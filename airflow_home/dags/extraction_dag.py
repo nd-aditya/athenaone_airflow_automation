@@ -18,6 +18,12 @@ SCHEMA = "ATHENAONE"
 BATCH_SIZE = 20        # Number of tables per task (800 tables / 20 = 40 tasks in UI)
 MAX_ACTIVE_TASKS = 5   # Max batches running in parallel (so max 5 x 20 = 100 concurrent Snowflake queries)
 
+# --- Testing: hardcode table names here when testing specific tables ---
+TEST_TABLE_NAMES = [
+    "MEDICATION",
+    # "OTHER_TABLE",
+]
+
 
 with DAG(
     dag_id="snowflake_incremental_extraction",
@@ -27,6 +33,7 @@ with DAG(
     max_active_tasks=MAX_ACTIVE_TASKS,
     tags=["snowflake", "incremental"],
 ) as dag:
+
 
     @task
     def get_table_batches() -> list[list[str]]:
@@ -67,6 +74,16 @@ with DAG(
         ]
 
         return batches
+
+    @task
+    def get_test_batches() -> list[list[str]]:
+        """
+        Returns a single batch containing TEST_TABLE_NAMES.
+        Use this instead of get_table_batches() when testing.
+        """
+        if not TEST_TABLE_NAMES:
+            raise ValueError("TEST_TABLE_NAMES is empty. Add table names to test.")
+        return [TEST_TABLE_NAMES]
 
     @task
     def extract_batch(batch: list[str]) -> dict:
@@ -115,5 +132,8 @@ with DAG(
 
     # get_table_batches() returns a list of lists
     # expand() creates one task per batch → 40 tasks in UI instead of 800
-    batches = get_table_batches()
+    # TEST: only tables in TEST_TABLE_NAMES (paste table names above)
+    batches = get_test_batches()
+    # FULL RUN: all views from Snowflake
+    # batches = get_table_batches()
     extract_batch.expand(batch=batches)
