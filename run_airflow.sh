@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# Stop on error
+set -e
+
+# ---- CONFIG ----
+AIRFLOW_HOME="/Users/ndaident/Desktop/Airflow_Automation/airflow_home"
+CONDA_ENV="airflow_inc"
+AIRFLOW_PORT=8890
+
+# ---- LOAD CONDA ----
+source "$(conda info --base)/etc/profile.d/conda.sh"
+
+# ---- ACTIVATE ENV ----
+conda activate "$CONDA_ENV"
+
+export AIRFLOW_HOME="$AIRFLOW_HOME"
+
+echo "--------------------------------------"
+echo "Using CONDA ENV: $CONDA_ENV"
+echo "Using AIRFLOW_HOME: $AIRFLOW_HOME"
+echo "Starting Airflow on port $AIRFLOW_PORT"
+echo "--------------------------------------"
+
+# ---- START SERVICES ----
+airflow scheduler &
+SCHEDULER_PID=$!
+
+sleep 3
+
+airflow dag-processor &
+DAG_PROCESSOR_PID=$!
+
+sleep 3
+
+airflow api-server &
+API_PID=$!
+
+echo "--------------------------------------"
+echo "Airflow started."
+echo "Scheduler PID: $SCHEDULER_PID"
+echo "DAG Processor PID: $DAG_PROCESSOR_PID"
+echo "API Server PID: $API_PID"
+echo "UI: http://localhost:$AIRFLOW_PORT"
+echo "--------------------------------------"
+
+# Keep script alive
+wait

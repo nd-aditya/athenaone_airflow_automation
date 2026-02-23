@@ -1,0 +1,28 @@
+2026-02-21T16:11:46.956824Z [info     ] setup plugin alembic.autogenerate.schemas [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:46.956982Z [info     ] setup plugin alembic.autogenerate.tables [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:46.957036Z [info     ] setup plugin alembic.autogenerate.types [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:46.957077Z [info     ] setup plugin alembic.autogenerate.constraints [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:46.957112Z [info     ] setup plugin alembic.autogenerate.defaults [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:46.957146Z [info     ] setup plugin alembic.autogenerate.comments [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:47.377035Z [info     ] Running the uvicorn with:
+Apps: all
+Workers: 1
+Host: 0.0.0.0:8082
+Timeout: 120
+Logfiles: -
+================================================================= [airflow.cli.commands.api_server_command] loc=api_server_command.py:54
+/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/api_fastapi/execution_api/routes/__init__.py:23 DeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
+/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/api_fastapi/core_api/routes/public/__init__.py:36 DeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
+INFO:     Started server process [69880]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8082 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [69880]
+  ____________       _____________
+ ____    |__( )_________  __/__  /________      __
+____  /| |_  /__  ___/_  /_ __  /_  __ \_ | /| / /
+___  ___ |  / _  /   _  __/ _  / / /_/ /_ |/ |/ /
+ _/_/  |_/_/  /_/    /_/    /_/  \____/____/|__/

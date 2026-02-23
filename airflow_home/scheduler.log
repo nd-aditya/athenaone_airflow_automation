@@ -1,0 +1,233 @@
+2026-02-21T16:11:46.956802Z [info     ] setup plugin alembic.autogenerate.schemas [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:46.956965Z [info     ] setup plugin alembic.autogenerate.tables [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:46.957018Z [info     ] setup plugin alembic.autogenerate.types [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:46.957058Z [info     ] setup plugin alembic.autogenerate.constraints [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:46.957093Z [info     ] setup plugin alembic.autogenerate.defaults [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:46.957127Z [info     ] setup plugin alembic.autogenerate.comments [alembic.runtime.plugins] loc=plugins.py:37
+  ____________       _____________
+ ____    |__( )_________  __/__  /________      __
+____  /| |_  /__  ___/_  /_ __  /_  __ \_ | /| / /
+___  ___ |  / _  /   _  __/ _  / / /_/ /_ |/ |/ /
+ _/_/  |_/_/  /_/    /_/    /_/  \____/____/|__/
+2026-02-21T16:11:47.407237Z [info     ] Starting the scheduler         [airflow.jobs.scheduler_job_runner.SchedulerJobRunner] loc=scheduler_job_runner.py:1058
+2026-02-21T16:11:47.409563Z [info     ] Loaded executor: :LocalExecutor: [airflow.executors.executor_loader] loc=executor_loader.py:281
+2026-02-21T16:11:47.424907Z [info     ] Adopting or resetting orphaned tasks for active dag runs [airflow.jobs.scheduler_job_runner.SchedulerJobRunner] loc=scheduler_job_runner.py:2324
+2026-02-21T16:11:47.458754Z [info     ] Reset the following 1 orphaned TaskInstances:
+	<TaskInstance: snowflake_incremental_extraction.get_tables manual__2026-02-21T14:54:09.295778+00:00 [queued]> [airflow.jobs.scheduler_job_runner.SchedulerJobRunner] loc=scheduler_job_runner.py:2398
+2026-02-21T16:11:47.520019Z [info     ] 1 tasks up for execution:
+	<TaskInstance: snowflake_incremental_extraction.get_tables manual__2026-02-21T14:54:09.295778+00:00 [scheduled]> [airflow.jobs.scheduler_job_runner.SchedulerJobRunner] loc=scheduler_job_runner.py:448
+2026-02-21T16:11:47.520124Z [info     ] DAG snowflake_incremental_extraction has 0/10 running and queued tasks [airflow.jobs.scheduler_job_runner.SchedulerJobRunner] loc=scheduler_job_runner.py:520
+2026-02-21T16:11:47.520225Z [info     ] Setting the following tasks to queued state:
+	<TaskInstance: snowflake_incremental_extraction.get_tables manual__2026-02-21T14:54:09.295778+00:00 [scheduled]> [airflow.jobs.scheduler_job_runner.SchedulerJobRunner] loc=scheduler_job_runner.py:659
+2026-02-21T16:11:47.521149Z [info     ] Trying to enqueue tasks: [<TaskInstance: snowflake_incremental_extraction.get_tables manual__2026-02-21T14:54:09.295778+00:00 [scheduled]>] for executor: LocalExecutor(parallelism=32) [airflow.jobs.scheduler_job_runner.SchedulerJobRunner] loc=scheduler_job_runner.py:744
+/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/jwt/api_jwt.py:153 InsecureKeyLengthWarning: The HMAC key is 24 bytes long, which is below the minimum recommended length of 64 bytes for SHA512. See RFC 7518 Section 3.2.
+2026-02-21T16:11:48.000371Z [info     ] setup plugin alembic.autogenerate.schemas [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.000514Z [info     ] setup plugin alembic.autogenerate.tables [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.000567Z [info     ] setup plugin alembic.autogenerate.types [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.000605Z [info     ] setup plugin alembic.autogenerate.constraints [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.000637Z [info     ] setup plugin alembic.autogenerate.defaults [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.000670Z [info     ] setup plugin alembic.autogenerate.comments [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.144621Z [info     ] setup plugin alembic.autogenerate.schemas [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.144764Z [info     ] setup plugin alembic.autogenerate.tables [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.144815Z [info     ] setup plugin alembic.autogenerate.types [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.144873Z [info     ] setup plugin alembic.autogenerate.constraints [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.144906Z [info     ] setup plugin alembic.autogenerate.defaults [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.144938Z [info     ] setup plugin alembic.autogenerate.comments [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.148030Z [info     ] setup plugin alembic.autogenerate.schemas [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.148137Z [info     ] setup plugin alembic.autogenerate.tables [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.148182Z [info     ] setup plugin alembic.autogenerate.types [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.148217Z [info     ] setup plugin alembic.autogenerate.constraints [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.148246Z [info     ] setup plugin alembic.autogenerate.defaults [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.148274Z [info     ] setup plugin alembic.autogenerate.comments [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.159509Z [info     ] setup plugin alembic.autogenerate.schemas [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.159617Z [info     ] setup plugin alembic.autogenerate.tables [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.159665Z [info     ] setup plugin alembic.autogenerate.types [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.159701Z [info     ] setup plugin alembic.autogenerate.constraints [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.159731Z [info     ] setup plugin alembic.autogenerate.defaults [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.159761Z [info     ] setup plugin alembic.autogenerate.comments [alembic.runtime.plugins] loc=plugins.py:37
+2026-02-21T16:11:48.261406Z [info     ] Starting log server on http://[::]:8793 [airflow.utils.serve_logs.core] loc=core.py:50
+WARNING:  ASGI app factory detected. Using it, but please consider setting the --factory flag explicitly.
+INFO:     Started server process [69945]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://:8793 (Press CTRL+C to quit)
+2026-02-21T16:11:48.402956Z [info     ] Worker starting up pid=69946   [airflow.executors.local_executor.LocalExecutor] loc=local_executor.py:65
+2026-02-21T16:11:48.403000Z [info     ] Worker starting up pid=69947   [airflow.executors.local_executor.LocalExecutor] loc=local_executor.py:65
+2026-02-21T16:11:48.412104Z [info     ] Worker starting up pid=69948   [airflow.executors.local_executor.LocalExecutor] loc=local_executor.py:65
+2026-02-21T16:11:48.434296Z [info     ] Secrets backends loaded for worker [supervisor] backend_classes=['EnvironmentVariablesBackend', 'MetastoreBackend'] count=2 loc=supervisor.py:1975
+/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/sdk/execution_time/supervisor.py:477 DeprecationWarning: This process (pid=69946) is multi-threaded, use of fork() may lead to deadlocks in the child.
+2026-02-21T16:11:48.451448Z [info     ] Process exited                 [supervisor] exit_code=<Negsignal.SIGKILL: -9> loc=supervisor.py:710 pid=69956 signal_sent=SIGKILL
+2026-02-21T16:11:48.452037Z [error    ] uhoh                           [airflow.executors.local_executor.LocalExecutor] loc=local_executor.py:100
+Traceback (most recent call last):
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/executors/local_executor.py", line 96, in _run_worker
+    _execute_work(log, workload)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/executors/local_executor.py", line 124, in _execute_work
+    supervise(
+    ~~~~~~~~~^
+        # This is the "wrong" ti type, but it duck types the same. TODO: Create a protocol for this.
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+        log_path=workload.log_path,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/sdk/execution_time/supervisor.py", line 1984, in supervise
+    process = ActivitySubprocess.start(
+        dag_rel_path=dag_rel_path,
+    ...<4 lines>...
+        subprocess_logs_to_stdout=subprocess_logs_to_stdout,
+    )
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/sdk/execution_time/supervisor.py", line 955, in start
+    proc._on_child_started(ti=what, dag_rel_path=dag_rel_path, bundle_info=bundle_info)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/sdk/execution_time/supervisor.py", line 966, in _on_child_started
+    ti_context = self.client.task_instances.start(ti.id, self.pid, start_date)
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/sdk/api/client.py", line 215, in start
+    resp = self.client.patch(f"task-instances/{id}/run", content=body.model_dump_json())
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/httpx/_client.py", line 1218, in patch
+    return self.request(
+           ~~~~~~~~~~~~^
+        "PATCH",
+        ^^^^^^^^
+    ...<11 lines>...
+        extensions=extensions,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/tenacity/__init__.py", line 338, in wrapped_f
+    return copy(f, *args, **kw)
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/tenacity/__init__.py", line 477, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/tenacity/__init__.py", line 378, in iter
+    result = action(retry_state)
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/tenacity/__init__.py", line 400, in <lambda>
+    self._add_action_func(lambda rs: rs.outcome.result())
+                                     ~~~~~~~~~~~~~~~~~^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/tenacity/__init__.py", line 480, in __call__
+    result = fn(*args, **kwargs)
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/sdk/api/client.py", line 887, in request
+    return super().request(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/httpx/_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+        request,
+    ...<2 lines>...
+        history=[],
+    )
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+        request,
+        follow_redirects=follow_redirects,
+        history=history,
+    )
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/httpx/_client.py", line 999, in _send_handling_redirects
+    raise exc
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/httpx/_client.py", line 982, in _send_handling_redirects
+    hook(response)
+    ~~~~^^^^^^^^^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/sdk/api/client.py", line 186, in raise_on_4xx_5xx_with_note
+    return get_json_error(response) or response.raise_for_status()
+                                       ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Redirect response '307 Temporary Redirect' for url 'http://localhost:8080/execution/task-instances/019c80f8-af82-776b-ada1-c8d4041f6c4a/run'
+Redirect location: '/containers/'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307
+Correlation-id=019c80f8-b35f-7c4a-88c9-5917e59b5858
+2026-02-21T16:11:48.608282Z [error    ] Exception when executing SchedulerJob._run_scheduler_loop [airflow.jobs.scheduler_job_runner.SchedulerJobRunner] loc=scheduler_job_runner.py:1086
+Traceback (most recent call last):
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/jobs/scheduler_job_runner.py", line 1082, in _execute
+    self._run_scheduler_loop()
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/jobs/scheduler_job_runner.py", line 1380, in _run_scheduler_loop
+    executor.heartbeat()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/traces/tracer.py", line 58, in wrapper
+    return func(*args, **kwargs)
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/executors/base_executor.py", line 257, in heartbeat
+    self.sync()
+    ~~~~~~~~~^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/executors/local_executor.py", line 241, in sync
+    self._read_results()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/executors/local_executor.py", line 246, in _read_results
+    key, state, exc = self.result_queue.get()
+                      ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/multiprocessing/queues.py", line 387, in get
+    return _ForkingPickler.loads(res)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^
+TypeError: HTTPStatusError.__init__() missing 2 required keyword-only arguments: 'request' and 'response'
+2026-02-21T16:11:48.610191Z [info     ] Shutting down LocalExecutor; waiting for running tasks to finish.  Signal again if you don't want to wait. [airflow.executors.local_executor.LocalExecutor] loc=local_executor.py:252
+2026-02-21T16:11:48.926505Z [info     ] Exited execute loop            [airflow.jobs.scheduler_job_runner.SchedulerJobRunner] loc=scheduler_job_runner.py:1098
+Traceback (most recent call last):
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/bin/airflow", line 6, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/__main__.py", line 55, in main
+    args.func(args)
+    ~~~~~~~~~^^^^^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/cli/cli_config.py", line 49, in command
+    return func(*args, **kwargs)
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/utils/cli.py", line 114, in wrapper
+    return f(*args, **kwargs)
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/utils/providers_configuration_loader.py", line 54, in wrapped_function
+    return func(*args, **kwargs)
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/cli/commands/scheduler_command.py", line 52, in scheduler
+    run_command_with_daemon_option(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        args=args,
+        ^^^^^^^^^^
+    ...<2 lines>...
+        should_setup_logging=True,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/cli/commands/daemon_utils.py", line 86, in run_command_with_daemon_option
+    callback()
+    ~~~~~~~~^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/cli/commands/scheduler_command.py", line 55, in <lambda>
+    callback=lambda: _run_scheduler_job(args),
+                     ~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/cli/commands/scheduler_command.py", line 43, in _run_scheduler_job
+    run_job(job=job_runner.job, execute_callable=job_runner._execute)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/utils/session.py", line 100, in wrapper
+    return func(*args, session=session, **kwargs)
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/jobs/job.py", line 368, in run_job
+    return execute_job(job, execute_callable=execute_callable)
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/jobs/job.py", line 397, in execute_job
+    ret = execute_callable()
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/jobs/scheduler_job_runner.py", line 1082, in _execute
+    self._run_scheduler_loop()
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/jobs/scheduler_job_runner.py", line 1380, in _run_scheduler_loop
+    executor.heartbeat()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/traces/tracer.py", line 58, in wrapper
+    return func(*args, **kwargs)
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/executors/base_executor.py", line 257, in heartbeat
+    self.sync()
+    ~~~~~~~~~^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/executors/local_executor.py", line 241, in sync
+    self._read_results()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/site-packages/airflow/executors/local_executor.py", line 246, in _read_results
+    key, state, exc = self.result_queue.get()
+                      ~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/ndaident/miniconda3/envs/airflow_inc/lib/python3.13/multiprocessing/queues.py", line 387, in get
+    return _ForkingPickler.loads(res)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^
+TypeError: HTTPStatusError.__init__() missing 2 required keyword-only arguments: 'request' and 'response'
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [69945]
