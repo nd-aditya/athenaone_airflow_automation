@@ -12,6 +12,7 @@ from services.config import (
 )
 from services.extraction_service import extract_table
 from services.extraction_date_service import add_extraction_date_to_all_tables
+from services.merge_service import merge_incremental_to_historical
 
 SCHEMA = "ATHENAONE"
 
@@ -139,6 +140,15 @@ with DAG(
         """
         return add_extraction_date_to_all_tables()
 
+    @task
+    def merge_to_historical() -> dict:
+        """
+        Merge data from incremental schema to historical schema.
+        Creates missing tables in historical, then INSERT INTO ... SELECT for common columns.
+        Runs once after add_nd_extracted_date.
+        """
+        return merge_incremental_to_historical()
+
     # get_table_batches() returns a list of lists
     # expand() creates one task per batch → 40 tasks in UI instead of 800
     # TEST: only tables in TEST_TABLE_NAMES (paste table names above)
@@ -146,4 +156,6 @@ with DAG(
     # FULL RUN: all views from Snowflake
     # batches = get_table_batches()
     expanded = extract_batch.expand(batch=batches)
-    expanded >> add_nd_extracted_date()
+    add_date_task = add_nd_extracted_date()
+    merge_task = merge_to_historical()
+    expanded >> add_date_task >> merge_task
