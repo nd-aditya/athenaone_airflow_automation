@@ -11,6 +11,7 @@ from services.config import (
     SNOWFLAKE_WAREHOUSE,
 )
 from services.extraction_service import extract_table
+from services.extraction_date_service import add_extraction_date_to_all_tables
 
 SCHEMA = "ATHENAONE"
 
@@ -20,7 +21,7 @@ MAX_ACTIVE_TASKS = 5   # Max batches running in parallel (so max 5 x 20 = 100 co
 
 # --- Testing: hardcode table names here when testing specific tables ---
 TEST_TABLE_NAMES = [
-    "MEDICATION",
+    "MEDICATION"
     # "OTHER_TABLE",
 ]
 
@@ -130,10 +131,19 @@ with DAG(
 
         return results
 
+    @task
+    def add_nd_extracted_date() -> dict:
+        """
+        Add nd_extracted_date column to all tables in incremental schema (if missing)
+        and set it to current date. Runs once after all extract_batch tasks complete.
+        """
+        return add_extraction_date_to_all_tables()
+
     # get_table_batches() returns a list of lists
     # expand() creates one task per batch → 40 tasks in UI instead of 800
     # TEST: only tables in TEST_TABLE_NAMES (paste table names above)
     batches = get_test_batches()
     # FULL RUN: all views from Snowflake
     # batches = get_table_batches()
-    extract_batch.expand(batch=batches)
+    expanded = extract_batch.expand(batch=batches)
+    expanded >> add_nd_extracted_date()
