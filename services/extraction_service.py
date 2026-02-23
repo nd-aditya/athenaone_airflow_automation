@@ -35,7 +35,7 @@ data_type_mapping = {
    'NUMBER(2,0)': 'TINYINT',
    'NUMBER(3,0)': 'TINYINT',
    'NUMBER(4,0)': 'SMALLINT',
-   'NUMBER(5,0)': 'SMALLINT',
+   'NUMBER(5,0)': 'INT',
    'NUMBER(6,0)': 'MEDIUMINT',
    'NUMBER(7,0)': 'MEDIUMINT',
    'NUMBER(8,0)': 'INT',

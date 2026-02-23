@@ -11,8 +11,10 @@ from services.config import (
     SNOWFLAKE_WAREHOUSE,
 )
 from services.extraction_service import extract_table
-from services.extraction_date_service import add_extraction_date_to_all_tables
+from services.nd_date_service import add_extraction_date_to_all_tables
 from services.merge_service import merge_incremental_to_historical
+from services.diff_schema_service import copy_historical_to_diff_schema
+from services.schema_reset_service import reset_incremental_schema as reset_schema
 
 SCHEMA = "ATHENAONE"
 
@@ -36,6 +38,13 @@ with DAG(
     tags=["snowflake", "incremental"],
 ) as dag:
 
+    @task
+    def reset_incremental_schema() -> dict:
+        """
+        Drop and recreate the incremental schema (database) so each run starts clean.
+        Runs first, before any extraction.
+        """
+        return reset_schema()
 
     @task
     def get_table_batches() -> list[list[str]]:
@@ -149,13 +158,23 @@ with DAG(
         """
         return merge_incremental_to_historical()
 
+    @task
+    def copy_to_diff_schema() -> dict:
+        """
+        Create schema diff_<current_date> if not exists and copy from historical
+        only rows where nd_extracted_date = CURDATE(). Runs after merge_to_historical.
+        """
+        return copy_historical_to_diff_schema()
+
     # get_table_batches() returns a list of lists
     # expand() creates one task per batch → 40 tasks in UI instead of 800
     # TEST: only tables in TEST_TABLE_NAMES (paste table names above)
     batches = get_test_batches()
     # FULL RUN: all views from Snowflake
     # batches = get_table_batches()
+    reset_task = reset_incremental_schema()
     expanded = extract_batch.expand(batch=batches)
     add_date_task = add_nd_extracted_date()
     merge_task = merge_to_historical()
-    expanded >> add_date_task >> merge_task
+    diff_task = copy_to_diff_schema()
+    reset_task >> batches >> expanded >> add_date_task >> merge_task >> diff_task
