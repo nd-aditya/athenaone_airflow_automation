@@ -1,0 +1,51 @@
+{
+    "schemas": {
+      "historical_schema": "dummy_mapping_schema",
+      "incremental_schema": "dump_testing"
+    },
+    "machine_name": "Local",
+    "date_settings": {
+      "to_date": null,
+      "from_date": null,
+      "extraction_date": null
+    },
+    "extraction_settings": {
+      "batch_size": 10000,
+      "context_ids": [
+        1,
+        23649
+      ],
+      "max_threads": 10,
+      "test_tables": null
+    },
+    "notification_settings": {
+      "notify_on_step": true,
+      "notify_on_start": true,
+      "email_recipients": [
+        "aalind@neurodiscovery.ai"
+      ],
+      "notify_on_failure": true,
+      "notify_on_success": true,
+      "google_chat_webhook": "https://chat.googleapis.com/v1/spaces/AAQAQEnoR7w/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=Jw4x8jS2oegUKr-9kbi0sH0sUlrCG0RBZJ95A6y2QnE",
+      "enable_chat_notifications": false
+    },
+    "deid_connection_details": {
+      "schema": "deid_incr",
+      "mysql_host": "localhost",
+      "mysql_user": "root",
+      "mysql_password": "123456789"
+    },
+    "source_connection_details": {
+      "snowflake_user": "sgarai",
+      "snowflake_account": "CM97887-READER_DATAPOND_DLSE_PROD_NEURO_DISCOVERY_AI",
+      "snowflake_database": "ATHENAHEALTH",
+      "snowflake_password": "NeuroDiscovery%401234",
+      "snowflake_warehouse": "AH_WAREHOUSE",
+      "snowflake_insecure_mode": true
+    },
+    "destination_connection_details": {
+      "mysql_host": "localhost",
+      "mysql_user": "root",
+      "mysql_password": "123456789"
+    }
+  }

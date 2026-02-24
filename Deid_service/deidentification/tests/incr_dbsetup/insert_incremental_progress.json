@@ -1,0 +1,17 @@
+{
+  "Encounter": {
+    "status": "done"
+  },
+  "Facility": {
+    "status": "done"
+  },
+  "Patient": {
+    "status": "done"
+  },
+  "ProgressNotes": {
+    "status": "done"
+  },
+  "Vitals": {
+    "status": "done"
+  }
+}

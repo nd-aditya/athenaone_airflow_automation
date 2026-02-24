@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground: #2D3453;
+}
+
+body {
+  color: var(--foreground);
+  background: #F1F2F7;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+

@@ -1,0 +1,35 @@
+xml_tag_replacements = {
+    "SSN": "((SSN))",
+    "address" : "((ADDRESS))",
+    "Address" : "((ADDRESS))",
+    "hl7PtName" : '((PATIENTNAME))',
+    "patientname" : '((PATIENTNAME))',
+    "ptName" : '((PATIENTNAME))',
+    "facName" : '((FACILITYNAME))',
+    "GuarantorName" : '((GUARANTORNAME))',
+    "encid" : "((ENCOUNTERID))",
+    "PayorID" : "((PAYORID))",
+    "InsuranceId" : "((INSURANCEID))",
+    "postalCode": "((ZipCode))",
+    "PatientId": "((PatientId))",
+    "EncounterId": "((EncounterId))",
+    "Pt_FName": "((Pt_FName))",
+    "Pt_LName": "((Pt_LName))",
+    "AddressLine1": "((AddressLine1))",
+    "AddressLine2": "((AddressLine2))",
+    "City": "((City))",
+    "ZipCode": "((ZipCode))",
+    "FirstName": "((FirstName))",
+    "MiddleName": "((MiddleName))",
+    "LastName": "((LastName))",
+    "DateOfBirth": "((DateOfBirth))",
+    "EncFacilityName" : "((EncFacilityName))",
+    "PracticeName" : "((PracticeName))",
+    "encounterId" : "((encounterId))",
+    "EncounterId" : "((EncounterId))",
+    "birthTime" : "((DOBDatetime))",
+
+}
+
+ZIPCODE_TAGS = ["zip", "zipcode", "postalcode"]
+DOB_TAGS = ["dob", "dateofbirth", "ptdob", "birthTime"]

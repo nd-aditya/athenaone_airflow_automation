@@ -1,0 +1,47 @@
+{
+    "incremental_process_type": "ecw_with_diff_script",
+    "client_name": "texas",
+    "dump_date": "2025-12-10",
+    "main_database_details": {
+        "database_name": "automation_incr_testing",
+        "username": "root",
+        "password": "123456789",
+        "host": "localhost",
+        "port": 3306,
+        "db_type": "mysql"
+    },
+    "newer_database_details": {
+        "username": "sa",
+        "password": "ndAdmin2025",
+        "host": "localhost",
+        "port": 1433,
+        "db_type": "mssql"
+    },
+    "incremental_diff_database_details": {
+        "username": "root",
+        "password": "123456789",
+        "host": "localhost",
+        "port": 3306,
+        "db_type": "mysql"
+    },
+    "extraction_settings": {
+        "hash_buckets": 64,
+        "max_workers": 4,
+        "chunk_size": 250000
+    },
+    "notification_settings": {
+        "email_recipients": ["rohit@neurodiscovery.ai"],
+        "google_chat_webhook": "",
+        "enable_chat_notifications": false,
+        "notify_on_start": true,
+        "notify_on_step": true,
+        "notify_on_success": true,
+        "notify_on_failure": true
+    },
+    "deid_connection_details": {
+        "schema": "deid_incr_ecw_diff_script",
+        "mysql_host": "localhost",
+        "mysql_user": "root",
+        "mysql_password": "123456789"
+    }
+}

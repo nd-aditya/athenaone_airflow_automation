@@ -1,0 +1,6 @@
+table_name,unique_key_column
+encounters,enc_id
+table4,pid
+table2,profileid
+table1,patient_id
+table3,patient_id

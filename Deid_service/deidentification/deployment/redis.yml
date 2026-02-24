@@ -1,0 +1,8 @@
+version: '3'
+services:
+  redis:
+    container_name: redis_deid
+    image: redis:latest
+    restart: always
+    ports:
+      - "13169:6379"

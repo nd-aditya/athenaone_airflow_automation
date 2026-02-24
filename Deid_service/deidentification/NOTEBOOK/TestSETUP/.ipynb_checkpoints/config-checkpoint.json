@@ -1,0 +1,2724 @@
+{
+    "ELIGIBILITYTRACK": {
+        "config": {
+            "batch_size": 1000,
+            "ignore_rows": {},
+            "columns_details": [
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CONTEXTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "FACILITYNAME",
+                    "column_name": "CONTEXTNAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CONTEXTPARENTCONTEXTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ELIGIBILITYTRACKID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ORIGINALID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "STATE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ATTEMPTSREMAINING",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ELIGIBILITYCLASS",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "RECEIVERNAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "PATIENTINSURANCEID",
+                    "column_name": "PATIENTINSURANCEID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "ALTPATIENTINSURANCEID",
+                    "column_name": "ALTPATIENTINSURANCEID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "ALTPATIENTINSURANCEID",
+                    "column_name": "DOCUMENTINSURANCEID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "PATIENTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "PATIENT_ID_PATIENTID",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "ALTPATIENTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "PATIENT_ID_PATIENTID",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "INFORMATIONTYPE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "PROVIDERID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "REFERENCEKEY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "TRANSACTIONYN",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "INQUIRYREASON",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "OUTGOINGTRANSACTION",
+                    "column_name": "OUTGOINGTRANSACTION",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "OUTGOINGTRANSACTIONDATEDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "DATE_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "INCOMINGTRANSACTION",
+                    "column_name": "INCOMINGTRANSACTION",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "INCOMINGTRANSACTIONDATEDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "DATE_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ACKNOWLEDGEMENT",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "ACKNOWLEDGEMENTDATEDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "DATE_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "MESSAGERESULT",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "NOTES",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "SYNCHRONOUSYN",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "VERIFICATIONNOTE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "NOTES",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ELIGIBILITYWARNING",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "DEBUG",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "NOTES",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "FULLOUTGOINGDATA",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "NOTES",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "FULLINCOMINGDATA",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "NOTES",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ELAPSEDTIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "TESTYN",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "USERNAME",
+                    "column_name": "USERNAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DEPARTMENTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "APPOINTMENTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "INSURANCEPACKAGEID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "IDNUMBER",
+                    "column_name": "IDNUMBER",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "POLICYNUMBER",
+                    "column_name": "POLICYNUMBER",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "RELATIONSHIPTOINSUREDID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "DATEOFSERVICEDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "DATE_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "INFORMATIONSOURCENAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "PCPNAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "OUTGOINGANSIVERSIONID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "INCOMINGANSIVERSIONID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ELIGIBILITYSEARCHCRITERIAID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ENROLLMENTPERIODID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "PROVIDERSOURCE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "NPITYPE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "NPI",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ITERATIVEMESSAGEMAPID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "SERVICETYPECODE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ISSUECATEGORY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "PARENTELIGIBILITYTRACKID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ELIGIBILITYBATCHID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "RULELOCATION",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "RULEID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "PATIENTMATCHSCORE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ELIGIBLERESULT",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "UNVERIFIED",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "INCORRECTPACKAGE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DEMOGRAPHICMISMATCH",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "HIXGRACEPERIOD",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "INCORRECTPATIENTPHI",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "EDIBATCHID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "LIMITEDCOVERAGEYN",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CACHEDELIGIBILITYTRACKID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "OTHERPAYERFLAG",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "USECACHINGLOGICFLAG",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ELIGIBLEINSTITUTIONALFLAG",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "INSURANCEPRODUCTTYPECODE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "CREATEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CREATEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "LASTMODIFIEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "LASTMODIFIEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "DELETEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DELETEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "LASTUPDATED",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "nd_auto_increment_id",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                }
+            ],
+            "reference_mapping": {},
+            "reference_enc_id_column": null,
+            "reference_patient_id_column": "PATIENTID"
+        },
+        "rows_count": 10143922
+    },
+    "CLINICALTEMPLATE": {
+        "config": {
+            "batch_size": 1000,
+            "ignore_rows": {},
+            "columns_details": [
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CONTEXTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "FACILITYNAME",
+                    "column_name": "CONTEXTNAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CONTEXTPARENTCONTEXTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "PATIENTTEMPLATEDATAID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "CLINICALENCOUNTERID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "ENCOUNTER_ID",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ENCOUNTERSECTION",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CLINICALTEMPLATENAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CLINICALTEMPLATEPARAGRAPH",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CLINICALTEMPLATESENTENCE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "CLINICALFINDING",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "NOTES",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "FINDINGDETAIL",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "NOTES",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "FINDINGTYPE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "CREATEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CREATEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "DELETEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DELETEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CLINICALTEMPLATEID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "LASTUPDATED",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "nd_auto_increment_id",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                }
+            ],
+            "reference_mapping": {},
+            "reference_enc_id_column": "CLINICALENCOUNTERID",
+            "reference_patient_id_column": null
+        },
+        "rows_count": 14228256
+    },
+    "INTERFACEMESSAGEDATA": {
+        "config": {
+            "batch_size": 1000,
+            "ignore_rows": {},
+            "columns_details": [
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CONTEXTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "FACILITYNAME",
+                    "column_name": "CONTEXTNAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CONTEXTPARENTCONTEXTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "INTERFACEMESSAGEDATAID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "INTERFACEMESSAGEID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "MESSAGETEXT",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "NOTES",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "RESPONSETEXT",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "NOTES",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "CREATEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CREATEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "DELETEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DELETEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "LASTMODIFIEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "LASTMODIFIEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "LASTUPDATED",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "nd_auto_increment_id",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                }
+            ],
+            "reference_mapping": {},
+            "reference_enc_id_column": null,
+            "reference_patient_id_column": null
+        },
+        "rows_count": 32593858
+    },
+    "CRDNETWORKDOCUMENT": {
+        "config": {
+            "batch_size": 1000,
+            "ignore_rows": {},
+            "columns_details": [
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CONTEXTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "FACILITYNAME",
+                    "column_name": "CONTEXTNAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CONTEXTPARENTCONTEXTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CRDNETWORKDOCUMENTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "DOCUMENTUNIQUEID",
+                    "column_name": "DOCUMENTUNIQUEID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "REPOSITORYUNIQUEID",
+                    "column_name": "REPOSITORYUNIQUEID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "HOMECOMMUNITYID",
+                    "column_name": "HOMECOMMUNITYID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "PATIENTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "PATIENT_ID_PATIENTID",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "PATIENT_ID",
+                    "column_name": "EXTERNALPATIENTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "INTERFACEVENDORID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "MIMETYPE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "CREATIONTIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "DATE_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "SERVICESTARTTIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "DATE_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "SERVICESTOPTIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "DATE_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "TITLE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "NOTES",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "LASTSYNCDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "DATE_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "LASTCONTENTSYNCDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "DATE_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "STATICYN",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "SUPERSEDEDNETDOCID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "NETWORKPROVIDER",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "NETWORKPRACTICENAME",
+                    "column_name": "NETWORKPRACTICENAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "NETWORKDOCUMENTNAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "NETWORKSPECIALTY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ISDEPRIORITIZEDYN",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "DELETEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DELETEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "CREATEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CREATEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "LASTMODIFIEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "LASTMODIFIEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "LASTUPDATED",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "nd_auto_increment_id",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                }
+            ],
+            "reference_mapping": {},
+            "reference_enc_id_column": null,
+            "reference_patient_id_column": "PATIENTID"
+        },
+        "rows_count": 30363478
+    },
+    "DOCUMENTACTION": {
+        "config": {
+            "batch_size": 1000,
+            "ignore_rows": {},
+            "columns_details": [
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CONTEXTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "FACILITYNAME",
+                    "column_name": "CONTEXTNAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CONTEXTPARENTCONTEXTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DOCUMENTACTIONID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DOCUMENTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ASSIGNEDTO",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "STATUS",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "PRIORITY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DOCUMENTCATEGORY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DOCUMENTCLASS",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DOCUMENTSUBCLASS",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DOCUMENTPRECLASS",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ACTIONGROUP",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ACTION",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "SYSTEMKEY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DOCUMENTERRORREASON",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "SENDFAXUNIQUEID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "MOBILE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "NOTE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "NOTES",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ERRORYN",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "PATIENTNOTIFIEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "DATE_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "CREATEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CREATEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DELETEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "DELETEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DOCUMENTACTIONREASONID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "LASTUPDATED",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "nd_auto_increment_id",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                }
+            ],
+            "reference_mapping": {
+                "conditions": [
+                    {
+                        "column_name": "DOCUMENTID",
+                        "source_column": "DOCUMENTID",
+                        "reference_table": "DOCUMENT"
+                    }
+                ],
+                "source_table": "DOCUMENTACTION",
+                "destination_column": "PATIENTID",
+                "destination_column_type": "patient_id"
+            },
+            "reference_enc_id_column": null,
+            "reference_patient_id_column": null
+        },
+        "rows_count": 49623192
+    },
+    "INTERFACEMESSAGEDATACLOB": {
+        "config": {
+            "batch_size": 1000,
+            "ignore_rows": {},
+            "columns_details": [
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CONTEXTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "FACILITYNAME",
+                    "column_name": "CONTEXTNAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CONTEXTPARENTCONTEXTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "INTERFACEMESSAGEDATAID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "MESSAGETEXT",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "NOTES",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "RESPONSETEXT",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "NOTES",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "LASTUPDATED",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "nd_auto_increment_id",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                }
+            ],
+            "reference_mapping": {},
+            "reference_enc_id_column": null,
+            "reference_patient_id_column": null
+        },
+        "rows_count": 32755014
+    },
+    "CLINICALENCOUNTERDATA": {
+        "config": {
+            "batch_size": 1000,
+            "ignore_rows": {},
+            "columns_details": [
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CONTEXTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "FACILITYNAME",
+                    "column_name": "CONTEXTNAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "MASK",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CONTEXTPARENTCONTEXTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CLINICALENCOUNTERDATAID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "CLINICALENCOUNTERID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "ENCOUNTER_ID",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "KEY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "KEYID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "VALUE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "NOTES",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "ORDERING",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "VERSIONTOKEN",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "ENCOUNTERDATACLOB",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "NOTES",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "DELETEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "DELETEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "CREATEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "CREATEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "LASTMODIFIEDDATETIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "mask_value": "",
+                    "column_name": "LASTMODIFIEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": true,
+                    "mask_value": "",
+                    "column_name": "LASTUPDATED",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": "STATIC_OFFSET",
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "nd_auto_increment_id",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                }
+            ],
+            "reference_mapping": {},
+            "reference_enc_id_column": "CLINICALENCOUNTERID",
+            "reference_patient_id_column": null
+        },
+        "rows_count": 56750656
+    },
+    "SLOT_FUTURE": {
+        "config": {
+            "batch_size": 1000,
+            "ignore_rows": {},
+            "columns_details": [
+                {
+                    "is_phi": false,
+                    "column_name": "CONTEXTID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "APPOINTMENT_ID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "PARENT_APPOINTMENT_ID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "TEMPLATE_APPOINTMENT_ID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "RESCHEDULED_APPOINTMENT_ID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "APPOINTMENT_DATE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "APPOINTMENT_MONTH",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "APPOINTMENT_START_TIME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "SCHEDULED_TIMESTAMP",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "SCHEDULED_MONTH",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "RESCHEDULED_TIMESTAMP",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "CANCELLED_TIMESTAMP",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "APPOINTMENT_STATUS_TYPE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "SLOT_STATUS_TYPE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "PATIENT_ID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "ENTERPRISE_ID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "PATIENT_GENDER_TYPE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "PATIENT_AGE_RANGE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "TEMPLATE_PROVIDER_ID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "RENDERING_PROVIDER_ID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "TEMPLATE_PROVIDER_NAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "RENDERING_PROVIDER_NAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "TEMPLATE_PROVIDERGROUP_NAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "RENDERING_PROVIDERGROUP_NAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "TEMPLATE_MEDICALGROUP_NAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "RENDERING_MEDICALGROUP_NAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "TEMPLATE_PROVIDER_CATEGORY_TYPE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "RENDERING_PROVIDER_CATEGORY_TYPE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "TEMPLATE_PROVIDERTYPE_NAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "RENDERING_PROVIDERTYPE_NAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "TEMPLATE_ENTITY_TYPE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "RENDERING_ENTITY_TYPE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "TEMPLATE_RESIDENT_STATUS_TYPE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "RENDERING_RESIDENT_STATUS_TYPE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "TEMPLATE_PROVIDER_SPECIALTY_TYPE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "RENDERING_PROVIDER_SPECIALTY_TYPE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "DEPARTMENT_ID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "DEPARTMENT_NAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "DEPARTMENT_CITY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "DEPARTMENT_STATE_CODE",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "DEPARTMENT_ZIP",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "DEPARTMENT_ADDRESS",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "DEPARTMENT_PLACE_OF_SERVICE_NAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "SLOT_ACTION_ID",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "PATIENT_SLOT_INDICATOR",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "APPOINTMENT_DELETED_INDICATOR",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "BOOKED_APPT_NAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "BOOKED_APPT_DURATION",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "TEMPLATE_APPT_NAME",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "TEMPLATE_APPT_GENERIC_INDICATOR",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "SLOT_DURATION",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "TEMPLATE_SLOT_INDICATOR",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "TEMPLATE_SLOT_DURATION",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "FORCED_SLOT_INDICATOR",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "FORCED_SLOT_DURATION",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "FROZEN_SLOT_INDICATOR",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "FROZEN_SLOT_DURATION",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "FROZEN_REASON",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "CHECKED_IN_INDICATOR",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "OPEN_INDICATOR",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "FILLED_INDICATOR",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "_EXTRACT_DATE_",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "CHECKED_IN_SLOT_DURATION",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "CREATEDON",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "CREATEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "LASTUPDATED",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "LASTUPDATEDBY",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                },
+                {
+                    "is_phi": false,
+                    "column_name": "nd_auto_increment_id",
+                    "ignore_rows": {},
+                    "add_to_phi_table": false,
+                    "reference_mapping": {},
+                    "de_identification_rule": null,
+                    "column_name_for_phi_table": null
+                }
+            ],
+            "reference_mapping": {},
+            "reference_enc_id_column": null,
+            "reference_patient_id_column": null
+        },
+        "rows_count": 86270070
+    }
+}

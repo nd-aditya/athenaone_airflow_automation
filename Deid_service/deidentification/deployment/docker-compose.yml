@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  de-identification-test_opti:
+    image: postgres:15
+    container_name: tncpa_inc
+    environment:
+      - POSTGRES_DB=deid_local
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_inc:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  postgres_data_inc:

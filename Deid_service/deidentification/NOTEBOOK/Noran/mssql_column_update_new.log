@@ -1,0 +1,3255 @@
+2025-05-18 09:34:39,049 [INFO] Running SQL:
+ALTER TABLE [ACTIVEMQ_LOCK] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:39,142 [INFO] Running SQL:
+ALTER TABLE [ACTIVEMQ_LOCK] DROP COLUMN nd_auto_increment_id
+
+2025-05-18 09:34:39,147 [INFO] Running SQL:
+ALTER TABLE [ACTIVEMQ_LOCK] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:39,151 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ACTIVEMQ_LOCK]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:39,163 [INFO] [OK] ACTIVEMQ_LOCK: Column created and values populated.
+2025-05-18 09:34:39,165 [INFO] Running SQL:
+ALTER TABLE [ACTIVEMQ_MSGS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:39,180 [INFO] Running SQL:
+ALTER TABLE [ACTIVEMQ_MSGS] DROP COLUMN nd_auto_increment_id
+
+2025-05-18 09:34:39,184 [INFO] Running SQL:
+ALTER TABLE [ACTIVEMQ_MSGS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:39,188 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ACTIVEMQ_MSGS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:39,444 [INFO] [OK] ACTIVEMQ_MSGS: Column created and values populated.
+2025-05-18 09:34:39,448 [INFO] Running SQL:
+ALTER TABLE [AllergyFix] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:39,457 [INFO] Running SQL:
+ALTER TABLE [AllergyFix] DROP COLUMN nd_auto_increment_id
+
+2025-05-18 09:34:39,462 [INFO] Running SQL:
+ALTER TABLE [AllergyFix] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:39,467 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [AllergyFix]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:39,502 [INFO] [OK] AllergyFix: Column created and values populated.
+2025-05-18 09:34:39,505 [INFO] Running SQL:
+ALTER TABLE [AllocationSet] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:39,603 [INFO] Running SQL:
+ALTER TABLE [AllocationSet] DROP COLUMN nd_auto_increment_id
+
+2025-05-18 09:34:39,608 [INFO] Running SQL:
+ALTER TABLE [AllocationSet] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:39,612 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [AllocationSet]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:39,620 [INFO] [OK] AllocationSet: Column created and values populated.
+2025-05-18 09:34:39,624 [INFO] [SKIP] Appointments: nd_auto_increment_id already exists and is INT.
+2025-05-18 09:34:39,626 [INFO] Running SQL:
+ALTER TABLE [AppSession] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:39,635 [INFO] Running SQL:
+ALTER TABLE [AppSession] DROP COLUMN nd_auto_increment_id
+
+2025-05-18 09:34:39,639 [INFO] Running SQL:
+ALTER TABLE [AppSession] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:39,643 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [AppSession]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:39,650 [INFO] [OK] AppSession: Column created and values populated.
+2025-05-18 09:34:39,652 [INFO] Running SQL:
+ALTER TABLE [ApptSearchCriteria] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:39,673 [INFO] Running SQL:
+ALTER TABLE [ApptSearchCriteria] DROP COLUMN nd_auto_increment_id
+
+2025-05-18 09:34:39,678 [INFO] Running SQL:
+ALTER TABLE [ApptSearchCriteria] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:39,682 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ApptSearchCriteria]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:39,700 [INFO] [OK] ApptSearchCriteria: Column created and values populated.
+2025-05-18 09:34:39,703 [INFO] Running SQL:
+ALTER TABLE [ApptSearchCriteriaApptTypes] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:39,716 [INFO] Running SQL:
+ALTER TABLE [ApptSearchCriteriaApptTypes] DROP COLUMN nd_auto_increment_id
+
+2025-05-18 09:34:39,721 [INFO] Running SQL:
+ALTER TABLE [ApptSearchCriteriaApptTypes] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:39,724 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ApptSearchCriteriaApptTypes]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:39,737 [INFO] [OK] ApptSearchCriteriaApptTypes: Column created and values populated.
+2025-05-18 09:34:39,739 [INFO] Running SQL:
+ALTER TABLE [ApptSearchCriteriaFacilities] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:39,766 [INFO] Running SQL:
+ALTER TABLE [ApptSearchCriteriaFacilities] DROP COLUMN nd_auto_increment_id
+
+2025-05-18 09:34:39,770 [INFO] Running SQL:
+ALTER TABLE [ApptSearchCriteriaFacilities] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:39,774 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ApptSearchCriteriaFacilities]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:39,800 [INFO] [OK] ApptSearchCriteriaFacilities: Column created and values populated.
+2025-05-18 09:34:39,802 [INFO] Running SQL:
+ALTER TABLE [ApptSearchCriteriaResources] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:39,809 [INFO] Running SQL:
+ALTER TABLE [ApptSearchCriteriaResources] DROP COLUMN nd_auto_increment_id
+
+2025-05-18 09:34:39,813 [INFO] Running SQL:
+ALTER TABLE [ApptSearchCriteriaResources] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:39,817 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ApptSearchCriteriaResources]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:39,835 [INFO] [OK] ApptSearchCriteriaResources: Column created and values populated.
+2025-05-18 09:34:39,837 [INFO] Running SQL:
+ALTER TABLE [ApptSet] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:39,857 [INFO] Running SQL:
+ALTER TABLE [ApptSet] DROP COLUMN nd_auto_increment_id
+
+2025-05-18 09:34:39,862 [INFO] Running SQL:
+ALTER TABLE [ApptSet] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:39,866 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ApptSet]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:39,921 [INFO] [OK] ApptSet: Column created and values populated.
+2025-05-18 09:34:39,924 [INFO] Running SQL:
+ALTER TABLE [ApptSlot] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:39,948 [INFO] Running SQL:
+ALTER TABLE [ApptSlot] DROP COLUMN nd_auto_increment_id
+
+2025-05-18 09:34:39,955 [INFO] Running SQL:
+ALTER TABLE [ApptSlot] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:39,960 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ApptSlot]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:46,422 [INFO] [OK] ApptSlot: Column created and values populated.
+2025-05-18 09:34:46,426 [INFO] Running SQL:
+ALTER TABLE [ApptType] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:46,433 [INFO] Running SQL:
+ALTER TABLE [ApptType] DROP COLUMN nd_auto_increment_id
+
+2025-05-18 09:34:46,440 [INFO] Running SQL:
+ALTER TABLE [ApptType] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:46,449 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ApptType]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:46,467 [INFO] [OK] ApptType: Column created and values populated.
+2025-05-18 09:34:46,469 [INFO] Running SQL:
+ALTER TABLE [ApptTypeAssignments] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:46,475 [INFO] Running SQL:
+ALTER TABLE [ApptTypeAssignments] DROP COLUMN nd_auto_increment_id
+
+2025-05-18 09:34:46,480 [INFO] Running SQL:
+ALTER TABLE [ApptTypeAssignments] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:46,533 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ApptTypeAssignments]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:46,563 [INFO] [OK] ApptTypeAssignments: Column created and values populated.
+2025-05-18 09:34:46,565 [INFO] Running SQL:
+ALTER TABLE [AUCSTATUS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:46,573 [INFO] Running SQL:
+ALTER TABLE [AUCSTATUS] DROP COLUMN nd_auto_increment_id
+
+2025-05-18 09:34:46,578 [INFO] Running SQL:
+ALTER TABLE [AUCSTATUS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:46,582 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [AUCSTATUS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:46,587 [INFO] [OK] AUCSTATUS: Column created and values populated.
+2025-05-18 09:34:46,589 [INFO] Running SQL:
+ALTER TABLE [AUDIT_EVENT_TYPE] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:46,595 [INFO] Running SQL:
+ALTER TABLE [AUDIT_EVENT_TYPE] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:46,599 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [AUDIT_EVENT_TYPE]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:46,609 [ERROR] [ERROR] AUDIT_EVENT_TYPE: (pymssql.exceptions.OperationalError) (213, b'Column name or number of supplied values does not match table definition.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n')
+[SQL: 
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [AUDIT_EVENT_TYPE]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 09:34:46,611 [INFO] Running SQL:
+ALTER TABLE [AUDIT_EVENT_TYPE_LOG] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:46,616 [INFO] Running SQL:
+ALTER TABLE [AUDIT_EVENT_TYPE_LOG] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:46,620 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [AUDIT_EVENT_TYPE_LOG]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:46,628 [INFO] [OK] AUDIT_EVENT_TYPE_LOG: Column created and values populated.
+2025-05-18 09:34:46,630 [INFO] Running SQL:
+ALTER TABLE [AUDIT_PROFILE] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:46,635 [INFO] Running SQL:
+ALTER TABLE [AUDIT_PROFILE] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:46,639 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [AUDIT_PROFILE]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:51,060 [ERROR] [ERROR] AUDIT_PROFILE: (pymssql.exceptions.OperationalError) (213, b'Column name or number of supplied values does not match table definition.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n')
+[SQL: 
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [AUDIT_PROFILE]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 09:34:51,064 [INFO] Running SQL:
+ALTER TABLE [Batch] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:51,075 [INFO] Running SQL:
+ALTER TABLE [Batch] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:51,080 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [Batch]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:51,266 [INFO] [OK] Batch: Column created and values populated.
+2025-05-18 09:34:51,268 [INFO] Running SQL:
+ALTER TABLE [BKP_SPR4526ALLERGY] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:51,275 [INFO] Running SQL:
+ALTER TABLE [BKP_SPR4526ALLERGY] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:51,280 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [BKP_SPR4526ALLERGY]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:51,595 [INFO] [OK] BKP_SPR4526ALLERGY: Column created and values populated.
+2025-05-18 09:34:51,598 [INFO] Running SQL:
+ALTER TABLE [CareTransInMUFix] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:51,605 [INFO] Running SQL:
+ALTER TABLE [CareTransInMUFix] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:51,610 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [CareTransInMUFix]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:51,615 [INFO] [OK] CareTransInMUFix: Column created and values populated.
+2025-05-18 09:34:51,617 [INFO] Running SQL:
+ALTER TABLE [CasesAttachment] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:51,623 [INFO] Running SQL:
+ALTER TABLE [CasesAttachment] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:51,626 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [CasesAttachment]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:51,633 [INFO] [OK] CasesAttachment: Column created and values populated.
+2025-05-18 09:34:51,635 [INFO] Running SQL:
+ALTER TABLE [CDS_Parameters] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:51,640 [INFO] Running SQL:
+ALTER TABLE [CDS_Parameters] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:51,644 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [CDS_Parameters]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:51,648 [INFO] [OK] CDS_Parameters: Column created and values populated.
+2025-05-18 09:34:51,650 [INFO] Running SQL:
+ALTER TABLE [CEM_EventQueue] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:51,656 [INFO] Running SQL:
+ALTER TABLE [CEM_EventQueue] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:51,660 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [CEM_EventQueue]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:34:54,257 [INFO] [OK] CEM_EventQueue: Column created and values populated.
+2025-05-18 09:34:54,260 [INFO] Running SQL:
+ALTER TABLE [CEM_MessageLog] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:34:54,267 [INFO] Running SQL:
+ALTER TABLE [CEM_MessageLog] ADD nd_auto_increment_id INT
+
+2025-05-18 09:34:54,272 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [CEM_MessageLog]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,519 [INFO] [OK] CEM_MessageLog: Column created and values populated.
+2025-05-18 09:35:09,521 [INFO] Running SQL:
+ALTER TABLE [CEM_Subscription] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,526 [INFO] Running SQL:
+ALTER TABLE [CEM_Subscription] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,530 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [CEM_Subscription]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,580 [INFO] [OK] CEM_Subscription: Column created and values populated.
+2025-05-18 09:35:09,582 [INFO] Running SQL:
+ALTER TABLE [CEM_SubscriptionRunDate] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,588 [INFO] Running SQL:
+ALTER TABLE [CEM_SubscriptionRunDate] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,592 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [CEM_SubscriptionRunDate]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,597 [INFO] [OK] CEM_SubscriptionRunDate: Column created and values populated.
+2025-05-18 09:35:09,599 [INFO] Running SQL:
+ALTER TABLE [CEM_SubscriptionType] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,604 [INFO] Running SQL:
+ALTER TABLE [CEM_SubscriptionType] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,609 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [CEM_SubscriptionType]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,619 [INFO] [OK] CEM_SubscriptionType: Column created and values populated.
+2025-05-18 09:35:09,621 [INFO] Running SQL:
+ALTER TABLE [CEM_TriggerStatus] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,627 [INFO] Running SQL:
+ALTER TABLE [CEM_TriggerStatus] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,631 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [CEM_TriggerStatus]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,646 [INFO] [OK] CEM_TriggerStatus: Column created and values populated.
+2025-05-18 09:35:09,648 [INFO] Running SQL:
+ALTER TABLE [Clearinghouse] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,655 [INFO] Running SQL:
+ALTER TABLE [Clearinghouse] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,660 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [Clearinghouse]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,666 [INFO] [OK] Clearinghouse: Column created and values populated.
+2025-05-18 09:35:09,667 [INFO] Running SQL:
+ALTER TABLE [ComponentSensitiveReport] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,673 [INFO] Running SQL:
+ALTER TABLE [ComponentSensitiveReport] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,678 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ComponentSensitiveReport]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,683 [INFO] [OK] ComponentSensitiveReport: Column created and values populated.
+2025-05-18 09:35:09,685 [INFO] Running SQL:
+ALTER TABLE [CONFTYPES] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,691 [INFO] Running SQL:
+ALTER TABLE [CONFTYPES] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,694 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [CONFTYPES]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,707 [INFO] [OK] CONFTYPES: Column created and values populated.
+2025-05-18 09:35:09,709 [INFO] Running SQL:
+ALTER TABLE [Control] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,714 [INFO] Running SQL:
+ALTER TABLE [Control] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,718 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [Control]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,723 [INFO] [OK] Control: Column created and values populated.
+2025-05-18 09:35:09,724 [INFO] Running SQL:
+ALTER TABLE [CriticalErrorSymbol] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,730 [INFO] Running SQL:
+ALTER TABLE [CriticalErrorSymbol] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,734 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [CriticalErrorSymbol]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,739 [INFO] [OK] CriticalErrorSymbol: Column created and values populated.
+2025-05-18 09:35:09,740 [INFO] Running SQL:
+ALTER TABLE [cus_activeLockReport] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,746 [INFO] Running SQL:
+ALTER TABLE [cus_activeLockReport] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,752 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [cus_activeLockReport]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,756 [INFO] [OK] cus_activeLockReport: Column created and values populated.
+2025-05-18 09:35:09,758 [INFO] Running SQL:
+ALTER TABLE [cus_fixMikPatientVisitLock] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,763 [INFO] Running SQL:
+ALTER TABLE [cus_fixMikPatientVisitLock] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,767 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [cus_fixMikPatientVisitLock]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,774 [INFO] [OK] cus_fixMikPatientVisitLock: Column created and values populated.
+2025-05-18 09:35:09,774 [INFO] Running SQL:
+ALTER TABLE [cus_fixStuckDocuments] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,779 [INFO] Running SQL:
+ALTER TABLE [cus_fixStuckDocuments] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,783 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [cus_fixStuckDocuments]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,788 [INFO] [OK] cus_fixStuckDocuments: Column created and values populated.
+2025-05-18 09:35:09,790 [INFO] Running SQL:
+ALTER TABLE [cus_LockedDocuments] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,794 [INFO] Running SQL:
+ALTER TABLE [cus_LockedDocuments] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,798 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [cus_LockedDocuments]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,803 [INFO] [OK] cus_LockedDocuments: Column created and values populated.
+2025-05-18 09:35:09,804 [INFO] Running SQL:
+ALTER TABLE [cus_Script] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,812 [INFO] Running SQL:
+ALTER TABLE [cus_Script] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,816 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [cus_Script]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,907 [INFO] [OK] cus_Script: Column created and values populated.
+2025-05-18 09:35:09,908 [INFO] Running SQL:
+ALTER TABLE [DESKDOCVIEWS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,930 [INFO] Running SQL:
+ALTER TABLE [DESKDOCVIEWS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,935 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [DESKDOCVIEWS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:09,941 [INFO] [OK] DESKDOCVIEWS: Column created and values populated.
+2025-05-18 09:35:09,943 [INFO] Running SQL:
+ALTER TABLE [DFFeeSchedule] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:09,949 [INFO] Running SQL:
+ALTER TABLE [DFFeeSchedule] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:09,953 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [DFFeeSchedule]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:10,003 [INFO] [OK] DFFeeSchedule: Column created and values populated.
+2025-05-18 09:35:10,005 [INFO] Running SQL:
+ALTER TABLE [DOCDATA2] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:10,012 [INFO] Running SQL:
+ALTER TABLE [DOCDATA2] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:10,016 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [DOCDATA2]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:10,455 [INFO] [OK] DOCDATA2: Column created and values populated.
+2025-05-18 09:35:10,459 [INFO] Running SQL:
+ALTER TABLE [DOCIMAGES] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:10,469 [INFO] Running SQL:
+ALTER TABLE [DOCIMAGES] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:10,474 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [DOCIMAGES]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:10,496 [INFO] [OK] DOCIMAGES: Column created and values populated.
+2025-05-18 09:35:10,498 [INFO] Running SQL:
+ALTER TABLE [DOCROUTE] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:10,504 [INFO] Running SQL:
+ALTER TABLE [DOCROUTE] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:10,508 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [DOCROUTE]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:10,566 [INFO] [OK] DOCROUTE: Column created and values populated.
+2025-05-18 09:35:10,568 [INFO] [SKIP] DoctorFacility: nd_auto_increment_id already exists and is INT.
+2025-05-18 09:35:10,570 [INFO] Running SQL:
+ALTER TABLE [DOCVIEWS_TRACKER] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:10,575 [INFO] Running SQL:
+ALTER TABLE [DOCVIEWS_TRACKER] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:10,579 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [DOCVIEWS_TRACKER]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:10,584 [INFO] [OK] DOCVIEWS_TRACKER: Column created and values populated.
+2025-05-18 09:35:10,585 [INFO] Running SQL:
+ALTER TABLE [EDIClaimFile] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:10,591 [INFO] Running SQL:
+ALTER TABLE [EDIClaimFile] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:10,596 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [EDIClaimFile]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:11,520 [ERROR] [ERROR] EDIClaimFile: (pymssql.exceptions.OperationalError) (213, b'Column name or number of supplied values does not match table definition.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n')
+[SQL: 
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [EDIClaimFile]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 09:35:11,523 [INFO] Running SQL:
+ALTER TABLE [EDIReportFile] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:11,532 [INFO] Running SQL:
+ALTER TABLE [EDIReportFile] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:11,536 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [EDIReportFile]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:17,538 [INFO] [OK] EDIReportFile: Column created and values populated.
+2025-05-18 09:35:17,541 [INFO] Running SQL:
+ALTER TABLE [emridcontrol] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:17,549 [INFO] Running SQL:
+ALTER TABLE [emridcontrol] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:17,553 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [emridcontrol]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:17,559 [INFO] [OK] emridcontrol: Column created and values populated.
+2025-05-18 09:35:17,561 [INFO] Running SQL:
+ALTER TABLE [ErrorLog] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:17,566 [INFO] Running SQL:
+ALTER TABLE [ErrorLog] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:17,571 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ErrorLog]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:19,256 [INFO] [OK] ErrorLog: Column created and values populated.
+2025-05-18 09:35:19,260 [INFO] Running SQL:
+ALTER TABLE [ERXREQUEST] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:19,267 [INFO] Running SQL:
+ALTER TABLE [ERXREQUEST] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:19,272 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ERXREQUEST]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:19,498 [INFO] [OK] ERXREQUEST: Column created and values populated.
+2025-05-18 09:35:19,500 [INFO] Running SQL:
+ALTER TABLE [ExcludedUsr] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:19,508 [INFO] Running SQL:
+ALTER TABLE [ExcludedUsr] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:19,513 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ExcludedUsr]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:19,533 [INFO] [OK] ExcludedUsr: Column created and values populated.
+2025-05-18 09:35:19,534 [INFO] Running SQL:
+ALTER TABLE [EXT_CODE] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:19,540 [INFO] Running SQL:
+ALTER TABLE [EXT_CODE] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:19,544 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [EXT_CODE]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:19,616 [INFO] [OK] EXT_CODE: Column created and values populated.
+2025-05-18 09:35:19,619 [INFO] Running SQL:
+ALTER TABLE [EXTID] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:19,625 [INFO] Running SQL:
+ALTER TABLE [EXTID] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:19,629 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [EXTID]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:22,014 [INFO] [OK] EXTID: Column created and values populated.
+2025-05-18 09:35:22,017 [INFO] Running SQL:
+ALTER TABLE [EXTIDSPACE] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:22,024 [INFO] Running SQL:
+ALTER TABLE [EXTIDSPACE] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:22,029 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [EXTIDSPACE]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:22,035 [INFO] [OK] EXTIDSPACE: Column created and values populated.
+2025-05-18 09:35:22,037 [INFO] Running SQL:
+ALTER TABLE [FeeSchedule] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:22,043 [INFO] Running SQL:
+ALTER TABLE [FeeSchedule] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:22,047 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [FeeSchedule]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:22,054 [INFO] [OK] FeeSchedule: Column created and values populated.
+2025-05-18 09:35:22,056 [INFO] Running SQL:
+ALTER TABLE [FINDDLGPREFS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:22,063 [INFO] Running SQL:
+ALTER TABLE [FINDDLGPREFS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:22,068 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [FINDDLGPREFS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:22,121 [INFO] [OK] FINDDLGPREFS: Column created and values populated.
+2025-05-18 09:35:22,123 [INFO] Running SQL:
+ALTER TABLE [FLAG] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:22,129 [INFO] Running SQL:
+ALTER TABLE [FLAG] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:22,133 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [FLAG]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:22,678 [INFO] [OK] FLAG: Column created and values populated.
+2025-05-18 09:35:22,681 [INFO] Running SQL:
+ALTER TABLE [FlagBackup] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:22,687 [INFO] Running SQL:
+ALTER TABLE [FlagBackup] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:22,691 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [FlagBackup]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:22,785 [INFO] [OK] FlagBackup: Column created and values populated.
+2025-05-18 09:35:22,787 [INFO] Running SQL:
+ALTER TABLE [FLAGTEMP] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:22,794 [INFO] Running SQL:
+ALTER TABLE [FLAGTEMP] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:22,798 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [FLAGTEMP]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:22,808 [INFO] [OK] FLAGTEMP: Column created and values populated.
+2025-05-18 09:35:22,810 [INFO] Running SQL:
+ALTER TABLE [FORMUPDATE] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:22,816 [INFO] Running SQL:
+ALTER TABLE [FORMUPDATE] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:22,820 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [FORMUPDATE]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:22,828 [INFO] [OK] FORMUPDATE: Column created and values populated.
+2025-05-18 09:35:22,829 [INFO] Running SQL:
+ALTER TABLE [GE_DBSchema_Audit] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:22,837 [INFO] Running SQL:
+ALTER TABLE [GE_DBSchema_Audit] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:22,844 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [GE_DBSchema_Audit]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:24,309 [INFO] [OK] GE_DBSchema_Audit: Column created and values populated.
+2025-05-18 09:35:24,312 [INFO] Running SQL:
+ALTER TABLE [GLOBALREFRESH] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:24,319 [INFO] Running SQL:
+ALTER TABLE [GLOBALREFRESH] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:24,323 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [GLOBALREFRESH]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:24,329 [INFO] [OK] GLOBALREFRESH: Column created and values populated.
+2025-05-18 09:35:24,331 [INFO] Running SQL:
+ALTER TABLE [GPICLUPD] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:24,336 [INFO] Running SQL:
+ALTER TABLE [GPICLUPD] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:24,385 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [GPICLUPD]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:24,392 [INFO] [OK] GPICLUPD: Column created and values populated.
+2025-05-18 09:35:24,393 [INFO] Running SQL:
+ALTER TABLE [gtRecentScheduleActivity] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:24,398 [INFO] Running SQL:
+ALTER TABLE [gtRecentScheduleActivity] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:24,402 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [gtRecentScheduleActivity]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:24,777 [INFO] [OK] gtRecentScheduleActivity: Column created and values populated.
+2025-05-18 09:35:24,779 [INFO] Running SQL:
+ALTER TABLE [gtRecentWaitingListActivity] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:24,786 [INFO] Running SQL:
+ALTER TABLE [gtRecentWaitingListActivity] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:24,791 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [gtRecentWaitingListActivity]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:24,797 [INFO] [OK] gtRecentWaitingListActivity: Column created and values populated.
+2025-05-18 09:35:24,799 [INFO] Running SQL:
+ALTER TABLE [HISTVIEWTEMPLATE] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:24,804 [INFO] Running SQL:
+ALTER TABLE [HISTVIEWTEMPLATE] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:24,808 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [HISTVIEWTEMPLATE]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:24,814 [INFO] [OK] HISTVIEWTEMPLATE: Column created and values populated.
+2025-05-18 09:35:24,816 [INFO] Running SQL:
+ALTER TABLE [HOUTMAPMS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:24,821 [INFO] Running SQL:
+ALTER TABLE [HOUTMAPMS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:24,824 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [HOUTMAPMS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:24,877 [INFO] [OK] HOUTMAPMS: Column created and values populated.
+2025-05-18 09:35:24,879 [INFO] Running SQL:
+ALTER TABLE [HOUTMAPMS_DELTA] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:24,887 [INFO] Running SQL:
+ALTER TABLE [HOUTMAPMS_DELTA] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:24,891 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [HOUTMAPMS_DELTA]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:24,899 [INFO] [OK] HOUTMAPMS_DELTA: Column created and values populated.
+2025-05-18 09:35:24,900 [INFO] Running SQL:
+ALTER TABLE [iLicInfo] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:24,906 [INFO] Running SQL:
+ALTER TABLE [iLicInfo] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:24,910 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [iLicInfo]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:25,742 [ERROR] [ERROR] iLicInfo: (pymssql.exceptions.OperationalError) (10342, b"Assembly 'Licensing' cannot be loaded because this edition of SQL Server only supports SAFE assemblies.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n")
+[SQL: 
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [iLicInfo]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 09:35:25,745 [INFO] Running SQL:
+ALTER TABLE [iLicProdInfo] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:25,752 [INFO] Running SQL:
+ALTER TABLE [iLicProdInfo] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:25,757 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [iLicProdInfo]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:25,764 [INFO] [OK] iLicProdInfo: Column created and values populated.
+2025-05-18 09:35:25,765 [INFO] Running SQL:
+ALTER TABLE [InconsistentDataFix] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:25,772 [INFO] Running SQL:
+ALTER TABLE [InconsistentDataFix] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:25,777 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [InconsistentDataFix]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:26,382 [INFO] [OK] InconsistentDataFix: Column created and values populated.
+2025-05-18 09:35:26,385 [INFO] Running SQL:
+ALTER TABLE [Industry] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:26,392 [INFO] Running SQL:
+ALTER TABLE [Industry] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:26,397 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [Industry]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:26,406 [INFO] [OK] Industry: Column created and values populated.
+2025-05-18 09:35:26,408 [INFO] Running SQL:
+ALTER TABLE [INETSERVICES] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:26,413 [INFO] Running SQL:
+ALTER TABLE [INETSERVICES] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:26,417 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [INETSERVICES]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:26,423 [INFO] [OK] INETSERVICES: Column created and values populated.
+2025-05-18 09:35:26,424 [INFO] Running SQL:
+ALTER TABLE [INQFLTRS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:26,430 [INFO] Running SQL:
+ALTER TABLE [INQFLTRS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:26,433 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [INQFLTRS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:26,439 [INFO] [OK] INQFLTRS: Column created and values populated.
+2025-05-18 09:35:26,440 [INFO] Running SQL:
+ALTER TABLE [KDCUPDATE] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:26,445 [INFO] Running SQL:
+ALTER TABLE [KDCUPDATE] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:26,448 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [KDCUPDATE]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:26,481 [INFO] [OK] KDCUPDATE: Column created and values populated.
+2025-05-18 09:35:26,483 [INFO] Running SQL:
+ALTER TABLE [L3ATTRBIND] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:26,489 [INFO] Running SQL:
+ALTER TABLE [L3ATTRBIND] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:26,492 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [L3ATTRBIND]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:26,499 [INFO] [OK] L3ATTRBIND: Column created and values populated.
+2025-05-18 09:35:26,501 [INFO] Running SQL:
+ALTER TABLE [L3ATTRDEFINE] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:26,507 [INFO] Running SQL:
+ALTER TABLE [L3ATTRDEFINE] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:26,510 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [L3ATTRDEFINE]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:26,516 [INFO] [OK] L3ATTRDEFINE: Column created and values populated.
+2025-05-18 09:35:26,517 [INFO] Running SQL:
+ALTER TABLE [L3ATTRTYPE] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:26,523 [INFO] Running SQL:
+ALTER TABLE [L3ATTRTYPE] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:26,526 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [L3ATTRTYPE]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:26,531 [INFO] [OK] L3ATTRTYPE: Column created and values populated.
+2025-05-18 09:35:26,532 [INFO] Running SQL:
+ALTER TABLE [L3DTS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:26,537 [INFO] Running SQL:
+ALTER TABLE [L3DTS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:26,541 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [L3DTS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:26,547 [INFO] [OK] L3DTS: Column created and values populated.
+2025-05-18 09:35:26,548 [INFO] Running SQL:
+ALTER TABLE [L3EVENTLOG] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:26,553 [INFO] Running SQL:
+ALTER TABLE [L3EVENTLOG] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:26,557 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [L3EVENTLOG]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:30,461 [INFO] [OK] L3EVENTLOG: Column created and values populated.
+2025-05-18 09:35:30,465 [INFO] Running SQL:
+ALTER TABLE [L3HIERARCHY] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:30,472 [INFO] Running SQL:
+ALTER TABLE [L3HIERARCHY] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:30,476 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [L3HIERARCHY]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:30,486 [INFO] [OK] L3HIERARCHY: Column created and values populated.
+2025-05-18 09:35:30,488 [INFO] Running SQL:
+ALTER TABLE [L3QUALIFIER] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:30,496 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [L3QUALIFIER]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:30,502 [INFO] [OK] L3QUALIFIER: Column created and values populated.
+2025-05-18 09:35:30,503 [INFO] Running SQL:
+ALTER TABLE [L3TASKDTS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:30,509 [INFO] Running SQL:
+ALTER TABLE [L3TASKDTS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:30,512 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [L3TASKDTS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:30,517 [INFO] [OK] L3TASKDTS: Column created and values populated.
+2025-05-18 09:35:30,518 [INFO] Running SQL:
+ALTER TABLE [L3TASKONCE] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:30,524 [INFO] Running SQL:
+ALTER TABLE [L3TASKONCE] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:30,528 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [L3TASKONCE]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:30,538 [INFO] [OK] L3TASKONCE: Column created and values populated.
+2025-05-18 09:35:30,541 [INFO] Running SQL:
+ALTER TABLE [L3TASKRECUR] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:30,546 [INFO] Running SQL:
+ALTER TABLE [L3TASKRECUR] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:30,550 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [L3TASKRECUR]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:30,556 [INFO] [OK] L3TASKRECUR: Column created and values populated.
+2025-05-18 09:35:30,557 [INFO] Running SQL:
+ALTER TABLE [L3TASKSTATUS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:30,562 [INFO] Running SQL:
+ALTER TABLE [L3TASKSTATUS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:30,566 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [L3TASKSTATUS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:30,572 [INFO] [OK] L3TASKSTATUS: Column created and values populated.
+2025-05-18 09:35:30,573 [INFO] Running SQL:
+ALTER TABLE [L3TASKSTEP] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:30,578 [INFO] Running SQL:
+ALTER TABLE [L3TASKSTEP] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:30,581 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [L3TASKSTEP]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:30,587 [INFO] [OK] L3TASKSTEP: Column created and values populated.
+2025-05-18 09:35:30,588 [INFO] Running SQL:
+ALTER TABLE [L3TASKTYPE] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:30,593 [INFO] Running SQL:
+ALTER TABLE [L3TASKTYPE] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:30,596 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [L3TASKTYPE]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:30,601 [INFO] [OK] L3TASKTYPE: Column created and values populated.
+2025-05-18 09:35:30,602 [INFO] Running SQL:
+ALTER TABLE [LabOrderPanel] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:30,608 [INFO] Running SQL:
+ALTER TABLE [LabOrderPanel] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:30,612 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [LabOrderPanel]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:34,795 [INFO] [OK] LabOrderPanel: Column created and values populated.
+2025-05-18 09:35:34,798 [INFO] Running SQL:
+ALTER TABLE [LIC_HISTORY] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:34,807 [INFO] Running SQL:
+ALTER TABLE [LIC_HISTORY] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:34,812 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [LIC_HISTORY]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:34,873 [INFO] [OK] LIC_HISTORY: Column created and values populated.
+2025-05-18 09:35:34,876 [INFO] Running SQL:
+ALTER TABLE [LinkLogic_Export_Flowsheet] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:34,883 [INFO] Running SQL:
+ALTER TABLE [LinkLogic_Export_Flowsheet] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:34,888 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [LinkLogic_Export_Flowsheet]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:35,449 [INFO] [OK] LinkLogic_Export_Flowsheet: Column created and values populated.
+2025-05-18 09:35:35,452 [INFO] Running SQL:
+ALTER TABLE [LoginProcUsers] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:35,463 [INFO] Running SQL:
+ALTER TABLE [LoginProcUsers] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:35,468 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [LoginProcUsers]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:35,474 [INFO] [OK] LoginProcUsers: Column created and values populated.
+2025-05-18 09:35:35,476 [INFO] Running SQL:
+ALTER TABLE [LOGLOCKS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:35,484 [INFO] Running SQL:
+ALTER TABLE [LOGLOCKS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:35,489 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [LOGLOCKS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:35,536 [INFO] [OK] LOGLOCKS: Column created and values populated.
+2025-05-18 09:35:35,541 [INFO] Running SQL:
+ALTER TABLE [Med_Inconsistent_Data_Fix] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:35,549 [INFO] Running SQL:
+ALTER TABLE [Med_Inconsistent_Data_Fix] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:35,554 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [Med_Inconsistent_Data_Fix]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:35,560 [INFO] [OK] Med_Inconsistent_Data_Fix: Column created and values populated.
+2025-05-18 09:35:35,563 [INFO] Running SQL:
+ALTER TABLE [MedLists] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:35,569 [INFO] Running SQL:
+ALTER TABLE [MedLists] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:35,574 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MedLists]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:35,674 [INFO] [OK] MedLists: Column created and values populated.
+2025-05-18 09:35:35,678 [INFO] Running SQL:
+ALTER TABLE [MedLists_BAK] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:35,686 [INFO] Running SQL:
+ALTER TABLE [MedLists_BAK] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:35,691 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MedLists_BAK]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:35,710 [INFO] [OK] MedLists_BAK: Column created and values populated.
+2025-05-18 09:35:35,714 [INFO] Running SQL:
+ALTER TABLE [MIKDestination] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:35,723 [INFO] Running SQL:
+ALTER TABLE [MIKDestination] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:35,729 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MIKDestination]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:35,735 [INFO] [OK] MIKDestination: Column created and values populated.
+2025-05-18 09:35:35,740 [INFO] Running SQL:
+ALTER TABLE [MIKEventLog] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:35,747 [INFO] Running SQL:
+ALTER TABLE [MIKEventLog] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:35,751 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MIKEventLog]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:35,761 [INFO] [OK] MIKEventLog: Column created and values populated.
+2025-05-18 09:35:35,766 [INFO] Running SQL:
+ALTER TABLE [MIKIdMap] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:35,773 [INFO] Running SQL:
+ALTER TABLE [MIKIdMap] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:35,778 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MIKIdMap]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:35,796 [INFO] [OK] MIKIdMap: Column created and values populated.
+2025-05-18 09:35:35,802 [INFO] Running SQL:
+ALTER TABLE [MIKTrigger] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:35,809 [INFO] Running SQL:
+ALTER TABLE [MIKTrigger] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:35,814 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MIKTrigger]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:35,821 [INFO] [OK] MIKTrigger: Column created and values populated.
+2025-05-18 09:35:35,823 [INFO] Running SQL:
+ALTER TABLE [MIKTriggerDestination] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:35,835 [INFO] Running SQL:
+ALTER TABLE [MIKTriggerDestination] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:35,839 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MIKTriggerDestination]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:35,845 [INFO] [OK] MIKTriggerDestination: Column created and values populated.
+2025-05-18 09:35:35,846 [INFO] Running SQL:
+ALTER TABLE [MIKType] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:35,852 [INFO] Running SQL:
+ALTER TABLE [MIKType] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:35,856 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MIKType]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:35,861 [INFO] [OK] MIKType: Column created and values populated.
+2025-05-18 09:35:35,863 [INFO] Running SQL:
+ALTER TABLE [MIKTypeMap] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:35,868 [INFO] Running SQL:
+ALTER TABLE [MIKTypeMap] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:35,872 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MIKTypeMap]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:35,877 [INFO] [OK] MIKTypeMap: Column created and values populated.
+2025-05-18 09:35:35,878 [INFO] Running SQL:
+ALTER TABLE [ML_MERGEAUDIT] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:35,884 [INFO] Running SQL:
+ALTER TABLE [ML_MERGEAUDIT] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:35,887 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ML_MERGEAUDIT]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:51,274 [INFO] [OK] ML_MERGEAUDIT: Column created and values populated.
+2025-05-18 09:35:51,277 [INFO] Running SQL:
+ALTER TABLE [ML_MERGEGLOBALS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:51,289 [INFO] Running SQL:
+ALTER TABLE [ML_MERGEGLOBALS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:51,294 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ML_MERGEGLOBALS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:51,300 [INFO] [OK] ML_MERGEGLOBALS: Column created and values populated.
+2025-05-18 09:35:51,302 [INFO] Running SQL:
+ALTER TABLE [MM_CEM_EventQueue] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:51,308 [INFO] Running SQL:
+ALTER TABLE [MM_CEM_EventQueue] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:51,312 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MM_CEM_EventQueue]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:51,330 [INFO] [OK] MM_CEM_EventQueue: Column created and values populated.
+2025-05-18 09:35:51,331 [INFO] Running SQL:
+ALTER TABLE [MRUCUSTOMLISTS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:51,338 [INFO] Running SQL:
+ALTER TABLE [MRUCUSTOMLISTS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:51,343 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MRUCUSTOMLISTS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:51,352 [INFO] [OK] MRUCUSTOMLISTS: Column created and values populated.
+2025-05-18 09:35:51,354 [INFO] Running SQL:
+ALTER TABLE [MS_COPYRIGHT] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:51,360 [INFO] Running SQL:
+ALTER TABLE [MS_COPYRIGHT] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:51,364 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MS_COPYRIGHT]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:51,369 [INFO] [OK] MS_COPYRIGHT: Column created and values populated.
+2025-05-18 09:35:51,371 [INFO] Running SQL:
+ALTER TABLE [MS_D01_DELTA] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:51,377 [INFO] Running SQL:
+ALTER TABLE [MS_D01_DELTA] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:51,381 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MS_D01_DELTA]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:51,424 [INFO] [OK] MS_D01_DELTA: Column created and values populated.
+2025-05-18 09:35:51,425 [INFO] Running SQL:
+ALTER TABLE [MS_D02C_DELTA] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:51,432 [INFO] Running SQL:
+ALTER TABLE [MS_D02C_DELTA] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:51,436 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MS_D02C_DELTA]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:51,446 [INFO] [OK] MS_D02C_DELTA: Column created and values populated.
+2025-05-18 09:35:51,448 [INFO] Running SQL:
+ALTER TABLE [MS_D02I_DELTA] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:51,454 [INFO] Running SQL:
+ALTER TABLE [MS_D02I_DELTA] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:51,458 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MS_D02I_DELTA]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:51,470 [INFO] [OK] MS_D02I_DELTA: Column created and values populated.
+2025-05-18 09:35:51,471 [INFO] Running SQL:
+ALTER TABLE [MS_DDS_COPYRIGHT] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:51,477 [INFO] Running SQL:
+ALTER TABLE [MS_DDS_COPYRIGHT] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:51,482 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MS_DDS_COPYRIGHT]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:51,487 [INFO] [OK] MS_DDS_COPYRIGHT: Column created and values populated.
+2025-05-18 09:35:51,489 [INFO] Running SQL:
+ALTER TABLE [MUActivityLog] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:51,495 [INFO] Running SQL:
+ALTER TABLE [MUActivityLog] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:51,500 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MUActivityLog]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:59,232 [INFO] [OK] MUActivityLog: Column created and values populated.
+2025-05-18 09:35:59,236 [INFO] Running SQL:
+ALTER TABLE [MUActivityLogType] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:59,244 [INFO] Running SQL:
+ALTER TABLE [MUActivityLogType] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:59,249 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MUActivityLogType]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:59,255 [INFO] [OK] MUActivityLogType: Column created and values populated.
+2025-05-18 09:35:59,257 [INFO] Running SQL:
+ALTER TABLE [MUPatchData] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:59,263 [INFO] Running SQL:
+ALTER TABLE [MUPatchData] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:59,269 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [MUPatchData]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:35:59,274 [INFO] [OK] MUPatchData: Column created and values populated.
+2025-05-18 09:35:59,276 [INFO] Running SQL:
+ALTER TABLE [OBSHEAD] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:35:59,282 [INFO] Running SQL:
+ALTER TABLE [OBSHEAD] ADD nd_auto_increment_id INT
+
+2025-05-18 09:35:59,286 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [OBSHEAD]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:36:00,689 [INFO] [OK] OBSHEAD: Column created and values populated.
+2025-05-18 09:36:00,692 [INFO] Running SQL:
+ALTER TABLE [OBSNORM] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:36:00,699 [INFO] Running SQL:
+ALTER TABLE [OBSNORM] ADD nd_auto_increment_id INT
+
+2025-05-18 09:36:00,704 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [OBSNORM]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:36:00,710 [INFO] [OK] OBSNORM: Column created and values populated.
+2025-05-18 09:36:00,712 [INFO] Running SQL:
+ALTER TABLE [Occupation] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:36:00,717 [INFO] Running SQL:
+ALTER TABLE [Occupation] ADD nd_auto_increment_id INT
+
+2025-05-18 09:36:00,721 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [Occupation]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:36:00,758 [INFO] [OK] Occupation: Column created and values populated.
+2025-05-18 09:36:00,759 [INFO] Running SQL:
+ALTER TABLE [ORDDX] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:36:00,765 [INFO] Running SQL:
+ALTER TABLE [ORDDX] ADD nd_auto_increment_id INT
+
+2025-05-18 09:36:00,770 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ORDDX]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:36:55,132 [INFO] [OK] ORDDX: Column created and values populated.
+2025-05-18 09:36:55,133 [INFO] Running SQL:
+ALTER TABLE [ORDENCINFO] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:36:55,140 [INFO] Running SQL:
+ALTER TABLE [ORDENCINFO] ADD nd_auto_increment_id INT
+
+2025-05-18 09:36:55,144 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ORDENCINFO]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:36:55,153 [INFO] [OK] ORDENCINFO: Column created and values populated.
+2025-05-18 09:36:55,155 [INFO] Running SQL:
+ALTER TABLE [ORDER_ENTRY_MODIFIERS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:36:55,161 [INFO] Running SQL:
+ALTER TABLE [ORDER_ENTRY_MODIFIERS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:36:55,166 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ORDER_ENTRY_MODIFIERS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:36:55,304 [INFO] [OK] ORDER_ENTRY_MODIFIERS: Column created and values populated.
+2025-05-18 09:36:55,308 [INFO] Running SQL:
+ALTER TABLE [ORDER_MODIFIERS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:36:55,314 [INFO] Running SQL:
+ALTER TABLE [ORDER_MODIFIERS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:36:55,319 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ORDER_MODIFIERS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:36:55,325 [INFO] [OK] ORDER_MODIFIERS: Column created and values populated.
+2025-05-18 09:36:55,327 [INFO] Running SQL:
+ALTER TABLE [ORDERCAT] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:36:55,334 [INFO] Running SQL:
+ALTER TABLE [ORDERCAT] ADD nd_auto_increment_id INT
+
+2025-05-18 09:36:55,338 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ORDERCAT]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:36:55,344 [INFO] [OK] ORDERCAT: Column created and values populated.
+2025-05-18 09:36:55,345 [INFO] Running SQL:
+ALTER TABLE [ORDERCODES] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:36:55,352 [INFO] Running SQL:
+ALTER TABLE [ORDERCODES] ADD nd_auto_increment_id INT
+
+2025-05-18 09:36:55,355 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ORDERCODES]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:36:55,379 [INFO] [OK] ORDERCODES: Column created and values populated.
+2025-05-18 09:36:55,380 [INFO] Running SQL:
+ALTER TABLE [ORDERDEFAULTS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:36:55,386 [INFO] Running SQL:
+ALTER TABLE [ORDERDEFAULTS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:36:55,389 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ORDERDEFAULTS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:36:55,395 [INFO] [OK] ORDERDEFAULTS: Column created and values populated.
+2025-05-18 09:36:55,396 [INFO] Running SQL:
+ALTER TABLE [ORDERS] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:36:55,402 [INFO] Running SQL:
+ALTER TABLE [ORDERS] ADD nd_auto_increment_id INT
+
+2025-05-18 09:36:55,406 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ORDERS]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:43:14,153 [INFO] [OK] ORDERS: Column created and values populated.
+2025-05-18 09:43:14,156 [INFO] Running SQL:
+ALTER TABLE [ORDTOCOMPLETE] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:43:14,165 [INFO] Running SQL:
+ALTER TABLE [ORDTOCOMPLETE] ADD nd_auto_increment_id INT
+
+2025-05-18 09:43:14,170 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ORDTOCOMPLETE]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:43:15,504 [INFO] [OK] ORDTOCOMPLETE: Column created and values populated.
+2025-05-18 09:43:15,508 [INFO] Running SQL:
+ALTER TABLE [PATCHES] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:43:15,515 [INFO] Running SQL:
+ALTER TABLE [PATCHES] ADD nd_auto_increment_id INT
+
+2025-05-18 09:43:15,520 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PATCHES]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:43:15,527 [INFO] [OK] PATCHES: Column created and values populated.
+2025-05-18 09:43:15,529 [INFO] Running SQL:
+ALTER TABLE [PatientContacts] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:43:15,534 [INFO] Running SQL:
+ALTER TABLE [PatientContacts] ADD nd_auto_increment_id INT
+
+2025-05-18 09:43:15,540 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientContacts]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:43:15,738 [INFO] [OK] PatientContacts: Column created and values populated.
+2025-05-18 09:43:15,741 [INFO] Running SQL:
+ALTER TABLE [PatientCorrespondence] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:43:15,748 [INFO] Running SQL:
+ALTER TABLE [PatientCorrespondence] ADD nd_auto_increment_id INT
+
+2025-05-18 09:43:15,752 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientCorrespondence]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:43:20,165 [INFO] [OK] PatientCorrespondence: Column created and values populated.
+2025-05-18 09:43:20,168 [INFO] Running SQL:
+ALTER TABLE [PatientEthnicity] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:43:20,176 [INFO] Running SQL:
+ALTER TABLE [PatientEthnicity] ADD nd_auto_increment_id INT
+
+2025-05-18 09:43:20,181 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientEthnicity]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:43:20,630 [INFO] [OK] PatientEthnicity: Column created and values populated.
+2025-05-18 09:43:20,632 [INFO] Running SQL:
+ALTER TABLE [PatientInsurance] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:43:20,640 [INFO] Running SQL:
+ALTER TABLE [PatientInsurance] ADD nd_auto_increment_id INT
+
+2025-05-18 09:43:20,644 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientInsurance]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:43:30,147 [INFO] [OK] PatientInsurance: Column created and values populated.
+2025-05-18 09:43:30,150 [INFO] Running SQL:
+ALTER TABLE [PatientProfile] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:43:30,160 [INFO] Running SQL:
+ALTER TABLE [PatientProfile] ADD nd_auto_increment_id INT
+
+2025-05-18 09:43:30,167 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientProfile]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:43:43,649 [ERROR] [ERROR] PatientProfile: (pymssql.exceptions.OperationalError) (10342, b"Assembly 'Licensing' cannot be loaded because this edition of SQL Server only supports SAFE assemblies.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n")
+[SQL: 
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientProfile]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 09:43:43,653 [INFO] Running SQL:
+ALTER TABLE [PatientProfile_BAK] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:43:43,660 [INFO] Running SQL:
+ALTER TABLE [PatientProfile_BAK] ADD nd_auto_increment_id INT
+
+2025-05-18 09:43:43,665 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientProfile_BAK]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:43:45,389 [INFO] [OK] PatientProfile_BAK: Column created and values populated.
+2025-05-18 09:43:45,393 [INFO] Running SQL:
+ALTER TABLE [PatientProfileAgg] ADD nd_auto_increment_id INT
+
+2025-05-18 09:43:45,399 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientProfileAgg]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:43:47,728 [INFO] [OK] PatientProfileAgg: Column created and values populated.
+2025-05-18 09:43:47,733 [INFO] Running SQL:
+ALTER TABLE [PatientProfileAttachment] ADD nd_auto_increment_id INT
+
+2025-05-18 09:43:47,739 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientProfileAttachment]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:43:47,748 [INFO] [OK] PatientProfileAttachment: Column created and values populated.
+2025-05-18 09:43:47,750 [INFO] Running SQL:
+ALTER TABLE [PatientProfileReport] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:43:47,756 [INFO] Running SQL:
+ALTER TABLE [PatientProfileReport] ADD nd_auto_increment_id INT
+
+2025-05-18 09:43:47,761 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientProfileReport]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:43:47,769 [INFO] [OK] PatientProfileReport: Column created and values populated.
+2025-05-18 09:43:47,771 [INFO] Running SQL:
+ALTER TABLE [PatientRace] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:43:47,776 [INFO] Running SQL:
+ALTER TABLE [PatientRace] ADD nd_auto_increment_id INT
+
+2025-05-18 09:43:47,780 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientRace]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:43:48,537 [INFO] [OK] PatientRace: Column created and values populated.
+2025-05-18 09:43:48,540 [INFO] Running SQL:
+ALTER TABLE [PatientRelationship] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:43:48,548 [INFO] Running SQL:
+ALTER TABLE [PatientRelationship] ADD nd_auto_increment_id INT
+
+2025-05-18 09:43:48,553 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientRelationship]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:43:54,055 [INFO] [OK] PatientRelationship: Column created and values populated.
+2025-05-18 09:43:54,060 [INFO] Running SQL:
+ALTER TABLE [PatientVisit] ADD nd_auto_increment_id INT
+
+2025-05-18 09:43:54,067 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisit]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:24,695 [INFO] [SKIP] Appointments: nd_auto_increment_id already exists and is INT.
+2025-05-18 09:50:24,698 [INFO] [SKIP] AUDIT_PROFILE: nd_auto_increment_id already exists and is INT.
+2025-05-18 09:50:24,700 [INFO] [SKIP] EDIClaimFile: nd_auto_increment_id already exists and is INT.
+2025-05-18 09:50:24,702 [INFO] [SKIP] PatientProfile: nd_auto_increment_id already exists and is INT.
+2025-05-18 09:50:24,704 [INFO] [SKIP] PatientVisit: nd_auto_increment_id already exists and is INT.
+2025-05-18 09:50:24,707 [INFO] Running SQL:
+ALTER TABLE [PatientVisitAgg] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:24,725 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitAgg]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:27,627 [ERROR] [ERROR] PatientVisitAgg: (pymssql.exceptions.OperationalError) (213, b'Column name or number of supplied values does not match table definition.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n')
+[SQL: 
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitAgg]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 09:50:27,630 [INFO] Running SQL:
+ALTER TABLE [PatientVisitAggClosing] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:50:27,637 [INFO] Running SQL:
+ALTER TABLE [PatientVisitAggClosing] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:27,642 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitAggClosing]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:29,117 [INFO] [OK] PatientVisitAggClosing: Column created and values populated.
+2025-05-18 09:50:29,120 [INFO] Running SQL:
+ALTER TABLE [PatientVisitAmbulance] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:50:29,128 [INFO] Running SQL:
+ALTER TABLE [PatientVisitAmbulance] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:29,133 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitAmbulance]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:29,500 [INFO] [OK] PatientVisitAmbulance: Column created and values populated.
+2025-05-18 09:50:29,502 [INFO] Running SQL:
+ALTER TABLE [PatientVisitAttachment] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:50:29,509 [INFO] Running SQL:
+ALTER TABLE [PatientVisitAttachment] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:29,514 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitAttachment]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:29,528 [INFO] [OK] PatientVisitAttachment: Column created and values populated.
+2025-05-18 09:50:29,529 [INFO] Running SQL:
+ALTER TABLE [PatientVisitDiags] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:50:29,536 [INFO] Running SQL:
+ALTER TABLE [PatientVisitDiags] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:29,541 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitDiags]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:32,192 [INFO] [OK] PatientVisitDiags: Column created and values populated.
+2025-05-18 09:50:32,196 [INFO] Running SQL:
+ALTER TABLE [PatientVisitDiagsRelatedCodes] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:50:32,203 [INFO] Running SQL:
+ALTER TABLE [PatientVisitDiagsRelatedCodes] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:32,209 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitDiagsRelatedCodes]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:32,215 [INFO] [OK] PatientVisitDiagsRelatedCodes: Column created and values populated.
+2025-05-18 09:50:32,216 [INFO] Running SQL:
+ALTER TABLE [PatientVisitFiling] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:50:32,223 [INFO] Running SQL:
+ALTER TABLE [PatientVisitFiling] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:32,229 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitFiling]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:34,611 [INFO] [OK] PatientVisitFiling: Column created and values populated.
+2025-05-18 09:50:34,614 [INFO] Running SQL:
+ALTER TABLE [PatientVisitFilingConditionCodes] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:50:34,622 [INFO] Running SQL:
+ALTER TABLE [PatientVisitFilingConditionCodes] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:34,628 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitFilingConditionCodes]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:35,522 [INFO] [OK] PatientVisitFilingConditionCodes: Column created and values populated.
+2025-05-18 09:50:35,525 [INFO] Running SQL:
+ALTER TABLE [PatientVisitInsurance] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:50:35,533 [INFO] Running SQL:
+ALTER TABLE [PatientVisitInsurance] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:35,538 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitInsurance]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:37,222 [INFO] [OK] PatientVisitInsurance: Column created and values populated.
+2025-05-18 09:50:37,224 [INFO] Running SQL:
+ALTER TABLE [PatientVisitPaperClaim] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:50:37,231 [INFO] Running SQL:
+ALTER TABLE [PatientVisitPaperClaim] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:37,236 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitPaperClaim]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:37,303 [INFO] [OK] PatientVisitPaperClaim: Column created and values populated.
+2025-05-18 09:50:37,305 [INFO] Running SQL:
+ALTER TABLE [PatientVisitProcs] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:37,311 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitProcs]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:46,114 [ERROR] [ERROR] PatientVisitProcs: (pymssql.exceptions.OperationalError) (213, b'Column name or number of supplied values does not match table definition.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n')
+[SQL: 
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitProcs]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 09:50:46,118 [INFO] Running SQL:
+ALTER TABLE [PatientVisitProcsAgg] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:50:46,134 [INFO] Running SQL:
+ALTER TABLE [PatientVisitProcsAgg] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:46,139 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitProcsAgg]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:50,289 [ERROR] [ERROR] PatientVisitProcsAgg: (pymssql.exceptions.OperationalError) (213, b'Column name or number of supplied values does not match table definition.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n')
+[SQL: 
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitProcsAgg]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 09:50:50,293 [INFO] Running SQL:
+ALTER TABLE [PatientVisitResource] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:50:50,301 [INFO] Running SQL:
+ALTER TABLE [PatientVisitResource] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:50,306 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientVisitResource]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:51,534 [INFO] [OK] PatientVisitResource: Column created and values populated.
+2025-05-18 09:50:51,538 [INFO] Running SQL:
+ALTER TABLE [PaymentMethod] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:51,544 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PaymentMethod]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:55,134 [ERROR] [ERROR] PaymentMethod: (pymssql.exceptions.OperationalError) (213, b'Column name or number of supplied values does not match table definition.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n')
+[SQL: 
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PaymentMethod]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 09:50:55,137 [INFO] Running SQL:
+ALTER TABLE [PaymentPlan] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:50:55,145 [INFO] Running SQL:
+ALTER TABLE [PaymentPlan] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:55,150 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PaymentPlan]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:50:55,158 [INFO] [OK] PaymentPlan: Column created and values populated.
+2025-05-18 09:50:55,160 [INFO] Running SQL:
+ALTER TABLE [PRESCRIB] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:50:55,167 [INFO] Running SQL:
+ALTER TABLE [PRESCRIB] ADD nd_auto_increment_id INT
+
+2025-05-18 09:50:55,171 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PRESCRIB]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:51:56,598 [INFO] [OK] PRESCRIB: Column created and values populated.
+2025-05-18 09:51:56,602 [INFO] Running SQL:
+ALTER TABLE [PROBLEM] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:51:56,612 [INFO] Running SQL:
+ALTER TABLE [PROBLEM] ADD nd_auto_increment_id INT
+
+2025-05-18 09:51:56,616 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PROBLEM]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:52:28,496 [INFO] [OK] PROBLEM: Column created and values populated.
+2025-05-18 09:52:28,499 [INFO] Running SQL:
+ALTER TABLE [ProblemCodeMap] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:52:28,506 [INFO] Running SQL:
+ALTER TABLE [ProblemCodeMap] ADD nd_auto_increment_id INT
+
+2025-05-18 09:52:28,511 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ProblemCodeMap]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:52:28,819 [INFO] [OK] ProblemCodeMap: Column created and values populated.
+2025-05-18 09:52:28,822 [INFO] Running SQL:
+ALTER TABLE [RcopiaMapAllergy] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:52:28,830 [INFO] Running SQL:
+ALTER TABLE [RcopiaMapAllergy] ADD nd_auto_increment_id INT
+
+2025-05-18 09:52:28,834 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [RcopiaMapAllergy]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:52:29,603 [INFO] [OK] RcopiaMapAllergy: Column created and values populated.
+2025-05-18 09:52:29,606 [INFO] Running SQL:
+ALTER TABLE [RcopiaMapLocation] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:52:29,613 [INFO] Running SQL:
+ALTER TABLE [RcopiaMapLocation] ADD nd_auto_increment_id INT
+
+2025-05-18 09:52:29,617 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [RcopiaMapLocation]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:52:29,625 [INFO] [OK] RcopiaMapLocation: Column created and values populated.
+2025-05-18 09:52:29,626 [INFO] Running SQL:
+ALTER TABLE [RcopiaMapMedication] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:52:29,632 [INFO] Running SQL:
+ALTER TABLE [RcopiaMapMedication] ADD nd_auto_increment_id INT
+
+2025-05-18 09:52:29,636 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [RcopiaMapMedication]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:52:41,588 [INFO] [OK] RcopiaMapMedication: Column created and values populated.
+2025-05-18 09:52:41,592 [INFO] Running SQL:
+ALTER TABLE [RcopiaMapPatient] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:52:41,599 [INFO] Running SQL:
+ALTER TABLE [RcopiaMapPatient] ADD nd_auto_increment_id INT
+
+2025-05-18 09:52:41,603 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [RcopiaMapPatient]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:52:42,571 [INFO] [OK] RcopiaMapPatient: Column created and values populated.
+2025-05-18 09:52:42,572 [INFO] Running SQL:
+ALTER TABLE [RcopiaMapPrescription] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:52:42,578 [INFO] Running SQL:
+ALTER TABLE [RcopiaMapPrescription] ADD nd_auto_increment_id INT
+
+2025-05-18 09:52:42,582 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [RcopiaMapPrescription]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:52:44,282 [INFO] [OK] RcopiaMapPrescription: Column created and values populated.
+2025-05-18 09:52:44,284 [INFO] Running SQL:
+ALTER TABLE [RcopiaMapProblem] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:52:44,292 [INFO] Running SQL:
+ALTER TABLE [RcopiaMapProblem] ADD nd_auto_increment_id INT
+
+2025-05-18 09:52:44,297 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [RcopiaMapProblem]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:52:47,302 [INFO] [OK] RcopiaMapProblem: Column created and values populated.
+2025-05-18 09:52:47,305 [INFO] Running SQL:
+ALTER TABLE [RcopiaMapUser] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:52:47,313 [INFO] Running SQL:
+ALTER TABLE [RcopiaMapUser] ADD nd_auto_increment_id INT
+
+2025-05-18 09:52:47,318 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [RcopiaMapUser]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:52:47,329 [INFO] [OK] RcopiaMapUser: Column created and values populated.
+2025-05-18 09:52:47,331 [INFO] Running SQL:
+ALTER TABLE [RcopiaMessage] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:52:47,337 [INFO] Running SQL:
+ALTER TABLE [RcopiaMessage] ADD nd_auto_increment_id INT
+
+2025-05-18 09:52:47,341 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [RcopiaMessage]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:52:48,117 [INFO] [OK] RcopiaMessage: Column created and values populated.
+2025-05-18 09:52:48,120 [INFO] Running SQL:
+ALTER TABLE [RcopiaMessageStatusReason] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:52:48,127 [INFO] Running SQL:
+ALTER TABLE [RcopiaMessageStatusReason] ADD nd_auto_increment_id INT
+
+2025-05-18 09:52:48,132 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [RcopiaMessageStatusReason]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:52:48,138 [INFO] [OK] RcopiaMessageStatusReason: Column created and values populated.
+2025-05-18 09:52:48,140 [INFO] Running SQL:
+ALTER TABLE [RcopiaSynchronization] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:52:48,146 [INFO] Running SQL:
+ALTER TABLE [RcopiaSynchronization] ADD nd_auto_increment_id INT
+
+2025-05-18 09:52:48,150 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [RcopiaSynchronization]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:52:54,469 [INFO] [OK] RcopiaSynchronization: Column created and values populated.
+2025-05-18 09:52:54,473 [INFO] Running SQL:
+ALTER TABLE [RcopiaSynchronizationClinical] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:52:54,480 [INFO] Running SQL:
+ALTER TABLE [RcopiaSynchronizationClinical] ADD nd_auto_increment_id INT
+
+2025-05-18 09:52:54,485 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [RcopiaSynchronizationClinical]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:53:19,735 [INFO] [OK] RcopiaSynchronizationClinical: Column created and values populated.
+2025-05-18 09:53:19,738 [INFO] Running SQL:
+ALTER TABLE [RcopiaSynchronizationMessage] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:53:19,745 [INFO] Running SQL:
+ALTER TABLE [RcopiaSynchronizationMessage] ADD nd_auto_increment_id INT
+
+2025-05-18 09:53:19,750 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [RcopiaSynchronizationMessage]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:53:20,501 [INFO] [OK] RcopiaSynchronizationMessage: Column created and values populated.
+2025-05-18 09:53:20,504 [INFO] Running SQL:
+ALTER TABLE [RemitChecks] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:53:20,512 [INFO] Running SQL:
+ALTER TABLE [RemitChecks] ADD nd_auto_increment_id INT
+
+2025-05-18 09:53:20,516 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [RemitChecks]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:53:20,524 [INFO] [OK] RemitChecks: Column created and values populated.
+2025-05-18 09:53:20,525 [INFO] Running SQL:
+ALTER TABLE [ReportControlCriteria] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:53:20,531 [INFO] Running SQL:
+ALTER TABLE [ReportControlCriteria] ADD nd_auto_increment_id INT
+
+2025-05-18 09:53:20,535 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ReportControlCriteria]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:53:20,541 [INFO] [OK] ReportControlCriteria: Column created and values populated.
+2025-05-18 09:53:20,542 [INFO] Running SQL:
+ALTER TABLE [ReportControlProperty] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:53:20,548 [INFO] Running SQL:
+ALTER TABLE [ReportControlProperty] ADD nd_auto_increment_id INT
+
+2025-05-18 09:53:20,552 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ReportControlProperty]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:53:20,583 [INFO] [OK] ReportControlProperty: Column created and values populated.
+2025-05-18 09:53:20,585 [INFO] Running SQL:
+ALTER TABLE [Schedule] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:53:20,591 [INFO] Running SQL:
+ALTER TABLE [Schedule] ADD nd_auto_increment_id INT
+
+2025-05-18 09:53:20,595 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [Schedule]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:53:21,622 [INFO] [OK] Schedule: Column created and values populated.
+2025-05-18 09:53:21,631 [INFO] Running SQL:
+ALTER TABLE [ScheduleTimesAlloc] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:53:21,640 [INFO] Running SQL:
+ALTER TABLE [ScheduleTimesAlloc] ADD nd_auto_increment_id INT
+
+2025-05-18 09:53:21,644 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ScheduleTimesAlloc]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:54:51,160 [INFO] [OK] ScheduleTimesAlloc: Column created and values populated.
+2025-05-18 09:54:51,163 [INFO] Running SQL:
+ALTER TABLE [ServerSetupLog] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:54:51,173 [INFO] Running SQL:
+ALTER TABLE [ServerSetupLog] ADD nd_auto_increment_id INT
+
+2025-05-18 09:54:51,178 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ServerSetupLog]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:54:51,281 [INFO] [OK] ServerSetupLog: Column created and values populated.
+2025-05-18 09:54:51,284 [INFO] Running SQL:
+ALTER TABLE [SERVPROV] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:54:51,292 [INFO] Running SQL:
+ALTER TABLE [SERVPROV] ADD nd_auto_increment_id INT
+
+2025-05-18 09:54:51,296 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [SERVPROV]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:54:51,342 [INFO] [OK] SERVPROV: Column created and values populated.
+2025-05-18 09:54:51,346 [INFO] Running SQL:
+ALTER TABLE [Settings] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:54:51,354 [INFO] Running SQL:
+ALTER TABLE [Settings] ADD nd_auto_increment_id INT
+
+2025-05-18 09:54:51,358 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [Settings]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:54:51,845 [INFO] [OK] Settings: Column created and values populated.
+2025-05-18 09:54:51,848 [INFO] Running SQL:
+ALTER TABLE [StatementsCriteria] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:54:51,856 [INFO] Running SQL:
+ALTER TABLE [StatementsCriteria] ADD nd_auto_increment_id INT
+
+2025-05-18 09:54:51,861 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [StatementsCriteria]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:54:51,867 [INFO] [OK] StatementsCriteria: Column created and values populated.
+2025-05-18 09:54:51,868 [INFO] Running SQL:
+ALTER TABLE [StatementsCriteriaGuarantor] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:54:51,874 [INFO] Running SQL:
+ALTER TABLE [StatementsCriteriaGuarantor] ADD nd_auto_increment_id INT
+
+2025-05-18 09:54:51,878 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [StatementsCriteriaGuarantor]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:54:52,054 [INFO] [OK] StatementsCriteriaGuarantor: Column created and values populated.
+2025-05-18 09:54:52,057 [INFO] Running SQL:
+ALTER TABLE [SYMBOL] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:54:52,064 [INFO] Running SQL:
+ALTER TABLE [SYMBOL] ADD nd_auto_increment_id INT
+
+2025-05-18 09:54:52,068 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [SYMBOL]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:54:52,540 [INFO] [OK] SYMBOL: Column created and values populated.
+2025-05-18 09:54:52,543 [INFO] Running SQL:
+ALTER TABLE [SYSTEMTEMP] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:54:52,550 [INFO] Running SQL:
+ALTER TABLE [SYSTEMTEMP] ADD nd_auto_increment_id INT
+
+2025-05-18 09:54:52,555 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [SYSTEMTEMP]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:54:52,561 [INFO] [OK] SYSTEMTEMP: Column created and values populated.
+2025-05-18 09:54:52,563 [INFO] Running SQL:
+ALTER TABLE [tLoadReports_Results] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:54:52,569 [INFO] Running SQL:
+ALTER TABLE [tLoadReports_Results] ADD nd_auto_increment_id INT
+
+2025-05-18 09:54:52,573 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [tLoadReports_Results]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:54:52,676 [INFO] [OK] tLoadReports_Results: Column created and values populated.
+2025-05-18 09:54:52,679 [INFO] Running SQL:
+ALTER TABLE [TM_TaskHistory] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:54:52,686 [INFO] Running SQL:
+ALTER TABLE [TM_TaskHistory] ADD nd_auto_increment_id INT
+
+2025-05-18 09:54:52,690 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [TM_TaskHistory]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:54:53,485 [INFO] [OK] TM_TaskHistory: Column created and values populated.
+2025-05-18 09:54:53,488 [INFO] Running SQL:
+ALTER TABLE [TransactionColumnSetColumns] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:54:53,495 [INFO] Running SQL:
+ALTER TABLE [TransactionColumnSetColumns] ADD nd_auto_increment_id INT
+
+2025-05-18 09:54:53,499 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [TransactionColumnSetColumns]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:54:53,506 [INFO] [OK] TransactionColumnSetColumns: Column created and values populated.
+2025-05-18 09:54:53,507 [INFO] Running SQL:
+ALTER TABLE [TransactionDistributions] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:54:53,512 [INFO] Running SQL:
+ALTER TABLE [TransactionDistributions] ADD nd_auto_increment_id INT
+
+2025-05-18 09:54:53,516 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [TransactionDistributions]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:55:30,287 [ERROR] [ERROR] TransactionDistributions: (pymssql.exceptions.OperationalError) (213, b'Column name or number of supplied values does not match table definition.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n')
+[SQL: 
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [TransactionDistributions]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 09:55:30,290 [INFO] Running SQL:
+ALTER TABLE [Transactions] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:55:30,298 [INFO] Running SQL:
+ALTER TABLE [Transactions] ADD nd_auto_increment_id INT
+
+2025-05-18 09:55:30,304 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [Transactions]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:55:47,831 [ERROR] [ERROR] Transactions: (pymssql.exceptions.OperationalError) (213, b'Column name or number of supplied values does not match table definition.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n')
+[SQL: 
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [Transactions]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 09:55:47,834 [INFO] Running SQL:
+ALTER TABLE [UI_LAYOUT] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:55:47,842 [INFO] Running SQL:
+ALTER TABLE [UI_LAYOUT] ADD nd_auto_increment_id INT
+
+2025-05-18 09:55:47,847 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [UI_LAYOUT]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:55:47,867 [INFO] [OK] UI_LAYOUT: Column created and values populated.
+2025-05-18 09:55:47,868 [INFO] Running SQL:
+ALTER TABLE [UNIQUEID] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:55:47,873 [INFO] Running SQL:
+ALTER TABLE [UNIQUEID] ADD nd_auto_increment_id INT
+
+2025-05-18 09:55:47,877 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [UNIQUEID]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:55:47,882 [INFO] [OK] UNIQUEID: Column created and values populated.
+2025-05-18 09:55:47,884 [INFO] Running SQL:
+ALTER TABLE [USR] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:55:47,892 [INFO] Running SQL:
+ALTER TABLE [USR] ADD nd_auto_increment_id INT
+
+2025-05-18 09:55:47,898 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [USR]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:55:47,968 [ERROR] [ERROR] USR: (pymssql.exceptions.OperationalError) (512, b'Subquery returned more than 1 value. This is not permitted when the subquery follows =, !=, <, <= , >, >= or when the subquery is used as an expression.DB-Lib error message 20018, severity 16:\nGeneral SQL Server error: Check messages from the SQL Server\n')
+[SQL: 
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [USR]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                ]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-05-18 09:55:47,971 [INFO] Running SQL:
+ALTER TABLE [VisitTransactions] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:55:47,978 [INFO] Running SQL:
+ALTER TABLE [VisitTransactions] ADD nd_auto_increment_id INT
+
+2025-05-18 09:55:47,987 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [VisitTransactions]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:55:53,576 [INFO] [OK] VisitTransactions: Column created and values populated.
+2025-05-18 09:55:53,578 [INFO] Running SQL:
+ALTER TABLE [WaitingListEntry] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:55:53,586 [INFO] Running SQL:
+ALTER TABLE [WaitingListEntry] ADD nd_auto_increment_id INT
+
+2025-05-18 09:55:53,591 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [WaitingListEntry]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:55:53,609 [INFO] [OK] WaitingListEntry: Column created and values populated.
+2025-05-18 09:55:53,611 [INFO] Running SQL:
+ALTER TABLE [WORKSTA] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 09:55:53,617 [INFO] Running SQL:
+ALTER TABLE [WORKSTA] ADD nd_auto_increment_id INT
+
+2025-05-18 09:55:53,621 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [WORKSTA]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 09:55:53,632 [INFO] [OK] WORKSTA: Column created and values populated.
+2025-05-18 10:05:13,217 [INFO] [SKIP] Appointments: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:05:13,220 [INFO] [SKIP] AUDIT_PROFILE: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:05:13,223 [INFO] [SKIP] EDIClaimFile: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:05:13,225 [INFO] [SKIP] PatientProfile: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:05:13,228 [INFO] [SKIP] PatientVisit: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:05:13,231 [INFO] [SKIP] PatientVisitAgg: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:05:13,234 [INFO] [SKIP] PatientVisitProcs: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:05:13,237 [INFO] [SKIP] PatientVisitProcsAgg: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:05:13,240 [INFO] [SKIP] PaymentMethod: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:05:13,242 [INFO] [SKIP] TransactionDistributions: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:05:13,245 [INFO] [SKIP] Transactions: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:05:13,247 [INFO] [SKIP] USR: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:08:56,321 [INFO] Running SQL:
+ALTER TABLE [ActivityLog] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 10:08:56,354 [INFO] Running SQL:
+ALTER TABLE [ActivityLog] DROP COLUMN nd_auto_increment_id
+
+2025-05-18 10:08:56,363 [INFO] Running SQL:
+ALTER TABLE [ActivityLog] ADD nd_auto_increment_id INT
+
+2025-05-18 10:08:56,373 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [ActivityLog]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 10:10:32,679 [INFO] [OK] ActivityLog: Column created and values populated.
+2025-05-18 10:10:32,683 [INFO] [SKIP] Appointments: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:10:32,686 [INFO] [SKIP] AUDIT_PROFILE: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:10:32,690 [INFO] [SKIP] EDIClaimFile: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:10:32,695 [INFO] [SKIP] OBS: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:10:32,697 [INFO] Running SQL:
+ALTER TABLE [PatientInfoLog] DROP COLUMN nd_auto_increament_id
+
+2025-05-18 10:10:32,706 [INFO] Running SQL:
+ALTER TABLE [PatientInfoLog] ADD nd_auto_increment_id INT
+
+2025-05-18 10:10:32,711 [INFO] Running SQL:
+
+                    WITH Ordered AS (
+                        SELECT *, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
+                        FROM [PatientInfoLog]
+                    )
+                    UPDATE Ordered SET nd_auto_increment_id = rn;
+                
+
+2025-05-18 10:11:26,970 [INFO] [OK] PatientInfoLog: Column created and values populated.
+2025-05-18 10:11:26,976 [INFO] [SKIP] PatientProfile: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:11:26,979 [INFO] [SKIP] PatientVisit: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:11:26,982 [INFO] [SKIP] PatientVisitAgg: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:11:26,985 [INFO] [SKIP] PatientVisitProcs: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:11:26,988 [INFO] [SKIP] PatientVisitProcsAgg: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:11:26,990 [INFO] [SKIP] PaymentMethod: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:11:26,992 [INFO] [SKIP] TransactionDistributions: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:11:26,995 [INFO] [SKIP] Transactions: nd_auto_increment_id already exists and is INT.
+2025-05-18 10:11:26,997 [INFO] [SKIP] USR: nd_auto_increment_id already exists and is INT.

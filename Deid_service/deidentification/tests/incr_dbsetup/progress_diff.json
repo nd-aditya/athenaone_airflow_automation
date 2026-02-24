@@ -1,0 +1,22 @@
+{
+  "Encounter": {
+    "status": "done",
+    "diff_rows": 5
+  },
+  "Facility": {
+    "status": "done",
+    "diff_rows": 5
+  },
+  "Patient": {
+    "status": "done",
+    "diff_rows": 5
+  },
+  "ProgressNotes": {
+    "status": "done",
+    "diff_rows": 5
+  },
+  "Vitals": {
+    "status": "done",
+    "diff_rows": 5
+  }
+}

@@ -1,0 +1,11 @@
+class DICOMTags(object):
+    SOP_INSTANCE_UID = "SOPInstanceUID"
+    SERIES_INSTANCE_UID = "SeriesInstanceUID"
+    STUDY_INSTANCE_UID = "StudyInstanceUID"
+    SERIES_NUMBER = "SeriesNumber"
+    SOP_CLASS_UID = "SOPClassUID"
+    ACCESSION_NUMBER = "AccessionNumber"
+    IMAGE_UUID = "ImageUUID"
+    INSTANCES_LIST = "InstancesList"
+    SERIES_LIST = "SeriesList"
+    PATIENT_ID = "PatientID"
