@@ -391,6 +391,8 @@ class MappingTable:
         _dup_keys = patient_map.loc[_dup, _join_key].drop_duplicates().head(5).tolist() if _dup_count else []
         _debug_log("create_table.py:generate_encounter_mapping_table", "patient_map loaded from PATIENT_MAPPING_TABLE", {"shape": list(patient_map.shape), "join_key": _join_key, "duplicate_count": _dup_count, "sample_duplicate_keys": _dup_keys, "queue_id": self.queue_id}, "H1")
         # #endregion
+        # For encounter merge only: use one row per patientid (in-memory only; PATIENT_MAPPING_TABLE is unchanged and remains one patientid -> many chartids).
+        patient_map = patient_map.drop_duplicates(subset=[_join_key], keep="first")
 
         # 2. Load existing unified encounters (may be empty)
         try:
