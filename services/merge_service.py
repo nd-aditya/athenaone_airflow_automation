@@ -74,14 +74,21 @@ def _process_table(table_name: str, engine, incr_schema: str, hist_schema: str) 
 
                 incr_cols = _get_columns(engine, incr_schema, table_name)
                 hist_cols = _get_columns(engine, hist_schema, table_name)
-
-                if "nd_auto_increment_id" in hist_cols:
+                has_nd_auto_increment = "nd_auto_increment_id" in hist_cols
+                if has_nd_auto_increment:
                     hist_cols.remove("nd_auto_increment_id")
 
                 common_cols = sorted(list(set(incr_cols).intersection(hist_cols)))
                 if not common_cols:
                     stats["error"] = "No matching columns"
                     return stats
+
+                # So next INSERT gets nd_auto_increment_id = max(existing) + 1 (fixes gap after deletes)
+                if has_nd_auto_increment and not stats["created"]:
+                    next_ai = conn.execute(
+                        text(f"SELECT COALESCE(MAX(`nd_auto_increment_id`), 0) + 1 FROM {dst_fqn}")
+                    ).scalar()
+                    conn.execute(text(f"ALTER TABLE {dst_fqn} AUTO_INCREMENT = :v"), {"v": next_ai})
 
                 quoted_cols = [_q(c) for c in common_cols]
                 col_list_str = ", ".join(quoted_cols)

@@ -32,12 +32,12 @@ TEST_TABLE_NAMES = [
 
 
 with DAG(
-    dag_id="snowflake_incremental_extraction",
+    dag_id="Athenaone_Master_pipeline",
     start_date=datetime(2026, 1, 1),
     schedule=None,
     catchup=False,
     max_active_tasks=MAX_ACTIVE_TASKS,
-    tags=["snowflake", "incremental"],
+    tags=["athenaone", "incremental"],
 ) as dag:
 
     @task
