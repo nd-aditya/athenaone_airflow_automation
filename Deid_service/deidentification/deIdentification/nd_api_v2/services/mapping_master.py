@@ -71,8 +71,12 @@ def run_encounter_mapping_generation_task(queue_id: int, dependencies: list[Task
         # #region agent log
         try:
             import json
+            import os
             _db = hist_conn.split("/")[-1].split("?")[0] if "/" in hist_conn else "unknown"
-            with open("/Users/adityaneuroAI/athenaone_airflow_automation/.cursor/debug-2ecf71.log", "a") as f:
+            log_dir = os.path.join(os.getcwd(), ".cursor")
+            os.makedirs(log_dir, exist_ok=True)
+            log_path = os.path.join(log_dir, "debug-2ecf71.log")
+            with open(log_path, "a") as f:
                 f.write(json.dumps({"sessionId": "2ecf71", "location": "mapping_master.py:run_encounter_mapping", "message": "schema used for MappingTable source", "data": {"schema_from_connection": _db, "queue_id": queue_id}, "hypothesisId": "H2", "timestamp": __import__("datetime").datetime.utcnow().isoformat()}) + "\n")
         except Exception:
             pass

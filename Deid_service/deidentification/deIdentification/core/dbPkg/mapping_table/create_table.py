@@ -32,8 +32,12 @@ from typing import TypedDict
 # #region agent log
 def _debug_log(location: str, message: str, data: dict, hypothesis_id: str = ""):
     import json
+    import os
     try:
-        with open("/Users/adityaneuroAI/athenaone_airflow_automation/.cursor/debug-2ecf71.log", "a") as f:
+        log_dir = os.path.join(os.getcwd(), ".cursor")
+        os.makedirs(log_dir, exist_ok=True)
+        log_path = os.path.join(log_dir, "debug-2ecf71.log")
+        with open(log_path, "a") as f:
             f.write(json.dumps({"sessionId": "2ecf71", "location": location, "message": message, "data": data, "hypothesisId": hypothesis_id, "timestamp": datetime.datetime.utcnow().isoformat()}) + "\n")
     except Exception:
         pass
