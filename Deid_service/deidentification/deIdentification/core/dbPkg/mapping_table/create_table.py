@@ -29,20 +29,6 @@ from core.dbPkg.mapping_loader import (
 from deIdentification.nd_logger import nd_logger
 from typing import TypedDict
 
-# #region agent log
-def _debug_log(location: str, message: str, data: dict, hypothesis_id: str = ""):
-    import json
-    import os
-    try:
-        log_dir = os.path.join(os.getcwd(), ".cursor")
-        os.makedirs(log_dir, exist_ok=True)
-        log_path = os.path.join(log_dir, "debug-2ecf71.log")
-        with open(log_path, "a") as f:
-            f.write(json.dumps({"sessionId": "2ecf71", "location": location, "message": message, "data": data, "hypothesisId": hypothesis_id, "timestamp": datetime.datetime.utcnow().isoformat()}) + "\n")
-    except Exception:
-        pass
-# #endregion
-
 
 class EncounterMappingConfig(TypedDict):
     table_name: str
@@ -324,10 +310,6 @@ class MappingTable:
         source_tables = (
             new_source_tables if new_source_tables else self.patient_mapping_config["tables"]
         )
-        # #region agent log
-        _table_names = [t.get("table_name", t) for t in source_tables] if source_tables else []
-        _debug_log("create_table.py:update_patient_mapping_table", "source_tables for patient mapping", {"count": len(source_tables), "table_names": _table_names, "queue_id": self.queue_id, "from_queue": new_source_tables is not None}, "H3")
-        # #endregion
         # Fetch all data from source tables
         dfs = self.fetch_and_normalize_dataframes(source_tables)
         
@@ -359,12 +341,6 @@ class MappingTable:
         # Ensure registration_date is datetime before writing to SQL
         if PATIENT_MAPPING_TABLE_REGISTRATION_DATE_COL in final_df.columns:
             final_df[PATIENT_MAPPING_TABLE_REGISTRATION_DATE_COL] = pd.to_datetime(final_df[PATIENT_MAPPING_TABLE_REGISTRATION_DATE_COL], errors='coerce')
-        # #region agent log
-        _prim = self.identifier_columns[0] if self.identifier_columns else (list(final_df.columns)[0] if not final_df.empty else None)
-        _final_dup = int(final_df.duplicated(subset=[_prim], keep=False).sum()) if _prim and _prim in final_df.columns else 0
-        _merged_dup = int(merged_df.duplicated(subset=[_prim], keep=False).sum()) if _prim and _prim in merged_df.columns else 0
-        _debug_log("create_table.py:update_patient_mapping_table", "before to_sql: final_df and merged_df duplicate counts", {"final_df_duplicate_count": _final_dup, "merged_df_duplicate_count": _merged_dup, "primary_id_col": _prim, "queue_id": self.queue_id}, "H4")
-        # #endregion
         final_df.to_sql(
             PATIENT_MAPPING_TABLE,
             con=self.mapping_engine,
@@ -384,13 +360,6 @@ class MappingTable:
             f"FROM {PATIENT_MAPPING_TABLE}",
             self.mapping_engine
         )
-        # #region agent log
-        _join_key = self.encounter_mapping_config["patient_identifier_type"]
-        _dup = patient_map.duplicated(subset=[_join_key], keep=False)
-        _dup_count = int(_dup.sum())
-        _dup_keys = patient_map.loc[_dup, _join_key].drop_duplicates().head(5).tolist() if _dup_count else []
-        _debug_log("create_table.py:generate_encounter_mapping_table", "patient_map loaded from PATIENT_MAPPING_TABLE", {"shape": list(patient_map.shape), "join_key": _join_key, "duplicate_count": _dup_count, "sample_duplicate_keys": _dup_keys, "queue_id": self.queue_id}, "H1")
-        # #endregion
         # For encounter merge only: use one row per patientid (in-memory only; PATIENT_MAPPING_TABLE is unchanged and remains one patientid -> many chartids).
         patient_map = patient_map.drop_duplicates(subset=[_join_key], keep="first")
 

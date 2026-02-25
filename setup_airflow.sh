@@ -35,7 +35,7 @@ conda activate "$CONDA_ENV"
 echo "Installing Apache Airflow and project dependencies..."
 pip install --upgrade pip
 pip install "apache-airflow==3.1.7"
-pip install sqlalchemy pandas snowflake-sqlalchemy PyMySQL psycopg2-binary
+pip install sqlalchemy pandas snowflake-sqlalchemy PyMySQL psycopg2-binary mysql-connector-python pycryptodome
 # Airflow 3 async metadata DB driver (required for PostgreSQL / default config)
 pip install asyncpg
 pip install "Django>=4.2,<5"

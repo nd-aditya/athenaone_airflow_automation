@@ -68,19 +68,6 @@ def run_encounter_mapping_generation_task(queue_id: int, dependencies: list[Task
         mapping_config['patient_mapping_config']['ndid_start_value'] = client_run_config.nd_patient_start_value
         mapping_config['patient_mapping_config']['primary_id_column'] = client_run_config.patient_identifier_columns[0]
         hist_conn = scheduler_config.get_historical_connection_str()
-        # #region agent log
-        try:
-            import json
-            import os
-            _db = hist_conn.split("/")[-1].split("?")[0] if "/" in hist_conn else "unknown"
-            log_dir = os.path.join(os.getcwd(), ".cursor")
-            os.makedirs(log_dir, exist_ok=True)
-            log_path = os.path.join(log_dir, "debug-2ecf71.log")
-            with open(log_path, "a") as f:
-                f.write(json.dumps({"sessionId": "2ecf71", "location": "mapping_master.py:run_encounter_mapping", "message": "schema used for MappingTable source", "data": {"schema_from_connection": _db, "queue_id": queue_id}, "hypothesisId": "H2", "timestamp": __import__("datetime").datetime.utcnow().isoformat()}) + "\n")
-        except Exception:
-            pass
-        # #endregion
         mptable = MappingTable(hist_conn, mapping_config, queue_id, client_run_config.ehr_type)
         mptable.generate_encounter_mapping_table()
     except Exception as e:

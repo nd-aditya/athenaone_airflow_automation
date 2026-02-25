@@ -55,6 +55,33 @@ def _remove_override_file():
         pass
 
 
+def _ensure_deid_database_exists(deid_schema: str):
+    """
+    Create the deidentified MySQL database if it does not exist.
+    Uses SchedulerConfig.get_deid_connection_str() (with override already applied) to get
+    server details, then connects without a database and runs CREATE DATABASE IF NOT EXISTS.
+    """
+    from nd_api_v2.models.scheduler_config import SchedulerConfig
+    from sqlalchemy.engine.url import make_url
+    from sqlalchemy import create_engine, text
+
+    scheduler_config = SchedulerConfig.objects.last()
+    if scheduler_config is None:
+        return
+    conn_str = scheduler_config.get_deid_connection_str()
+    try:
+        url = make_url(conn_str)
+        if url.drivername and "mysql" not in url.drivername:
+            return
+        url_no_db = url.set(database=None)
+        engine = create_engine(url_no_db, pool_pre_ping=True)
+        with engine.connect() as conn:
+            conn.execute(text(f"CREATE DATABASE IF NOT EXISTS `{deid_schema}` DEFAULT CHARACTER SET utf8mb4"))
+            conn.commit()
+    except Exception:
+        pass
+
+
 def run_deid_pipeline_for_airflow(diff_schema: str) -> dict:
     """
     Write override file, run nd_auto_increment_id, register_dump. Does not run mapping/master
@@ -63,6 +90,10 @@ def run_deid_pipeline_for_airflow(diff_schema: str) -> dict:
     """
     _setup_django()
     _write_override_file(diff_schema)
+
+    # Create deidentified schema (e.g. diff_20260225_deid) if it does not exist
+    deid_schema = f"{diff_schema}_deid"
+    _ensure_deid_database_exists(deid_schema)
 
     from nd_api_v2.models.scheduler_config import SchedulerConfig
     from nd_api_v2.services.register_dump import register_dump_in_queue

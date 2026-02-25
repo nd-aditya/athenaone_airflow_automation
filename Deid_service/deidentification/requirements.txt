@@ -20,6 +20,9 @@ snowflake-sqlalchemy==1.7.3
 google-cloud-storage
 pyodbc
 pymssql
+tqdm
+networkx
+jsonpickle
 mysql-connector-python
 pycryptodome
 lxml
