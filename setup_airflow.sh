@@ -26,15 +26,15 @@ source "$(conda info --base)/etc/profile.d/conda.sh"
 if conda env list | grep -q "^${CONDA_ENV} "; then
   echo "Conda env '$CONDA_ENV' already exists. Activating."
 else
-  echo "Creating conda env '$CONDA_ENV' with Python 3.11..."
-  conda create -n "$CONDA_ENV" python=3.11 -y
+  echo "Creating conda env '$CONDA_ENV' with Python 3.13..."
+  conda create -n "$CONDA_ENV" python=3.13 -y
 fi
 conda activate "$CONDA_ENV"
 
 # ---- Install Airflow and dependencies ----
 echo "Installing Apache Airflow and project dependencies..."
 pip install --upgrade pip
-pip install "apache-airflow>=2.8,<3"
+pip install "apache-airflow==3.1.7"
 pip install sqlalchemy pandas snowflake-sqlalchemy PyMySQL
 
 # Optional: install Deid_service deps if you run deid from this env

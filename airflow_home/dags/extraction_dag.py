@@ -1,5 +1,5 @@
 from airflow import DAG
-from airflow.sdk import task
+from airflow.decorators import task
 from datetime import datetime
 from sqlalchemy import create_engine, text
 
