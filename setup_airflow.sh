@@ -38,6 +38,8 @@ pip install "apache-airflow==3.1.7"
 pip install sqlalchemy pandas snowflake-sqlalchemy PyMySQL psycopg2-binary
 # Airflow 3 async metadata DB driver (required for PostgreSQL / default config)
 pip install asyncpg
+pip install "Django>=4.2,<5"
+pip install jupyter_server
 
 # Optional: install Deid_service deps if you run deid from this env
 DEID_REQ="$PROJECT_ROOT/Deid_service/deidentification/requirements.txt"
