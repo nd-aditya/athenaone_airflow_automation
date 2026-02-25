@@ -54,19 +54,24 @@ class SchedulerConfig(models.Model):
         return f"SchedulerConfig({self.id})"
 
     def get_source_connection_str(self):
+        from nd_api_v2.airflow_override import get_airflow_schema_override
+        override = get_airflow_schema_override()
         if "destination_connection_details" in self.run_config:
             connection_details = self.run_config['destination_connection_details']
-            schema = self.run_config['schemas']['current_schema']
+            schema = (override.get("current_schema") if override else None) or self.run_config['schemas'].get('current_schema')
             connection_string = f"mysql+pymysql://{connection_details['mysql_user']}:{connection_details['mysql_password']}@{connection_details['mysql_host']}/{schema}"
         else:
             connection_details = self.run_config['main_database_details']
-            schema = connection_details['database_name']
+            schema = (override.get("current_schema") if override else None) or connection_details.get('database_name')
             connection_string = f"mysql+pymysql://{connection_details['username']}:{connection_details['password']}@{connection_details['host']}/{schema}"
         return connection_string
 
     def get_deid_connection_str(self):
+        from nd_api_v2.airflow_override import get_airflow_schema_override
+        override = get_airflow_schema_override()
         connection_details = self.run_config['deid_connection_details']
-        connection_string = f"mysql+pymysql://{connection_details['mysql_user']}:{connection_details['mysql_password']}@{connection_details['mysql_host']}/{connection_details['schema']}"
+        schema = (override.get("deid_schema") if override else None) or connection_details.get('schema')
+        connection_string = f"mysql+pymysql://{connection_details['mysql_user']}:{connection_details['mysql_password']}@{connection_details['mysql_host']}/{schema}"
         return connection_string
     
     def get_bridge_db_connection_str(self):

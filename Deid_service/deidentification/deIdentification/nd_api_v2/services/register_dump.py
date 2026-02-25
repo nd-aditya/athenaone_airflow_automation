@@ -68,7 +68,7 @@ def register_dump_in_queue(connection_string: str, dump_date: str):
                 print(f"Error registering table: {tasks[future]}: {e}")
                 traceback.print_exc()
 
-    return results
+    return results, incremental_queue
 
 
 def register_table_metadata(table_name: str, connection_string: Optional[str] = None, columns: Optional[list[str]] = None, primary_key: Optional[list[str]] = None):

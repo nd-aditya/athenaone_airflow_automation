@@ -122,6 +122,14 @@ def get_config():
             if schemas:
                 default_config['INCREMENTAL_SCHEMA'] = schemas.get('incremental_schema', default_config['INCREMENTAL_SCHEMA'])
                 default_config['HISTORICAL_SCHEMA'] = schemas.get('historical_schema', default_config['HISTORICAL_SCHEMA'])
+            # Airflow override: when running from Airflow, use diff_<date> as current schema
+            try:
+                from nd_api_v2.airflow_override import get_airflow_schema_override
+                airflow_override = get_airflow_schema_override()
+                if airflow_override and airflow_override.get('current_schema'):
+                    default_config['INCREMENTAL_SCHEMA'] = airflow_override['current_schema']
+            except Exception:
+                pass
             
             # Update extraction settings
             extraction = run_config.get('extraction_settings', {})
