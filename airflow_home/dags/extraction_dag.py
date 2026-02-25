@@ -15,7 +15,8 @@ from services.nd_date_service import add_extraction_date_to_all_tables
 from services.merge_service import merge_incremental_to_historical
 from services.diff_schema_service import copy_historical_to_diff_schema
 from services.schema_reset_service import reset_incremental_schema as reset_schema
-from services.deid_runner import run_deid_pipeline_for_airflow, wait_for_deid_completion
+from services.deid_runner import run_deid_pipeline_for_airflow, create_deid_tasks_for_queue, wait_for_deid_completion
+from services.mapping_master_service import update_mapping_and_master_tables
 
 SCHEMA = "ATHENAONE"
 
@@ -170,22 +171,41 @@ with DAG(
     @task
     def run_deid_pipeline(diff_result: dict) -> dict:
         """
-        Write override file (current_schema=diff_<date>, deid_schema=diff_<date>_deid),
-        run nd_auto_increment_id, register_dump, mapping/master, create deid tasks.
-        Expects diff_result from copy_to_diff_schema with key diff_schema.
+        Write override file, run nd_auto_increment_id, register_dump. Does not run mapping/master
+        or create deid tasks (separate tasks). Expects diff_result from copy_to_diff_schema with key diff_schema.
         """
         if not diff_result or "diff_schema" not in diff_result:
             raise ValueError("copy_to_diff_schema did not return diff_schema")
         return run_deid_pipeline_for_airflow(diff_result["diff_schema"])
 
     @task
+    def update_mapping_master(pipe_result: dict) -> dict:
+        """
+        Update mapping and master tables for the queue. Separate task so validation can be added after this.
+        Expects pipe_result with key queue_id (from run_deid_pipeline).
+        """
+        if not pipe_result or "queue_id" not in pipe_result:
+            raise ValueError("run_deid_pipeline did not return queue_id")
+        return update_mapping_and_master_tables(pipe_result["queue_id"])
+
+    @task
+    def create_deid_tasks(pipe_result: dict) -> dict:
+        """
+        Create deid tasks for all tables in the queue. Runs after mapping/master (and any validation).
+        Expects pipe_result with queue_id (from update_mapping_master).
+        """
+        if not pipe_result or "queue_id" not in pipe_result:
+            raise ValueError("update_mapping_master did not return queue_id")
+        return create_deid_tasks_for_queue(pipe_result["queue_id"])
+
+    @task
     def wait_for_deid(deid_result: dict) -> dict:
         """
         Poll until all worker tasks for this queue are done. Assumes spine_worker runs elsewhere.
-        Expects deid_result from run_deid_pipeline with key queue_id.
+        Expects deid_result from create_deid_tasks with key queue_id.
         """
         if not deid_result or "queue_id" not in deid_result:
-            raise ValueError("run_deid_pipeline did not return queue_id")
+            raise ValueError("create_deid_tasks did not return queue_id")
         return wait_for_deid_completion(deid_result["queue_id"])
 
     # get_table_batches() returns a list of lists
@@ -200,5 +220,7 @@ with DAG(
     merge_task = merge_to_historical()
     diff_task = copy_to_diff_schema()
     deid_run_task = run_deid_pipeline(diff_task)
-    wait_deid_task = wait_for_deid(deid_run_task)
-    reset_task >> batches >> expanded >> add_date_task >> merge_task >> diff_task >> deid_run_task >> wait_deid_task
+    mapping_master_task = update_mapping_master(deid_run_task)
+    create_deid_tasks_task = create_deid_tasks(mapping_master_task)
+    wait_deid_task = wait_for_deid(create_deid_tasks_task)
+    reset_task >> batches >> expanded >> add_date_task >> merge_task >> diff_task >> deid_run_task >> mapping_master_task >> create_deid_tasks_task >> wait_deid_task

@@ -4,9 +4,11 @@
 set -e
 
 # ---- CONFIG ----
-AIRFLOW_HOME="/Users/ndaident/Desktop/Airflow_Automation/airflow_home"
 CONDA_ENV="airflow_inc"
 AIRFLOW_PORT=8890
+# Project root = directory where this script lives
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+AIRFLOW_HOME="$PROJECT_ROOT/airflow_home"
 
 # ---- LOAD CONDA ----
 source "$(conda info --base)/etc/profile.d/conda.sh"
@@ -14,7 +16,8 @@ source "$(conda info --base)/etc/profile.d/conda.sh"
 # ---- ACTIVATE ENV ----
 conda activate "$CONDA_ENV"
 
-export AIRFLOW_HOME="$AIRFLOW_HOME"
+export AIRFLOW_HOME
+export PYTHONPATH="${PROJECT_ROOT}:${PYTHONPATH:-}"
 
 echo "--------------------------------------"
 echo "Using CONDA ENV: $CONDA_ENV"

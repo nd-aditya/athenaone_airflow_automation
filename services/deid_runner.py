@@ -1,6 +1,7 @@
 """
 Run the deidentification pipeline from Airflow: write override file, nd_auto_increment_id,
-register_dump, mapping/master, create deid tasks. Also provides wait_for_deid_completion.
+register_dump. Mapping/master is in mapping_master_service (separate DAG task). Deid task
+creation and wait are separate so validation can be added in between.
 Assumes spine_worker is running elsewhere. Requires Django/Deid_service on path and configured.
 """
 import json
@@ -56,22 +57,15 @@ def _remove_override_file():
 
 def run_deid_pipeline_for_airflow(diff_schema: str) -> dict:
     """
-    Run the full deid pipeline for the given diff schema (e.g. diff_20250223).
-    Writes override file, runs nd_auto_increment_id, register_dump, mapping/master, create_deid_tasks.
-    Returns dict with queue_id, diff_schema, and any summary for XCom.
+    Write override file, run nd_auto_increment_id, register_dump. Does not run mapping/master
+    or create deid tasks; those are separate DAG tasks (mapping_master_service, then create_deid_tasks_for_queue).
+    Returns dict with queue_id, diff_schema, tables_registered for XCom.
     """
     _setup_django()
     _write_override_file(diff_schema)
 
     from nd_api_v2.models.scheduler_config import SchedulerConfig
     from nd_api_v2.services.register_dump import register_dump_in_queue
-    from nd_api_v2.services.mapping_master import (
-        run_patient_mapping_generation_task,
-        run_encounter_mapping_generation_task,
-        run_master_table_generation_task,
-    )
-    from nd_api_v2.views.operations.deid import create_deid_tasks_for_tables
-    from nd_api_v2.models import Table
 
     # 1. Update nd_auto_increment_id for diff schema
     from nd_api_v2.services.athenaone.update_nd_auto_inc_id import main as update_nd_auto_inc_main
@@ -91,21 +85,25 @@ def run_deid_pipeline_for_airflow(diff_schema: str) -> dict:
     results, incremental_queue = register_dump_in_queue(connection_string, dump_date_str)
     queue_id = incremental_queue.id
 
-    # 3. Mapping and master table update
-    run_patient_mapping_generation_task(queue_id)
-    run_encounter_mapping_generation_task(queue_id)
-    run_master_table_generation_task(queue_id)
-
-    # 4. Create deid tasks for all tables in this queue
-    table_ids = list(Table.objects.filter(incremental_queue_id=queue_id).values_list("id", flat=True))
-    create_deid_tasks_for_tables(queue_id, table_ids)
-
     return {
         "queue_id": queue_id,
         "diff_schema": diff_schema,
         "tables_registered": len(results),
-        "deid_tasks_created_for_tables": len(table_ids),
     }
+
+
+def create_deid_tasks_for_queue(queue_id: int) -> dict:
+    """
+    Create deid tasks for all tables in the given queue. Call after mapping/master (and any validation).
+    Returns dict with queue_id and count for XCom. Workers (e.g. spine_worker) will process the tasks.
+    """
+    _setup_django()
+    from nd_api_v2.views.operations.deid import create_deid_tasks_for_tables
+    from nd_api_v2.models import Table
+
+    table_ids = list(Table.objects.filter(incremental_queue_id=queue_id).values_list("id", flat=True))
+    create_deid_tasks_for_tables(queue_id, table_ids)
+    return {"queue_id": queue_id, "deid_tasks_created_for_tables": len(table_ids)}
 
 
 def wait_for_deid_completion(queue_id: int, poll_interval_seconds: int = 30, timeout_seconds: int = 86400) -> dict:
