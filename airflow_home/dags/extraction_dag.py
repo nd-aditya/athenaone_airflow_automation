@@ -161,12 +161,21 @@ with DAG(
         return merge_incremental_to_historical()
 
     @task
-    def copy_to_diff_schema() -> dict:
+    def get_tables_for_diff(batches: list[list[str]]) -> list[str]:
+        """
+        Flatten batch list to a single list of table names (tables extracted in this run).
+        Passed to copy_to_diff_schema so only these tables are copied to diff.
+        """
+        return [t for batch in batches for t in batch]
+
+    @task
+    def copy_to_diff_schema(tables_to_copy: list[str]) -> dict:
         """
         Create schema diff_<current_date> if not exists and copy from historical
-        only rows where nd_extracted_date = CURDATE(). Runs after merge_to_historical.
+        only the tables extracted in this run (tables_to_copy), inserting only rows
+        where nd_extracted_date = CURDATE(). Runs after merge_to_historical.
         """
-        return copy_historical_to_diff_schema()
+        return copy_historical_to_diff_schema(tables_to_copy=tables_to_copy)
 
     @task
     def run_deid_pipeline(diff_result: dict) -> dict:
@@ -214,13 +223,15 @@ with DAG(
     batches = get_test_batches()
     # FULL RUN: all views from Snowflake
     # batches = get_table_batches()
+    tables_for_diff = get_tables_for_diff(batches)
     reset_task = reset_incremental_schema()
     expanded = extract_batch.expand(batch=batches)
     add_date_task = add_nd_extracted_date()
     merge_task = merge_to_historical()
-    diff_task = copy_to_diff_schema()
+    diff_task = copy_to_diff_schema(tables_to_copy=tables_for_diff)
     deid_run_task = run_deid_pipeline(diff_task)
     mapping_master_task = update_mapping_master(deid_run_task)
     create_deid_tasks_task = create_deid_tasks(mapping_master_task)
     wait_deid_task = wait_for_deid(create_deid_tasks_task)
     reset_task >> batches >> expanded >> add_date_task >> merge_task >> diff_task >> deid_run_task >> mapping_master_task >> create_deid_tasks_task >> wait_deid_task
+    batches >> tables_for_diff >> diff_task

@@ -1,9 +1,13 @@
 """
 Copy data from historical schema into a date-stamped diff schema (diff_YYYYMMDD).
 Creates the diff schema if it doesn't exist. Only copies rows where nd_extracted_date = CURDATE().
+
+Approach B: When tables_to_copy is provided (from DAG), only those tables are copied (same run).
+Fallback: When tables_to_copy is None, only copy tables that have at least one row with nd_extracted_date = CURDATE().
 """
 import time
 from datetime import date
+from typing import Optional
 
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.exc import SQLAlchemyError
@@ -21,11 +25,16 @@ def _q(name: str) -> str:
     return f"`{name}`"
 
 
-def copy_historical_to_diff_schema() -> dict:
+def copy_historical_to_diff_schema(tables_to_copy: Optional[list[str]] = None) -> dict:
     """
-    Create schema diff_<current_date> if not exists, then for each table in
-    HISTORICAL_SCHEMA: create table in diff schema and insert only rows
-    where nd_extracted_date = CURDATE().
+    Create schema diff_<current_date> if not exists, then copy from historical only the
+    requested tables (or tables with data for today when no list given), inserting only
+    rows where nd_extracted_date = CURDATE().
+
+    Args:
+        tables_to_copy: If provided, only these tables (extracted in this run) are copied.
+            Must exist in HISTORICAL_SCHEMA. If None, fallback: only tables that have
+            at least one row with nd_extracted_date = CURDATE().
 
     Returns summary dict for XCom.
     """
@@ -38,11 +47,29 @@ def copy_historical_to_diff_schema() -> dict:
         conn.execute(text(f"CREATE DATABASE IF NOT EXISTS {_q(diff_schema)}"))
         conn.commit()
 
-    hist_tables = inspector.get_table_names(schema=HISTORICAL_SCHEMA)
+    hist_tables_all = inspector.get_table_names(schema=HISTORICAL_SCHEMA)
+    if tables_to_copy is not None:
+        # Approach B: only tables extracted in this run (must exist in historical)
+        tables_to_process = [t for t in tables_to_copy if t in hist_tables_all]
+    else:
+        # Fallback (Approach A): only tables that have data for today
+        tables_to_process = []
+        for table_name in hist_tables_all:
+            columns = [c["name"] for c in inspector.get_columns(table_name, schema=HISTORICAL_SCHEMA)]
+            if "nd_extracted_date" not in [c.lower() for c in columns]:
+                continue
+            hist_fqn = f"{_q(HISTORICAL_SCHEMA)}.{_q(table_name)}"
+            with engine.connect() as conn:
+                count = conn.execute(
+                    text(f"SELECT COUNT(*) FROM {hist_fqn} WHERE nd_extracted_date = CURDATE()")
+                ).scalar() or 0
+            if count > 0:
+                tables_to_process.append(table_name)
+
     results = []
     start_all = time.time()
 
-    for table_name in hist_tables:
+    for table_name in tables_to_process:
         stats = {
             "table": table_name,
             "inserted": 0,
