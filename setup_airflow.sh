@@ -35,7 +35,9 @@ conda activate "$CONDA_ENV"
 echo "Installing Apache Airflow and project dependencies..."
 pip install --upgrade pip
 pip install "apache-airflow==3.1.7"
-pip install sqlalchemy pandas snowflake-sqlalchemy PyMySQL asyncpg
+pip install sqlalchemy pandas snowflake-sqlalchemy PyMySQL
+# Airflow 3 async metadata DB driver (required for PostgreSQL / default config)
+pip install asyncpg
 
 # Optional: install Deid_service deps if you run deid from this env
 DEID_REQ="$PROJECT_ROOT/Deid_service/deidentification/requirements.txt"
