@@ -19,12 +19,18 @@ conda activate "$CONDA_ENV"
 export AIRFLOW_HOME
 export PYTHONPATH="${PROJECT_ROOT}:${PYTHONPATH:-}"
 export AIRFLOW__CORE__LOAD_EXAMPLES=False
+# Absolute path so scheduler/DAG processor always find your DAGs (avoids relative-path issues)
+export AIRFLOW__CORE__DAGS_FOLDER="${AIRFLOW_HOME}/dags"
 
 echo "--------------------------------------"
 echo "Using CONDA ENV: $CONDA_ENV"
 echo "Using AIRFLOW_HOME: $AIRFLOW_HOME"
+echo "DAGS_FOLDER: $AIRFLOW__CORE__DAGS_FOLDER"
 echo "Starting Airflow on port $AIRFLOW_PORT"
 echo "--------------------------------------"
+
+# Run from project root so DAG imports (e.g. services) resolve correctly
+cd "$PROJECT_ROOT"
 
 # ---- START SERVICES ----
 airflow scheduler &
