@@ -18,6 +18,7 @@ conda activate "$CONDA_ENV"
 
 export AIRFLOW_HOME
 export PYTHONPATH="${PROJECT_ROOT}:${PYTHONPATH:-}"
+export AIRFLOW__CORE__LOAD_EXAMPLES=False
 
 echo "--------------------------------------"
 echo "Using CONDA ENV: $CONDA_ENV"
