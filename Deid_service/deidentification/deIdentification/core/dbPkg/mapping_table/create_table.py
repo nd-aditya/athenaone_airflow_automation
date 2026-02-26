@@ -355,8 +355,9 @@ class MappingTable:
     def generate_encounter_mapping_table(self):
         self.backup_table(ENCOUNTER_MAPPING_TABLE)
         # 1. Load patient mapping: get nd_patient_id for merge
+        _join_key = self.encounter_mapping_config["patient_identifier_type"]
         patient_map = pd.read_sql(
-            f"SELECT {self.encounter_mapping_config['patient_identifier_type']}, {PATIENT_MAPPING_TABLE_ND_PATIENTID_COL} "
+            f"SELECT {_join_key}, {PATIENT_MAPPING_TABLE_ND_PATIENTID_COL} "
             f"FROM {PATIENT_MAPPING_TABLE}",
             self.mapping_engine
         )
