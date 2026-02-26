@@ -13,6 +13,7 @@ from services.config import (
     MYSQL_PASSWORD,
     MYSQL_HOST,
     INCREMENTAL_SCHEMA,
+    HISTORICAL_SCHEMA,
     CONTEXT_IDS,
     BATCH_SIZE,
 )
@@ -105,9 +106,35 @@ data_type_mapping = {
 # Helpers
 # --------------------------------------------
 
-def get_date_range():
-    start = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
+def get_date_range(table_name: str | None = None):
+    """
+    Get (start_date, end_date) for extraction.
+    If table_name is provided, start_date is max(LASTUPDATED) from that table in the
+    historical MySQL schema (athenaone) so no data is lost between runs; otherwise start = today - 3 days.
+    """
+    fallback_start = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
     end = datetime.now().strftime("%Y-%m-%d")
+
+    if table_name:
+        try:
+            hist_engine = get_historical_mysql_engine()
+            with hist_engine.connect() as conn:
+                row = conn.execute(
+                    text(f"SELECT MAX(`LASTUPDATED`) AS max_ts FROM `{table_name}`")
+                ).fetchone()
+            if row and row[0] is not None:
+                max_ts = row[0]
+                if hasattr(max_ts, "strftime"):
+                    start = max_ts.strftime("%Y-%m-%d")
+                else:
+                    start = str(max_ts)[:10]
+                return start, end
+        except Exception:
+            pass
+        start = fallback_start
+    else:
+        start = fallback_start
+
     return start, end
 
 
@@ -125,6 +152,15 @@ def get_mysql_engine():
     return create_engine(
         f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}"
         f"@{MYSQL_HOST}/{MYSQL_DATABASE}",
+        pool_pre_ping=True,
+    )
+
+
+def get_historical_mysql_engine():
+    """MySQL engine for the historical schema (athenaone). Used for max(LASTUPDATED) in get_date_range."""
+    return create_engine(
+        f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}"
+        f"@{MYSQL_HOST}/{HISTORICAL_SCHEMA}",
         pool_pre_ping=True,
     )
 
@@ -149,7 +185,7 @@ def extract_table(table_name: str):
     snowflake_engine = get_snowflake_engine()
     mysql_engine = get_mysql_engine()
 
-    start_date, end_date = get_date_range()
+    start_date, end_date = get_date_range(table_name=table_name)
 
     desc_query = f"DESC VIEW {SNOWFLAKE_DATABASE}.{SCHEMA}.{table_name};"
 
