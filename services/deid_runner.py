@@ -65,6 +65,11 @@ def _ensure_deid_database_exists(deid_schema: str):
     from sqlalchemy.engine.url import make_url
     from sqlalchemy import create_engine, text
 
+    try:
+        from deIdentification.nd_logger import nd_logger
+    except Exception:
+        nd_logger = None
+
     scheduler_config = SchedulerConfig.objects.last()
     if scheduler_config is None:
         return
@@ -78,14 +83,52 @@ def _ensure_deid_database_exists(deid_schema: str):
         with engine.connect() as conn:
             conn.execute(text(f"CREATE DATABASE IF NOT EXISTS `{deid_schema}` DEFAULT CHARACTER SET utf8mb4"))
             conn.commit()
-    except Exception:
-        pass
+        if nd_logger:
+            nd_logger.info(f"Deid database '{deid_schema}' ensured (created if not existed).")
+    except Exception as e:
+        if nd_logger:
+            nd_logger.exception(f"Failed to create deid database '{deid_schema}': {e}")
+        # Do not re-raise so pipeline can continue; fix DB permissions if needed
+
+
+def _update_table_nd_ranges_from_diff_schema(diff_schema: str, queue_id: int):
+    """
+    For each Table in the given queue, set nd_auto_increment_start_value and
+    nd_auto_increment_end_value from min/max(nd_auto_increment_id) in the diff schema.
+    Connection to diff schema must already be configured (override file written).
+    """
+    from nd_api_v2.models.scheduler_config import SchedulerConfig
+    from nd_api_v2.models import Table
+    from sqlalchemy import create_engine, text
+
+    scheduler_config = SchedulerConfig.objects.last()
+    if scheduler_config is None:
+        return
+    connection_string = scheduler_config.get_source_connection_str()
+    engine = create_engine(connection_string, pool_pre_ping=True)
+    tables = Table.objects.filter(incremental_queue_id=queue_id).select_related("metadata")
+    for table_obj in tables:
+        table_name = table_obj.metadata.table_name if table_obj.metadata else getattr(table_obj, "metadata_table_name", None)
+        if not table_name:
+            continue
+        try:
+            with engine.connect() as conn:
+                row = conn.execute(
+                    text(f"SELECT MIN(`nd_auto_increment_id`), MAX(`nd_auto_increment_id`) FROM `{table_name}`")
+                ).fetchone()
+            if row and row[0] is not None and row[1] is not None:
+                table_obj.nd_auto_increment_start_value = int(row[0])
+                table_obj.nd_auto_increment_end_value = int(row[1])
+                table_obj.save()
+        except Exception:
+            pass
+    engine.dispose()
 
 
 def run_deid_pipeline_for_airflow(diff_schema: str) -> dict:
     """
-    Write override file, run nd_auto_increment_id, register_dump. Does not run mapping/master
-    or create deid tasks; those are separate DAG tasks (mapping_master_service, then create_deid_tasks_for_queue).
+    Write override file, ensure deid DB, delete old queues, register_dump, set nd ranges from diff.
+    Does not run mapping/master or create deid tasks; those are separate DAG tasks.
     Returns dict with queue_id, diff_schema, tables_registered for XCom.
     """
     _setup_django()
@@ -96,13 +139,13 @@ def run_deid_pipeline_for_airflow(diff_schema: str) -> dict:
     _ensure_deid_database_exists(deid_schema)
 
     from nd_api_v2.models.scheduler_config import SchedulerConfig
+    from nd_api_v2.models.incremental_queue import IncrementalQueue
     from nd_api_v2.services.register_dump import register_dump_in_queue
 
-    # 1. Update nd_auto_increment_id for diff schema
-    from nd_api_v2.services.athenaone.update_nd_auto_inc_id import main as update_nd_auto_inc_main
-    update_nd_auto_inc_main()
+    # Delete old queues so this run has a clean set (same as manual register_dump.py)
+    IncrementalQueue.objects.all().delete()
 
-    # 2. Register dump (creates queue and tables with ranges)
+    # Register dump (creates queue and Table records from diff schema)
     scheduler_config = SchedulerConfig.objects.last()
     if scheduler_config is None:
         raise RuntimeError("SchedulerConfig not found. Configure incremental pipeline in UI or DB.")
@@ -115,6 +158,9 @@ def run_deid_pipeline_for_airflow(diff_schema: str) -> dict:
     dump_date_str = dump_date.strftime("%Y-%m-%d")
     results, incremental_queue = register_dump_in_queue(connection_string, dump_date_str)
     queue_id = incremental_queue.id
+
+    # Set nd_auto_increment_start_value / end_value from min/max(nd_auto_increment_id) in diff schema
+    _update_table_nd_ranges_from_diff_schema(diff_schema, queue_id)
 
     return {
         "queue_id": queue_id,
