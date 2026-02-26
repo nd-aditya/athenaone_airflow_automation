@@ -58,37 +58,22 @@ def _remove_override_file():
 def _ensure_deid_database_exists(deid_schema: str):
     """
     Create the deidentified MySQL database if it does not exist.
-    Uses SchedulerConfig.get_deid_connection_str() (with override already applied) to get
-    server details, then connects without a database and runs CREATE DATABASE IF NOT EXISTS.
+    Uses project MySQL config (MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD) to connect
+    and run CREATE DATABASE IF NOT EXISTS `diff_<date>_deid`.
     """
-    from nd_api_v2.models.scheduler_config import SchedulerConfig
-    from sqlalchemy.engine.url import make_url
     from sqlalchemy import create_engine, text
 
-    try:
-        from deIdentification.nd_logger import nd_logger
-    except Exception:
-        nd_logger = None
+    from services.config import MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD
 
-    scheduler_config = SchedulerConfig.objects.last()
-    if scheduler_config is None:
-        return
-    conn_str = scheduler_config.get_deid_connection_str()
+    conn_str = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/"
     try:
-        url = make_url(conn_str)
-        if url.drivername and "mysql" not in url.drivername:
-            return
-        url_no_db = url.set(database=None)
-        engine = create_engine(url_no_db, pool_pre_ping=True)
+        engine = create_engine(conn_str, pool_pre_ping=True)
         with engine.connect() as conn:
             conn.execute(text(f"CREATE DATABASE IF NOT EXISTS `{deid_schema}` DEFAULT CHARACTER SET utf8mb4"))
             conn.commit()
-        if nd_logger:
-            nd_logger.info(f"Deid database '{deid_schema}' ensured (created if not existed).")
-    except Exception as e:
-        if nd_logger:
-            nd_logger.exception(f"Failed to create deid database '{deid_schema}': {e}")
-        # Do not re-raise so pipeline can continue; fix DB permissions if needed
+        engine.dispose()
+    except Exception:
+        pass
 
 
 def _update_table_nd_ranges_from_diff_schema(diff_schema: str, queue_id: int):
