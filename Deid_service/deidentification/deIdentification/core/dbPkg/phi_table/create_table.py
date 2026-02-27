@@ -81,6 +81,11 @@ class PIITable:
                 f"Queue: {self.queue_id} - "
                 f"Backup table recreated: {backup_table_name}"
             )
+            # Truncate the main table after backup so we rebuild from source data only
+            truncate_sql = text(f"TRUNCATE TABLE `{table_name}`")
+            conn.execute(truncate_sql)
+            conn.commit()
+            nd_logger.info(f"Queue: {self.queue_id} - Truncated table {table_name} after backup.")
 
     
     def get_column_mapping(self, required_columns: list[dict]) -> dict[str, str]:

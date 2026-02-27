@@ -17,8 +17,13 @@ from services.diff_schema_service import copy_historical_to_diff_schema
 from services.schema_reset_service import reset_incremental_schema as reset_schema
 from services.deid_runner import run_deid_pipeline_for_airflow, create_deid_tasks_for_queue, wait_for_deid_completion
 from services.mapping_master_service import update_mapping_and_master_tables
+from services.worker_lifecycle import clear_worker_logs, start_workers, stop_workers
 
 SCHEMA = "ATHENAONE"
+
+# Deid workers: number to start and optional conda env (set to None to use current Python)
+DEID_WORKERS = 2
+DEID_CONDA_ENV = "airflow_inc"  # or None
 
 # --- Tuning knobs ---
 BATCH_SIZE = 20        # Number of tables per task (800 tables / 20 = 40 tasks in UI)
@@ -261,6 +266,24 @@ with DAG(
             raise ValueError("create_deid_tasks did not return queue_id")
         return wait_for_deid_completion(deid_result["queue_id"])
 
+    @task
+    def start_deid_workers(mapping_result: dict) -> dict:
+        """
+        Clear worker logs and start deid workers so they can pick up tasks.
+        Runs after mapping_master, before create_deid_tasks. Passes through mapping_result (queue_id) for downstream.
+        """
+        out = clear_worker_logs()
+        out_start = start_workers(n=DEID_WORKERS, conda_env=DEID_CONDA_ENV)
+        return {**(mapping_result or {}), "cleared_logs": out.get("cleared", []), **out_start}
+
+    @task
+    def stop_deid_workers(_wait_result: dict) -> dict:
+        """
+        Stop deid workers after all tasks are done.
+        Runs after wait_for_deid.
+        """
+        return stop_workers()
+
     # get_table_batches() returns a list of lists
     # expand() creates one task per batch → 40 tasks in UI instead of 800
     # TEST: only tables in TEST_TABLE_NAMES (paste table names above)
@@ -275,7 +298,9 @@ with DAG(
     diff_task = copy_to_diff_schema(tables_to_copy=tables_for_diff)
     deid_run_task = run_deid_pipeline(diff_task)
     mapping_master_task = update_mapping_master(deid_run_task)
-    create_deid_tasks_task = create_deid_tasks(mapping_master_task)
+    start_workers_task = start_deid_workers(mapping_master_task)
+    create_deid_tasks_task = create_deid_tasks(start_workers_task)
     wait_deid_task = wait_for_deid(create_deid_tasks_task)
-    reset_task >> batches >> expanded >> add_date_task >> merge_task >> diff_task >> deid_run_task >> mapping_master_task >> create_deid_tasks_task >> wait_deid_task
+    stop_workers_task = stop_deid_workers(wait_deid_task)
+    reset_task >> batches >> expanded >> add_date_task >> merge_task >> diff_task >> deid_run_task >> mapping_master_task >> start_workers_task >> create_deid_tasks_task >> wait_deid_task >> stop_workers_task
     batches >> tables_for_diff >> diff_task

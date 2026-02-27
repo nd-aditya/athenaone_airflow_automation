@@ -123,7 +123,8 @@ def run_master_table_generation_task(queue_id: int, dependencies: list[Task] = [
         scheduler_config = SchedulerConfig.objects.last()
         if scheduler_config is None:
             raise Exception("Scheduler configuration not found")
-        src_db_url = scheduler_config.get_source_connection_str()
+        # Use historical schema (not source/current) to read data for master table update
+        src_db_url = scheduler_config.get_historical_connection_str()
 
         master_db_url = get_master_db_connection_str()
         mapping_db_url = get_mapping_db_connection_str()
