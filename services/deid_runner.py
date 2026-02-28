@@ -154,24 +154,103 @@ def run_deid_pipeline_for_airflow(diff_schema: str) -> dict:
     }
 
 
-def create_deid_tasks_for_queue(queue_id: int) -> dict:
+def create_deid_tasks_for_queue(queue_id: int, table_ids: list[int] | None = None) -> dict:
     """
-    Create deid tasks for all tables in the given queue. Call after mapping/master (and any validation).
-    Returns dict with queue_id and count for XCom. Workers (e.g. spine_worker) will process the tasks.
+    Create deid tasks for tables in the given queue. Call after mapping/master (and any validation).
+    If table_ids is provided, only those table ids (must belong to queue_id) get tasks; else all.
+    Returns dict with queue_id and count for XCom. Workers will process the tasks.
     """
     _setup_django()
     from nd_api_v2.views.operations.deid import create_deid_tasks_for_tables
     from nd_api_v2.models import Table
 
-    table_ids = list(Table.objects.filter(incremental_queue_id=queue_id).values_list("id", flat=True))
+    if table_ids is not None:
+        table_ids = list(table_ids)
+    else:
+        table_ids = list(Table.objects.filter(incremental_queue_id=queue_id).values_list("id", flat=True))
+    if not table_ids:
+        return {"queue_id": queue_id, "deid_tasks_created_for_tables": 0}
     create_deid_tasks_for_tables(queue_id, table_ids)
     return {"queue_id": queue_id, "deid_tasks_created_for_tables": len(table_ids)}
 
 
-def wait_for_deid_completion(queue_id: int, poll_interval_seconds: int = 30, timeout_seconds: int = 86400) -> dict:
+def get_table_ids_for_queue_by_names(queue_id: int, table_names: list[str]) -> list[int]:
     """
-    Poll until all worker tasks for this queue's deid chains are in a terminal state.
-    Assumes spine_worker (or workers) are running elsewhere.
+    Return table ids for the given queue whose metadata table_name is in table_names.
+    Used to get ids for "remaining" or "test" tables after register_dump.
+    """
+    _setup_django()
+    from nd_api_v2.models import Table
+
+    tables = Table.objects.filter(
+        incremental_queue_id=queue_id,
+        metadata__table_name__in=table_names,
+    ).values_list("id", flat=True)
+    return list(tables)
+
+
+def get_table_id_batches_for_names(
+    queue_id: int,
+    table_names: list[str],
+    batch_size: int = 50,
+) -> list[list[int]]:
+    """
+    Return table ids for the given queue and table names, chunked into batches of batch_size.
+    Used by DAG 3 to run deid in batches (create tasks for batch, wait, next batch).
+    """
+    ids = get_table_ids_for_queue_by_names(queue_id, table_names)
+    return [ids[i : i + batch_size] for i in range(0, len(ids), batch_size)]
+
+
+def run_deid_in_batches(
+    queue_id: int,
+    table_id_batches: list[list[int]],
+    n_workers: int = 2,
+    conda_env: str | None = "airflow_inc",
+    poll_interval_seconds: int = 30,
+    timeout_seconds: int = 86400,
+) -> dict:
+    """
+    Create deid tasks and wait in batches: for each batch, create tasks for that batch's
+    table ids, then wait for only those tasks to complete before starting the next batch.
+    Starts workers once before the first batch and stops them after the last.
+    """
+    from services.worker_lifecycle import clear_worker_logs, start_workers, stop_workers
+
+    clear_worker_logs()
+    start_workers(n=n_workers, conda_env=conda_env)
+    batch_results = []
+    try:
+        for i, batch in enumerate(table_id_batches):
+            if not batch:
+                continue
+            create_deid_tasks_for_queue(queue_id, table_ids=batch)
+            result = wait_for_deid_completion(
+                queue_id,
+                table_ids=batch,
+                poll_interval_seconds=poll_interval_seconds,
+                timeout_seconds=timeout_seconds,
+            )
+            batch_results.append({"batch_index": i, "table_count": len(batch), "wait_result": result})
+    finally:
+        stop_workers()
+    _remove_override_file()
+    return {
+        "queue_id": queue_id,
+        "batches_run": len(batch_results),
+        "batch_results": batch_results,
+    }
+
+
+def wait_for_deid_completion(
+    queue_id: int,
+    table_ids: list[int] | None = None,
+    poll_interval_seconds: int = 30,
+    timeout_seconds: int = 86400,
+) -> dict:
+    """
+    Poll until worker tasks for this queue's deid chains are in a terminal state.
+    If table_ids is provided, wait only for chains for those tables; else all chains for the queue.
     Returns summary dict. Raises if timeout.
     """
     _setup_django()
@@ -181,8 +260,15 @@ def wait_for_deid_completion(queue_id: int, poll_interval_seconds: int = 30, tim
     terminal_statuses = (ComputationStatus.COMPLETED, ComputationStatus.FAILURE, ComputationStatus.INTERRUPTED)
     start = time.time()
 
+    if table_ids is not None and len(table_ids) == 0:
+        return {"queue_id": queue_id, "status": "done", "total_tasks": 0, "completed": 0, "failed": 0, "elapsed_seconds": 0}
+
     while True:
-        chains = Chain.objects.filter(reference_uuid__startswith=f"db_{queue_id}_")
+        if table_ids is not None:
+            reference_uuids = [f"db_{queue_id}_table_{tid}" for tid in table_ids]
+            chains = Chain.objects.filter(reference_uuid__in=reference_uuids)
+        else:
+            chains = Chain.objects.filter(reference_uuid__startswith=f"db_{queue_id}_")
         if not chains.exists():
             return {"queue_id": queue_id, "status": "no_chains", "message": "No chains found for queue (deid tasks may not be created yet)."}
 
@@ -196,7 +282,8 @@ def wait_for_deid_completion(queue_id: int, poll_interval_seconds: int = 30, tim
         if pending == 0:
             completed = tasks.filter(status=ComputationStatus.COMPLETED).count()
             failed = tasks.filter(status=ComputationStatus.FAILURE).count()
-            _remove_override_file()
+            if table_ids is None:
+                _remove_override_file()
             return {
                 "queue_id": queue_id,
                 "status": "done",

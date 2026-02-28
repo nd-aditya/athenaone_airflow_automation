@@ -98,7 +98,7 @@ data_type_mapping = {
    'VARCHAR(28)': 'VARCHAR(28)',
    'VARCHAR(30)': 'VARCHAR(30)',
    'VARCHAR(50)': 'VARCHAR(50)',
-   'VARCHAR(16777216)': 'TEXT',
+   'VARCHAR(16777216)': 'LONGTEXT',
 }
 
 
