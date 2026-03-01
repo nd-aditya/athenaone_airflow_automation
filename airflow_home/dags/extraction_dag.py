@@ -155,7 +155,7 @@ with DAG(
 
 
 # =============================================================================
-# DAG 2: Copy to diff → deid for TEST_TABLE_NAMES only (hardcoded list).
+# DAG 2: Copy to diff → deid for priority tables only (TEST_TABLE_NAMES list).
 # =============================================================================
 with DAG(
     dag_id="Athenaone_Deid_Priority_Tables",
@@ -163,11 +163,11 @@ with DAG(
     schedule=None,
     catchup=False,
     max_active_tasks=MAX_ACTIVE_TASKS,
-    tags=["athenaone", "deid", "test_tables"],
-) as dag_deid_test:
+    tags=["athenaone", "deid", "priority_tables"],
+) as dag_deid_priority:
 
     @task
-    def copy_to_diff_test() -> dict:
+    def copy_to_diff_priority() -> dict:
         return copy_historical_to_diff_schema(tables_to_copy=TEST_TABLE_NAMES)
 
     @task
@@ -183,10 +183,12 @@ with DAG(
         return update_mapping_and_master_tables(pipe_result["queue_id"])
 
     @task
-    def get_test_table_ids(mapping_result: dict) -> list:
+    def get_priority_table_ids(mapping_result: dict) -> dict:
+        """Return dict with queue_id and table_ids for priority tables (single payload for downstream)."""
         if not mapping_result or "queue_id" not in mapping_result:
             raise ValueError("mapping_result missing queue_id")
-        return get_table_ids_for_queue_by_names(mapping_result["queue_id"], TEST_TABLE_NAMES)
+        table_ids = get_table_ids_for_queue_by_names(mapping_result["queue_id"], TEST_TABLE_NAMES)
+        return {**(mapping_result or {}), "table_ids": table_ids}
 
     @task
     def start_deid_workers(mapping_result: dict) -> dict:
@@ -195,16 +197,17 @@ with DAG(
         return {**(mapping_result or {}), "cleared_logs": out.get("cleared", []), **out_start}
 
     @task
-    def create_deid_tasks(pipe_result: dict, table_ids: list) -> dict:
-        if not pipe_result or "queue_id" not in pipe_result:
-            raise ValueError("pipe_result missing queue_id")
-        return create_deid_tasks_for_queue(pipe_result["queue_id"], table_ids=table_ids)
+    def create_deid_tasks(pipe_result: dict) -> dict:
+        if not pipe_result or "queue_id" not in pipe_result or "table_ids" not in pipe_result:
+            raise ValueError("pipe_result missing queue_id or table_ids")
+        out = create_deid_tasks_for_queue(pipe_result["queue_id"], table_ids=pipe_result["table_ids"])
+        return {**out, "table_ids": pipe_result["table_ids"]}
 
     @task
-    def wait_for_deid(deid_result: dict, table_ids: list) -> dict:
-        if not deid_result or "queue_id" not in deid_result:
-            raise ValueError("deid_result missing queue_id")
-        return wait_for_deid_completion(deid_result["queue_id"], table_ids=table_ids)
+    def wait_for_deid(deid_result: dict) -> dict:
+        if not deid_result or "queue_id" not in deid_result or "table_ids" not in deid_result:
+            raise ValueError("deid_result missing queue_id or table_ids")
+        return wait_for_deid_completion(deid_result["queue_id"], table_ids=deid_result["table_ids"])
 
     @task
     def stop_deid_workers(_: dict) -> dict:
@@ -217,16 +220,16 @@ with DAG(
             raise ValueError("diff_result missing diff_schema")
         return update_diff_schema_history_and_drop_old(diff_result["diff_schema"], keep_last_n=3)
 
-    diff_task = copy_to_diff_test()
+    diff_task = copy_to_diff_priority()
     deid_run_task = run_deid_pipeline(diff_task)
     mapping_master_task = update_mapping_master(deid_run_task)
-    test_table_ids_task = get_test_table_ids(mapping_master_task)
-    start_workers_task = start_deid_workers(mapping_master_task)
-    create_deid_tasks_task = create_deid_tasks(start_workers_task, test_table_ids_task)
-    wait_deid_task = wait_for_deid(create_deid_tasks_task, test_table_ids_task)
+    priority_table_ids_task = get_priority_table_ids(mapping_master_task)
+    start_workers_task = start_deid_workers(priority_table_ids_task)
+    create_deid_tasks_task = create_deid_tasks(start_workers_task)
+    wait_deid_task = wait_for_deid(create_deid_tasks_task)
     stop_workers_task = stop_deid_workers(wait_deid_task)
     trim_task = trim_diff_schemas(diff_task)
-    diff_task >> deid_run_task >> mapping_master_task >> test_table_ids_task >> start_workers_task >> create_deid_tasks_task >> wait_deid_task >> stop_workers_task >> trim_task
+    diff_task >> deid_run_task >> mapping_master_task >> priority_table_ids_task >> start_workers_task >> create_deid_tasks_task >> wait_deid_task >> stop_workers_task >> trim_task
 
 
 # =============================================================================
