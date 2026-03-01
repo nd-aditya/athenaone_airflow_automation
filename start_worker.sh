@@ -34,8 +34,14 @@ if ! [[ "$n" =~ ^[0-9]+$ ]] || [[ "$n" -lt 1 ]]; then
 fi
 
 # Build run command: optional conda or venv, then cd and start_worker
+# When using conda, source conda.sh first so 'conda activate' works in non-interactive subshells (e.g. when run by Airflow).
 if [[ -n "$CONDA_ENV" ]]; then
-  RUN_CMD="conda activate '$CONDA_ENV' && cd '$DEID_MANAGE_DIR' && python manage.py start_worker"
+  CONDA_BASE="${CONDA_BASE:-$(conda info --base 2>/dev/null)}"
+  if [[ -z "$CONDA_BASE" || ! -f "$CONDA_BASE/etc/profile.d/conda.sh" ]]; then
+    echo "Error: conda not available or conda.sh not found. Set CONDA_BASE or run from a shell with conda on PATH."
+    exit 1
+  fi
+  RUN_CMD="source '$CONDA_BASE/etc/profile.d/conda.sh' && conda activate '$CONDA_ENV' && cd '$DEID_MANAGE_DIR' && python manage.py start_worker"
 elif [[ -n "$VENV_PATH" ]]; then
   if [[ -d "$VENV_PATH" ]]; then
     RUN_CMD="source '$VENV_PATH/bin/activate' && cd '$DEID_MANAGE_DIR' && python manage.py start_worker"
