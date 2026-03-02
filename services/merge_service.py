@@ -2,7 +2,11 @@
 Merge data from incremental schema (dump_daily) to historical schema (athenaone).
 Creates missing tables in historical, then INSERT INTO ... SELECT for common columns.
 Handles reserved keywords by quoting column names; nd_auto_increment_id remains NULL for new rows.
+After insert, updates nd_active_flag so one row per primary key is 'Y' (latest by LASTUPDATED)
+and all others 'N'. Uses table_primary_keys.csv for PK definitions.
 """
+import csv
+import os
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -24,10 +28,66 @@ ERROR_POLICY_CONTINUE = True
 RETRY_ATTEMPTS = 2
 RETRY_BACKOFF_SECONDS = 3
 
+TABLE_PRIMARY_KEYS_CSV = os.path.join(
+    os.path.dirname(__file__), "..", "table_primary_keys.csv"
+)
+
 
 def _q(name: str) -> str:
     """Quote a column or table name with backticks."""
     return f"`{name}`"
+
+
+def _load_primary_keys_csv() -> dict:
+    """Load table_primary_keys.csv into {table_name: [pk_col1, pk_col2, ...]}."""
+    out = {}
+    if not os.path.isfile(TABLE_PRIMARY_KEYS_CSV):
+        return out
+    with open(TABLE_PRIMARY_KEYS_CSV, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            tname = (row.get("table_name") or "").strip()
+            pk_raw = (row.get("primary_key") or "").strip()
+            if tname and pk_raw:
+                out[tname] = [c.strip() for c in pk_raw.split("|") if c.strip()]
+    return out
+
+
+def _update_nd_active_flag(conn, table_name: str, hist_fqn: str, hist_cols: list, pk_map: dict) -> None:
+    """
+    Set nd_active_flag: one row per primary key = 'Y' (latest by LASTUPDATED),
+    all others = 'N'. Skips if table or CSV lacks required columns.
+    """
+    if "nd_active_flag" not in hist_cols:
+        conn.execute(
+            text(f"ALTER TABLE {hist_fqn} ADD COLUMN `nd_active_flag` VARCHAR(1) DEFAULT 'N'")
+        )
+        hist_cols = list(hist_cols) + ["nd_active_flag"]
+    if "nd_auto_increment_id" not in hist_cols or "LASTUPDATED" not in hist_cols:
+        return
+    pk_cols = pk_map.get(table_name) or pk_map.get(table_name.upper())
+    if not pk_cols or not all(pc in hist_cols for pc in pk_cols):
+        return
+    pk_part = ", ".join(_q(c) for c in pk_cols)
+    conn.execute(text(f"UPDATE {hist_fqn} SET `nd_active_flag` = 'N'"))
+    update_sql = f"""
+        UPDATE {hist_fqn} h
+        INNER JOIN (
+            SELECT nd_auto_increment_id
+            FROM (
+                SELECT
+                    nd_auto_increment_id,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY {pk_part}
+                        ORDER BY `LASTUPDATED` DESC, `nd_auto_increment_id` DESC
+                    ) rn
+                FROM {hist_fqn}
+            ) t
+            WHERE rn = 1
+        ) x ON h.nd_auto_increment_id = x.nd_auto_increment_id
+        SET h.`nd_active_flag` = 'Y'
+    """
+    conn.execute(text(update_sql))
 
 
 def _get_columns(engine, schema: str, table: str) -> list:
@@ -35,7 +95,7 @@ def _get_columns(engine, schema: str, table: str) -> list:
     return [col["name"] for col in inspector.get_columns(table, schema=schema)]
 
 
-def _process_table(table_name: str, engine, incr_schema: str, hist_schema: str) -> dict:
+def _process_table(table_name: str, engine, incr_schema: str, hist_schema: str, pk_map: dict) -> dict:
     stats = {
         "table": table_name,
         "created": False,
@@ -115,6 +175,12 @@ def _process_table(table_name: str, engine, incr_schema: str, hist_schema: str) 
                         stats["dst_before"] or 0
                     )
 
+                hist_cols_full = _get_columns(engine, hist_schema, table_name)
+                try:
+                    _update_nd_active_flag(conn, table_name, dst_fqn, hist_cols_full, pk_map)
+                except SQLAlchemyError:
+                    pass
+
                 stats["duration"] = round(time.time() - start, 3)
                 return stats
 
@@ -135,6 +201,7 @@ def merge_incremental_to_historical() -> dict:
     Sync all tables from INCREMENTAL_SCHEMA to HISTORICAL_SCHEMA.
     Creates missing tables (CREATE TABLE hist.t LIKE incr.t), then
     INSERT INTO hist (common_cols) SELECT common_cols FROM incr.
+    Then sets nd_active_flag (one row per PK = 'Y', rest 'N') using table_primary_keys.csv.
 
     Returns a summary dict for XCom: total_tables, created, succeeded, failed,
     total_inserted, total_time_seconds, per_table results.
@@ -145,6 +212,7 @@ def merge_incremental_to_historical() -> dict:
     engine = create_engine(connection_str, pool_pre_ping=True)
     inspector = inspect(engine)
 
+    pk_map = _load_primary_keys_csv()
     incr_tables = inspector.get_table_names(schema=INCREMENTAL_SCHEMA)
     hist_tables = set(inspector.get_table_names(schema=HISTORICAL_SCHEMA))
 
@@ -159,6 +227,7 @@ def merge_incremental_to_historical() -> dict:
                 engine,
                 INCREMENTAL_SCHEMA,
                 HISTORICAL_SCHEMA,
+                pk_map,
             ): tbl
             for tbl in incr_tables
         }
