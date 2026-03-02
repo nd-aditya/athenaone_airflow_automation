@@ -20,8 +20,6 @@ from services.config import (
 
 MYSQL_DATABASE = INCREMENTAL_SCHEMA
 
-SCHEMA = "ATHENAONE"
-
 
 # --------------------------------------------
 # FULL ORIGINAL DATA TYPE MAPPING (UNCHANGED)
@@ -138,10 +136,11 @@ def get_date_range(table_name: str | None = None):
     return start, end
 
 
-def get_snowflake_engine():
+def get_snowflake_engine(schema: str):
+    """Snowflake engine for the given schema (e.g. ATHENAONE, scheduling, financials)."""
     return create_engine(
         f"snowflake://{SNOWFLAKE_USER}:{SNOWFLAKE_PASSWORD}"
-        f"@{SNOWFLAKE_ACCOUNT}/{SNOWFLAKE_DATABASE}/{SCHEMA}"
+        f"@{SNOWFLAKE_ACCOUNT}/{SNOWFLAKE_DATABASE}/{schema}"
         f"?warehouse={SNOWFLAKE_WAREHOUSE}",
         connect_args={"insecure_mode": True},
         pool_pre_ping=True,
@@ -180,14 +179,20 @@ def _escape_row(row):
 # Core Extraction
 # --------------------------------------------
 
-def extract_table(table_name: str):
-
-    snowflake_engine = get_snowflake_engine()
+def extract_table(table_name: str, schema: str, target_table_name: str | None = None):
+    """
+    Extract a table from Snowflake (schema.table_name) into MySQL incremental schema.
+    target_table_name: MySQL table name (default table_name). Use e.g. appointment_2 for
+    ATHENAONE.appointment so it does not clash with scheduling.appointment.
+    Date range is taken from historical MySQL table target_table_name (max LASTUPDATED).
+    """
+    target = target_table_name if target_table_name is not None else table_name
+    snowflake_engine = get_snowflake_engine(schema)
     mysql_engine = get_mysql_engine()
 
-    start_date, end_date = get_date_range(table_name=table_name)
+    start_date, end_date = get_date_range(table_name=target)
 
-    desc_query = f"DESC VIEW {SNOWFLAKE_DATABASE}.{SCHEMA}.{table_name};"
+    desc_query = f"DESC VIEW {SNOWFLAKE_DATABASE}.{schema}.{table_name};"
 
     with snowflake_engine.connect() as conn:
         result = conn.execute(text(desc_query))
@@ -205,7 +210,7 @@ def extract_table(table_name: str):
         column_names.append(col_name)
 
     create_table_sql = f"""
-        CREATE TABLE IF NOT EXISTS `{table_name}` (
+        CREATE TABLE IF NOT EXISTS `{target}` (
             {', '.join(columns_sql)}
         );
     """
@@ -216,12 +221,12 @@ def extract_table(table_name: str):
 
     where_clause = (
         f"contextid IN {CONTEXT_IDS} "
-        f"AND LASTUPDATED >= '{start_date}' "
+        f"AND LASTUPDATED > '{start_date}' "
         f"AND LASTUPDATED < '{end_date}'"
     )
 
     select_query = (
-        f"SELECT * FROM {SNOWFLAKE_DATABASE}.{SCHEMA}.{table_name} "
+        f"SELECT * FROM {SNOWFLAKE_DATABASE}.{schema}.{table_name} "
         f"WHERE {where_clause}"
     )
 
@@ -230,13 +235,13 @@ def extract_table(table_name: str):
         data = result.fetchall()
 
     if not data:
-        return {"table": table_name, "rows_inserted": 0, "status": "no_data"}
+        return {"table": target, "rows_inserted": 0, "status": "no_data"}
 
     columns = ", ".join([f"`{col}`" for col in column_names])
     placeholders = ", ".join(["%s"] * len(column_names))
 
     insert_query = f"""
-        INSERT INTO `{table_name}` ({columns})
+        INSERT INTO `{target}` ({columns})
         VALUES ({placeholders})
     """
 
@@ -259,7 +264,7 @@ def extract_table(table_name: str):
         raw_conn.close()
 
     return {
-        "table": table_name,
+        "table": target,
         "rows_inserted": len(data),
         "status": "success",
     }

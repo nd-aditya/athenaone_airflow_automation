@@ -30,18 +30,25 @@ from services.deid_runner import (
 from services.mapping_master_service import update_mapping_and_master_tables
 from services.worker_lifecycle import clear_worker_logs, start_workers, stop_workers
 
-SCHEMA = "ATHENAONE"
+# Snowflake schemas to extract from. Each can have table_rename_map for MySQL target names
+# (e.g. ATHENAONE.appointment -> appointment_2 so it does not clash with scheduling.appointment).
+EXTRACT_SOURCE_CONFIGS = [
+    {"schema": "ATHENAONE", "table_rename_map": {"APPOINTMENT": "appointment_2"}},
+    {"schema": "scheduling", "table_rename_map": {}},
+    {"schema": "financials", "table_rename_map": {}},
+]
 
-DEID_WORKERS = 2
-DEID_CONDA_ENV = "airflow_inc"
+DEID_WORKERS = 10
+DEID_CONDA_ENV = "py39"
 
 BATCH_SIZE = 20
 MAX_ACTIVE_TASKS = 5
 DEID_TABLE_BATCH_SIZE = 50
 
+# MySQL table names in historical/diff (ATHENAONE.appointment -> appointment_2 to avoid clash with scheduling.appointment)
 TEST_TABLE_NAMES = [
     "ALLERGY",
-    "APPOINTMENT",
+    "appointment_2",
     "APPOINTMENTELIGIBILITYINFO",
     "APPOINTMENTNOTE",
     "APPOINTMENTVIEW",
@@ -104,36 +111,53 @@ with DAG(
         return reset_schema()
 
     @task
-    def get_table_batches() -> list[list[str]]:
-        engine = create_engine(
-            f"snowflake://{SNOWFLAKE_USER}:{SNOWFLAKE_PASSWORD}"
-            f"@{SNOWFLAKE_ACCOUNT}/{SNOWFLAKE_DATABASE}/{SCHEMA}"
-            f"?warehouse={SNOWFLAKE_WAREHOUSE}",
-            connect_args={"insecure_mode": True},
-            pool_pre_ping=True,
-        )
-        with engine.connect() as conn:
-            result = conn.execute(
-                text("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = :schema ORDER BY TABLE_NAME"),
-                {"schema": SCHEMA},
+    def get_table_batches() -> list[list[dict]]:
+        """Return batches of {schema, table_name, target_table_name} for all configured schemas."""
+        from services.config import SNOWFLAKE_DATABASE
+
+        all_items = []
+        for config in EXTRACT_SOURCE_CONFIGS:
+            schema_name = config["schema"]
+            rename_map = config.get("table_rename_map") or {}
+            engine = create_engine(
+                f"snowflake://{SNOWFLAKE_USER}:{SNOWFLAKE_PASSWORD}"
+                f"@{SNOWFLAKE_ACCOUNT}/{SNOWFLAKE_DATABASE}/{schema_name}"
+                f"?warehouse={SNOWFLAKE_WAREHOUSE}",
+                connect_args={"insecure_mode": True},
+                pool_pre_ping=True,
             )
-            all_tables = [row[0] for row in result.fetchall()]
-        if not all_tables:
-            raise ValueError(f"No views found in schema {SCHEMA}.")
-        return [all_tables[i : i + BATCH_SIZE] for i in range(0, len(all_tables), BATCH_SIZE)]
+            with engine.connect() as conn:
+                result = conn.execute(
+                    text("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = :schema ORDER BY TABLE_NAME"),
+                    {"schema": schema_name},
+                )
+                tables = [row[0] for row in result.fetchall()]
+            for table_name in tables:
+                target_table_name = rename_map.get(table_name, table_name)
+                all_items.append({
+                    "schema": schema_name,
+                    "table_name": table_name,
+                    "target_table_name": target_table_name,
+                })
+        if not all_items:
+            raise ValueError("No views found in any configured schema.")
+        return [all_items[i : i + BATCH_SIZE] for i in range(0, len(all_items), BATCH_SIZE)]
 
     @task
-    def extract_batch(batch: list[str]) -> dict:
+    def extract_batch(batch: list[dict]) -> dict:
         results = {"total": len(batch), "success": [], "failed": [], "no_data": []}
-        for table_name in batch:
+        for item in batch:
+            schema_name = item["schema"]
+            table_name = item["table_name"]
+            target_table_name = item["target_table_name"]
             try:
-                result = extract_table(table_name)
+                result = extract_table(table_name, schema=schema_name, target_table_name=target_table_name)
                 if result.get("rows_inserted", 0) == 0:
-                    results["no_data"].append(table_name)
+                    results["no_data"].append(target_table_name)
                 else:
-                    results["success"].append({"table": table_name, "rows_inserted": result["rows_inserted"]})
+                    results["success"].append({"table": target_table_name, "rows_inserted": result["rows_inserted"]})
             except Exception as e:
-                results["failed"].append({"table": table_name, "error": str(e)})
+                results["failed"].append({"table": target_table_name, "error": str(e)})
         if results["failed"]:
             raise RuntimeError(f"Batch failures: {[f['table'] for f in results['failed']]}")
         return results
