@@ -10,6 +10,7 @@ import csv
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Optional
 
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.exc import SQLAlchemyError
@@ -304,14 +305,17 @@ def merge_incremental_to_historical() -> dict:
     return summary
 
 
-def ensure_historical_indexes_and_update_flags() -> dict:
+def ensure_historical_indexes_and_update_flags(merge_summary: Optional[dict] = None) -> dict:
     """
     For each table in HISTORICAL_SCHEMA that has a primary key in table_primary_keys.csv:
     ensures idx_<table>_pk and idx_<table>_norm exist (creates if missing), then sets
     nd_active_flag so one row per PK is 'Y' (latest by LASTUPDATED/nd_auto_increment_id) and rest 'N'.
     Intended to run as a separate DAG task after merge_incremental_to_historical (insert-only).
 
-    Returns a summary dict for XCom: total_tables, indexes_created, flags_updated, failed, per_table results.
+    If merge_summary is provided (from merge_incremental_to_historical), only tables that had
+    rows inserted (inserted > 0) are processed. Otherwise all historical tables with a PK are processed.
+
+    Returns a summary dict for XCom: total_tables, success, skipped, failed, indexes_created_count, per_table results.
     """
     connection_str = (
         f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}"
@@ -319,7 +323,19 @@ def ensure_historical_indexes_and_update_flags() -> dict:
     engine = create_engine(connection_str, pool_pre_ping=True)
     inspector = inspect(engine)
     pk_map = _load_primary_keys_csv()
-    hist_tables = inspector.get_table_names(schema=HISTORICAL_SCHEMA)
+    all_hist_tables = inspector.get_table_names(schema=HISTORICAL_SCHEMA)
+
+    tables_with_inserts = None
+    if merge_summary and merge_summary.get("per_table_results"):
+        tables_with_inserts = {
+            r["table"]
+            for r in merge_summary["per_table_results"]
+            if (r.get("inserted") or 0) > 0
+        }
+    if tables_with_inserts is not None:
+        hist_tables = [t for t in all_hist_tables if t in tables_with_inserts]
+    else:
+        hist_tables = all_hist_tables
 
     results = []
     start_all = time.time()
@@ -386,6 +402,7 @@ def ensure_historical_indexes_and_update_flags() -> dict:
 
     summary = {
         "total_tables": total_tables,
+        "tables_with_inserts_filter": tables_with_inserts is not None,
         "success": success,
         "skipped": skipped,
         "failed": failed,

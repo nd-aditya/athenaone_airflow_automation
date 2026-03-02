@@ -176,16 +176,16 @@ with DAG(
         return merge_incremental_to_historical()
 
     @task
-    def ensure_indexes_and_update_flags() -> dict:
-        """Ensure idx_*_pk and idx_*_norm exist on historical tables, then set nd_active_flag."""
-        return ensure_historical_indexes_and_update_flags()
+    def ensure_indexes_and_update_flags(merge_summary: dict) -> dict:
+        """Ensure idx_*_pk and idx_*_norm exist and set nd_active_flag only for tables that had rows inserted."""
+        return ensure_historical_indexes_and_update_flags(merge_summary)
 
     batches = get_table_batches()
     reset_task = reset_incremental_schema()
     expanded = extract_batch.expand(batch=batches)
     add_date_task = add_nd_extracted_date()
     merge_task = merge_to_historical()
-    ensure_indexes_task = ensure_indexes_and_update_flags()
+    ensure_indexes_task = ensure_indexes_and_update_flags(merge_task)
     reset_task >> batches >> expanded >> add_date_task >> merge_task >> ensure_indexes_task
 
 
