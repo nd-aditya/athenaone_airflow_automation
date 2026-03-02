@@ -16,16 +16,18 @@ from services.config import (
 )
 from services.extraction_service import extract_table
 from services.nd_date_service import add_extraction_date_to_all_tables
-from services.merge_service import merge_incremental_to_historical
+from services.merge_service import (
+    merge_incremental_to_historical,
+    ensure_historical_indexes_and_update_flags,
+)
 from services.diff_schema_service import copy_historical_to_diff_schema, update_diff_schema_history_and_drop_old
+from services.deid_merge_service import merge_deid_to_merged
 from services.schema_reset_service import reset_incremental_schema as reset_schema
 from services.deid_runner import (
     run_deid_pipeline_for_airflow,
     create_deid_tasks_for_queue,
     wait_for_deid_completion,
     get_table_ids_for_queue_by_names,
-    get_table_id_batches_for_names,
-    run_deid_in_batches,
 )
 from services.mapping_master_service import update_mapping_and_master_tables
 from services.worker_lifecycle import clear_worker_logs, start_workers, stop_workers
@@ -173,12 +175,18 @@ with DAG(
     def merge_to_historical() -> dict:
         return merge_incremental_to_historical()
 
+    @task
+    def ensure_indexes_and_update_flags() -> dict:
+        """Ensure idx_*_pk and idx_*_norm exist on historical tables, then set nd_active_flag."""
+        return ensure_historical_indexes_and_update_flags()
+
     batches = get_table_batches()
     reset_task = reset_incremental_schema()
     expanded = extract_batch.expand(batch=batches)
     add_date_task = add_nd_extracted_date()
     merge_task = merge_to_historical()
-    reset_task >> batches >> expanded >> add_date_task >> merge_task
+    ensure_indexes_task = ensure_indexes_and_update_flags()
+    reset_task >> batches >> expanded >> add_date_task >> merge_task >> ensure_indexes_task
 
 
 # =============================================================================
@@ -241,6 +249,14 @@ with DAG(
         return stop_workers()
 
     @task
+    def merge_deid_to_merged_task(diff_result: dict) -> dict:
+        """Merge diff_<date>_deid into DEIDENTIFIED_SCHEMA (config)."""
+        if not diff_result or "diff_schema" not in diff_result:
+            raise ValueError("diff_result missing diff_schema")
+        deid_schema = diff_result["diff_schema"] + "_deid"
+        return merge_deid_to_merged(deid_schema)
+
+    @task
     def trim_diff_schemas(diff_result: dict) -> dict:
         """Update diff schema history file and drop diff/deid schemas older than last 3 runs."""
         if not diff_result or "diff_schema" not in diff_result:
@@ -255,12 +271,13 @@ with DAG(
     create_deid_tasks_task = create_deid_tasks(start_workers_task)
     wait_deid_task = wait_for_deid(create_deid_tasks_task)
     stop_workers_task = stop_deid_workers(wait_deid_task)
+    merge_deid_task = merge_deid_to_merged_task(diff_task)
     trim_task = trim_diff_schemas(diff_task)
-    diff_task >> deid_run_task >> mapping_master_task >> priority_table_ids_task >> start_workers_task >> create_deid_tasks_task >> wait_deid_task >> stop_workers_task >> trim_task
+    diff_task >> deid_run_task >> mapping_master_task >> priority_table_ids_task >> start_workers_task >> create_deid_tasks_task >> wait_deid_task >> stop_workers_task >> merge_deid_task >> trim_task
 
 
 # =============================================================================
-# DAG 3: Copy to diff → deid for remaining tables (700+) in batches.
+# DAG 3: Copy to diff → deid for remaining tables (linear, same pattern as DAG 2).
 # =============================================================================
 with DAG(
     dag_id="Athenaone_Deid_Remaining_Tables",
@@ -300,28 +317,50 @@ with DAG(
         return update_mapping_and_master_tables(pipe_result["queue_id"])
 
     @task
-    def get_remaining_table_id_batches(mapping_result: dict, diff_result: dict) -> list[list[int]]:
+    def get_remaining_table_ids(mapping_result: dict, diff_result: dict) -> dict:
+        """Return dict with queue_id and table_ids for all remaining tables (single payload for downstream)."""
         if not mapping_result or "queue_id" not in mapping_result:
             raise ValueError("mapping_result missing queue_id")
         tables_to_copy = diff_result.get("tables_to_copy") or []
-        return get_table_id_batches_for_names(
-            mapping_result["queue_id"],
-            tables_to_copy,
-            batch_size=DEID_TABLE_BATCH_SIZE,
-        )
+        if not tables_to_copy:
+            return {**(mapping_result or {}), "table_ids": []}
+        table_ids = get_table_ids_for_queue_by_names(mapping_result["queue_id"], tables_to_copy)
+        return {**(mapping_result or {}), "table_ids": table_ids}
 
     @task
-    def run_deid_in_batches_task(mapping_result: dict, table_id_batches: list[list[int]]) -> dict:
-        if not mapping_result or "queue_id" not in mapping_result:
-            raise ValueError("mapping_result missing queue_id")
-        if not table_id_batches:
-            return {"queue_id": mapping_result["queue_id"], "batches_run": 0, "batch_results": []}
-        return run_deid_in_batches(
-            mapping_result["queue_id"],
-            table_id_batches,
-            n_workers=DEID_WORKERS,
-            conda_env=DEID_CONDA_ENV,
-        )
+    def start_deid_workers_rem(payload: dict) -> dict:
+        out = clear_worker_logs()
+        out_start = start_workers(n=DEID_WORKERS, conda_env=DEID_CONDA_ENV)
+        return {**(payload or {}), "cleared_logs": out.get("cleared", []), **out_start}
+
+    @task
+    def create_deid_tasks_rem(pipe_result: dict) -> dict:
+        if not pipe_result or "queue_id" not in pipe_result or "table_ids" not in pipe_result:
+            raise ValueError("pipe_result missing queue_id or table_ids")
+        if not pipe_result["table_ids"]:
+            return {**pipe_result, "deid_tasks_created_for_tables": 0}
+        out = create_deid_tasks_for_queue(pipe_result["queue_id"], table_ids=pipe_result["table_ids"])
+        return {**out, "table_ids": pipe_result["table_ids"]}
+
+    @task
+    def wait_for_deid_rem(deid_result: dict) -> dict:
+        if not deid_result or "queue_id" not in deid_result or "table_ids" not in deid_result:
+            raise ValueError("deid_result missing queue_id or table_ids")
+        if not deid_result["table_ids"]:
+            return deid_result
+        return wait_for_deid_completion(deid_result["queue_id"], table_ids=deid_result["table_ids"])
+
+    @task
+    def stop_deid_workers_rem(_: dict) -> dict:
+        return stop_workers()
+
+    @task
+    def merge_deid_to_merged_task_rem(diff_result: dict) -> dict:
+        """Merge diff_<date>_deid into DEIDENTIFIED_SCHEMA (config)."""
+        if not diff_result or "diff_schema" not in diff_result:
+            raise ValueError("diff_result missing diff_schema")
+        deid_schema = diff_result["diff_schema"] + "_deid"
+        return merge_deid_to_merged(deid_schema)
 
     @task
     def trim_diff_schemas_rem(diff_result: dict) -> dict:
@@ -334,7 +373,13 @@ with DAG(
     diff_task = copy_to_diff_remaining(remaining_tables_task)
     deid_run_task = run_deid_pipeline_rem(diff_task)
     mapping_master_task = update_mapping_master_rem(deid_run_task)
-    table_id_batches_task = get_remaining_table_id_batches(mapping_master_task, diff_task)
-    run_batches_task = run_deid_in_batches_task(mapping_master_task, table_id_batches_task)
+    remaining_table_ids_task = get_remaining_table_ids(mapping_master_task, diff_task)
+    start_workers_task = start_deid_workers_rem(remaining_table_ids_task)
+    create_deid_tasks_task = create_deid_tasks_rem(start_workers_task)
+    wait_deid_task = wait_for_deid_rem(create_deid_tasks_task)
+    stop_workers_task = stop_deid_workers_rem(wait_deid_task)
+    merge_deid_task = merge_deid_to_merged_task_rem(diff_task)
     trim_task = trim_diff_schemas_rem(diff_task)
-    remaining_tables_task >> diff_task >> deid_run_task >> mapping_master_task >> table_id_batches_task >> run_batches_task >> trim_task
+    (remaining_tables_task >> diff_task >> deid_run_task >> mapping_master_task
+     >> remaining_table_ids_task >> start_workers_task >> create_deid_tasks_task
+     >> wait_deid_task >> stop_workers_task >> merge_deid_task >> trim_task)
