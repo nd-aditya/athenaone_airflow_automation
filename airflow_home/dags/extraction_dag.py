@@ -48,7 +48,7 @@ DEID_TABLE_BATCH_SIZE = 50
 # MySQL table names in historical/diff (ATHENAONE.appointment -> appointment_2 to avoid clash with scheduling.appointment)
 TEST_TABLE_NAMES = [
     "ALLERGY",
-    "appointment_2",
+    "APPOINTMENT",
     "APPOINTMENTELIGIBILITYINFO",
     "APPOINTMENTNOTE",
     "APPOINTMENTVIEW",
@@ -159,7 +159,10 @@ with DAG(
             except Exception as e:
                 results["failed"].append({"table": target_table_name, "error": str(e)})
         if results["failed"]:
-            raise RuntimeError(f"Batch failures: {[f['table'] for f in results['failed']]}")
+            msg = "; ".join(
+                f"{f['table']}: {f.get('error', '')}" for f in results["failed"]
+            )
+            raise RuntimeError(f"Batch failures: {msg}")
         return results
 
     @task
