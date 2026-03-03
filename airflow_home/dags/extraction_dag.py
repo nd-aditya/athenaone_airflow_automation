@@ -17,8 +17,9 @@ from services.config import (
 from services.extraction_service import extract_table
 from services.nd_date_service import add_extraction_date_to_all_tables
 from services.merge_service import (
+    set_historical_flags_to_n,
     merge_incremental_to_historical,
-    ensure_historical_indexes_and_update_flags,
+    validate_historical_one_active_per_pk,
 )
 from services.diff_schema_service import copy_historical_to_diff_schema, update_diff_schema_history_and_drop_old
 from services.deid_merge_service import merge_deid_to_merged
@@ -172,21 +173,27 @@ with DAG(
         return add_extraction_date_to_all_tables()
 
     @task
+    def set_historical_flags_to_n_task() -> dict:
+        """Set nd_active_flag = 'N' in historical where PK exists in incremental. Run before merge."""
+        return set_historical_flags_to_n()
+
+    @task
     def merge_to_historical() -> dict:
         return merge_incremental_to_historical()
 
     @task
-    def ensure_indexes_and_update_flags(merge_summary: dict) -> dict:
-        """Ensure idx_*_pk and idx_*_norm exist and set nd_active_flag only for tables that had rows inserted."""
-        return ensure_historical_indexes_and_update_flags(merge_summary)
+    def validate_one_active_per_pk(merge_summary: dict) -> dict:
+        """Validate each primary key has at most one row with nd_active_flag = 'Y'. Only tables with rows inserted."""
+        return validate_historical_one_active_per_pk(merge_summary)
 
     batches = get_table_batches()
     reset_task = reset_incremental_schema()
     expanded = extract_batch.expand(batch=batches)
     add_date_task = add_nd_extracted_date()
+    set_flags_task = set_historical_flags_to_n_task()
     merge_task = merge_to_historical()
-    ensure_indexes_task = ensure_indexes_and_update_flags(merge_task)
-    reset_task >> batches >> expanded >> add_date_task >> merge_task >> ensure_indexes_task
+    validate_task = validate_one_active_per_pk(merge_task)
+    reset_task >> batches >> expanded >> add_date_task >> set_flags_task >> merge_task >> validate_task
 
 
 # =============================================================================
