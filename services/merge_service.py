@@ -63,6 +63,27 @@ def _get_columns(engine, schema: str, table: str) -> list:
 
 TEMP_PK_TABLE_PREFIX = "tmp_incr_pks_"
 SET_FLAGS_MAX_WORKERS = 8
+TEXT_PREFIX_LEN = 255
+
+
+def _build_index_columns(conn, schema: str, table: str, cols: list) -> list:
+    """Return index column specs for CREATE INDEX; TEXT/BLOB get prefix length."""
+    if not cols:
+        return []
+    rows = conn.execute(
+        text("""
+            SELECT column_name, data_type
+            FROM information_schema.columns
+            WHERE table_schema = :s AND table_name = :t AND column_name IN :c
+        """),
+        {"s": schema, "t": table, "c": tuple(cols)},
+    ).fetchall()
+    text_types = {"text", "blob", "mediumtext", "longtext"}
+    text_cols = {r[0] for r in rows if (r[1] or "").lower() in text_types}
+    return [
+        f"`{c}`({TEXT_PREFIX_LEN})" if c in text_cols else f"`{c}`"
+        for c in cols
+    ]
 
 
 def _pk_table_name_for(table_name: str) -> str:
@@ -97,7 +118,6 @@ def _set_historical_flags_to_n_one_table(
 
     pk_select = ", ".join(_q(c) for c in pk_cols)
     pk_join = " AND ".join(f"h.{_q(c)} = t.{_q(c)}" for c in pk_cols)
-    idx_cols = ", ".join(_q(c) for c in pk_cols)
     pk_table_name = _pk_table_name_for(table_name)
     pk_table_fqn = f"{_q(INCREMENTAL_SCHEMA)}.{_q(pk_table_name)}"
     try:
@@ -110,9 +130,12 @@ def _set_historical_flags_to_n_one_table(
             conn.execute(
                 text(f"CREATE TABLE {pk_table_fqn} AS SELECT {pk_select} FROM {incr_fqn}")
             )
-            conn.execute(
-                text(f"CREATE INDEX idx_pk ON {pk_table_fqn} ({idx_cols})")
-            )
+            idx_col_specs = _build_index_columns(conn, INCREMENTAL_SCHEMA, table_name, pk_cols)
+            if idx_col_specs:
+                idx_cols_str = ", ".join(idx_col_specs)
+                conn.execute(
+                    text(f"CREATE INDEX idx_pk ON {pk_table_fqn} ({idx_cols_str})")
+                )
             conn.execute(
                 text(f"""
                     UPDATE {hist_fqn} h
@@ -395,17 +418,22 @@ def _validate_table_one_active_per_pk(
     pk_cols: list,
 ) -> dict:
     """
-    Validate one table: pass if COUNT(DISTINCT pk_cols) == COUNT(*) WHERE nd_active_flag = 'Y'.
-    Returns a result dict for this table.
+    Validate one table: pass if COUNT(DISTINCT pk_cols) == count of rows with nd_active_flag = 'Y'.
+    Uses a single query (one table scan) to get both values.
     """
     hist_fqn = f"{_q(hist_schema)}.{_q(table_name)}"
     distinct_part = ", ".join(_q(c) for c in pk_cols)
-    distinct_sql = f"SELECT COUNT(DISTINCT {distinct_part}) FROM {hist_fqn}"
-    active_sql = f"SELECT COUNT(*) FROM {hist_fqn} WHERE `nd_active_flag` = 'Y'"
+    combined_sql = f"""
+        SELECT
+            COUNT(DISTINCT {distinct_part}) AS distinct_pk,
+            SUM(CASE WHEN `nd_active_flag` = 'Y' THEN 1 ELSE 0 END) AS active_count
+        FROM {hist_fqn}
+    """
     try:
         with engine.connect() as conn:
-            distinct_pk_count = conn.execute(text(distinct_sql)).scalar() or 0
-            active_count = conn.execute(text(active_sql)).scalar() or 0
+            row = conn.execute(text(combined_sql)).fetchone()
+        distinct_pk_count = (row[0] or 0) if row else 0
+        active_count = (row[1] or 0) if row and len(row) > 1 else 0
         if distinct_pk_count == active_count:
             return {"table": table_name, "status": "SUCCESS"}
         return {
