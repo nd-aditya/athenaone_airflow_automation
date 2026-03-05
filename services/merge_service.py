@@ -61,114 +61,145 @@ def _get_columns(engine, schema: str, table: str) -> list:
     return [col["name"] for col in inspector.get_columns(table, schema=schema)]
 
 
-TEMP_PK_TABLE = "tmp_incr_pks"
+TEMP_PK_TABLE_PREFIX = "tmp_incr_pks_"
+SET_FLAGS_MAX_WORKERS = 8
+
+
+def _pk_table_name_for(table_name: str) -> str:
+    """Return a unique table name for the PK staging table (MySQL identifier max 64 chars)."""
+    name = f"{TEMP_PK_TABLE_PREFIX}{table_name}"
+    return name[:64] if len(name) > 64 else name
+
+
+def _set_historical_flags_to_n_one_table(
+    table_name: str,
+    engine,
+    pk_cols: list,
+    hist_cols: list,
+    hist_fqn: str,
+    incr_fqn: str,
+) -> dict:
+    """
+    For one table: if incremental has rows, create PK staging table, index it, UPDATE historical
+    SET nd_active_flag = 'N' via JOIN, then drop staging table. Returns result dict.
+    """
+    try:
+        with engine.connect() as conn:
+            incr_count = conn.execute(text(f"SELECT COUNT(*) FROM {incr_fqn}")).scalar() or 0
+        if incr_count == 0:
+            return {"table": table_name, "status": "SKIPPED", "error": "incremental has 0 rows"}
+    except SQLAlchemyError as e:
+        return {
+            "table": table_name,
+            "status": "FAILED",
+            "error": f"count check: {type(e).__name__}: {str(e)}",
+        }
+
+    pk_select = ", ".join(_q(c) for c in pk_cols)
+    pk_join = " AND ".join(f"h.{_q(c)} = t.{_q(c)}" for c in pk_cols)
+    idx_cols = ", ".join(_q(c) for c in pk_cols)
+    pk_table_name = _pk_table_name_for(table_name)
+    pk_table_fqn = f"{_q(INCREMENTAL_SCHEMA)}.{_q(pk_table_name)}"
+    try:
+        with engine.begin() as conn:
+            if "nd_active_flag" not in hist_cols:
+                conn.execute(
+                    text(f"ALTER TABLE {hist_fqn} ADD COLUMN `nd_active_flag` VARCHAR(1) DEFAULT 'Y'")
+                )
+            conn.execute(text(f"DROP TABLE IF EXISTS {pk_table_fqn}"))
+            conn.execute(
+                text(f"CREATE TABLE {pk_table_fqn} AS SELECT {pk_select} FROM {incr_fqn}")
+            )
+            conn.execute(
+                text(f"CREATE INDEX idx_pk ON {pk_table_fqn} ({idx_cols})")
+            )
+            conn.execute(
+                text(f"""
+                    UPDATE {hist_fqn} h
+                    INNER JOIN {pk_table_fqn} t ON {pk_join}
+                    SET h.`nd_active_flag` = 'N'
+                """)
+            )
+            conn.execute(text(f"DROP TABLE IF EXISTS {pk_table_fqn}"))
+        return {"table": table_name, "status": "SUCCESS"}
+    except SQLAlchemyError as e:
+        try:
+            with engine.begin() as conn:
+                conn.execute(text(f"DROP TABLE IF EXISTS {pk_table_fqn}"))
+        except SQLAlchemyError:
+            pass
+        return {
+            "table": table_name,
+            "status": "FAILED",
+            "error": f"{type(e).__name__}: {str(e)}",
+        }
 
 
 def set_historical_flags_to_n() -> dict:
     """
     For each table present in both HISTORICAL and INCREMENTAL with a PK in table_primary_keys.csv
-    and COUNT(*) > 0 in incremental: create a temporary table with only PK columns from incremental,
-    add an index on it, UPDATE historical SET nd_active_flag = 'N' via JOIN with the temp table, then
-    drop the temp table. If incremental has 0 rows, the whole step is skipped for that table.
+    and COUNT(*) > 0 in incremental: DROP TABLE IF EXISTS then CREATE TABLE (in INCREMENTAL_SCHEMA,
+    name tmp_incr_pks_<table>) with only PK columns from incremental, add an index, UPDATE historical
+    SET nd_active_flag = 'N' via JOIN, then DROP TABLE. Runs in parallel (SET_FLAGS_MAX_WORKERS).
     Run this before merge_incremental_to_historical.
     """
     connection_str = (
         f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}"
     )
-    engine = create_engine(connection_str, pool_pre_ping=True)
+    engine = create_engine(
+        connection_str,
+        pool_pre_ping=True,
+        pool_size=SET_FLAGS_MAX_WORKERS,
+        max_overflow=2,
+    )
     inspector = inspect(engine)
     pk_map = _load_primary_keys_csv()
     hist_tables = set(inspector.get_table_names(schema=HISTORICAL_SCHEMA))
     incr_tables = set(inspector.get_table_names(schema=INCREMENTAL_SCHEMA))
     common_tables = sorted(hist_tables & incr_tables)
 
-    results = []
-    start_all = time.time()
-
+    skipped_pre = []
+    tasks = []
     for table_name in common_tables:
         pk_cols = pk_map.get(table_name) or pk_map.get(table_name.upper())
         if not pk_cols:
-            results.append({
-                "table": table_name,
-                "status": "SKIPPED",
-                "error": "No primary key in CSV",
-            })
+            skipped_pre.append({"table": table_name, "status": "SKIPPED", "error": "No primary key in CSV"})
             continue
-
         hist_cols = _get_columns(engine, HISTORICAL_SCHEMA, table_name)
         incr_cols = _get_columns(engine, INCREMENTAL_SCHEMA, table_name)
         if not all(pc in hist_cols for pc in pk_cols):
-            results.append({
-                "table": table_name,
-                "status": "SKIPPED",
-                "error": "PK columns not all in historical table",
-            })
+            skipped_pre.append({"table": table_name, "status": "SKIPPED", "error": "PK columns not all in historical table"})
             continue
         if not all(pc in incr_cols for pc in pk_cols):
-            results.append({
-                "table": table_name,
-                "status": "SKIPPED",
-                "error": "PK columns not all in incremental table",
-            })
+            skipped_pre.append({"table": table_name, "status": "SKIPPED", "error": "PK columns not all in incremental table"})
             continue
-
         hist_fqn = f"{_q(HISTORICAL_SCHEMA)}.{_q(table_name)}"
         incr_fqn = f"{_q(INCREMENTAL_SCHEMA)}.{_q(table_name)}"
+        tasks.append((table_name, pk_cols, hist_cols, hist_fqn, incr_fqn))
 
-        try:
-            with engine.connect() as conn:
-                incr_count = conn.execute(text(f"SELECT COUNT(*) FROM {incr_fqn}")).scalar() or 0
-            if incr_count == 0:
-                results.append({
-                    "table": table_name,
-                    "status": "SKIPPED",
-                    "error": "incremental has 0 rows",
-                })
-                continue
-        except SQLAlchemyError as e:
-            results.append({
-                "table": table_name,
-                "status": "FAILED",
-                "error": f"count check: {type(e).__name__}: {str(e)}",
-            })
-            continue
+    results = list(skipped_pre)
+    start_all = time.time()
 
-        pk_select = ", ".join(_q(c) for c in pk_cols)
-        pk_join = " AND ".join(f"h.{_q(c)} = t.{_q(c)}" for c in pk_cols)
-        idx_cols = ", ".join(_q(c) for c in pk_cols)
-        temp_fqn = f"{_q(INCREMENTAL_SCHEMA)}.{_q(TEMP_PK_TABLE)}"
-        try:
-            with engine.begin() as conn:
-                if "nd_active_flag" not in hist_cols:
-                    conn.execute(
-                        text(f"ALTER TABLE {hist_fqn} ADD COLUMN `nd_active_flag` VARCHAR(1) DEFAULT 'Y'")
-                    )
-                conn.execute(
-                    text(f"CREATE TEMPORARY TABLE {temp_fqn} AS SELECT {pk_select} FROM {incr_fqn}")
-                )
-                conn.execute(
-                    text(f"CREATE INDEX idx_{TEMP_PK_TABLE} ON {temp_fqn} ({idx_cols})")
-                )
-                conn.execute(
-                    text(f"""
-                        UPDATE {hist_fqn} h
-                        INNER JOIN {temp_fqn} t ON {pk_join}
-                        SET h.`nd_active_flag` = 'N'
-                    """)
-                )
-                conn.execute(text(f"DROP TEMPORARY TABLE {temp_fqn}"))
-            results.append({"table": table_name, "status": "SUCCESS"})
-        except SQLAlchemyError as e:
-            results.append({
-                "table": table_name,
-                "status": "FAILED",
-                "error": f"{type(e).__name__}: {str(e)}",
-            })
+    with ThreadPoolExecutor(max_workers=SET_FLAGS_MAX_WORKERS) as executor:
+        future_to_table = {
+            executor.submit(
+                _set_historical_flags_to_n_one_table,
+                table_name,
+                engine,
+                pk_cols,
+                hist_cols,
+                hist_fqn,
+                incr_fqn,
+            ): table_name
+            for (table_name, pk_cols, hist_cols, hist_fqn, incr_fqn) in tasks
+        }
+        for future in as_completed(future_to_table):
+            table_name = future_to_table[future]
             try:
-                with engine.begin() as conn:
-                    conn.execute(text(f"DROP TEMPORARY TABLE IF EXISTS {temp_fqn}"))
-            except SQLAlchemyError:
-                pass
+                res = future.result()
+                results.append(res)
+            except Exception as e:
+                results.append({"table": table_name, "status": "FAILED", "error": str(e)})
 
     total_time = round(time.time() - start_all, 2)
     success = sum(1 for r in results if r.get("status") == "SUCCESS")
