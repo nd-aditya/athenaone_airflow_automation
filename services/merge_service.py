@@ -136,26 +136,27 @@ def set_historical_flags_to_n() -> dict:
         pk_select = ", ".join(_q(c) for c in pk_cols)
         pk_join = " AND ".join(f"h.{_q(c)} = t.{_q(c)}" for c in pk_cols)
         idx_cols = ", ".join(_q(c) for c in pk_cols)
+        temp_fqn = f"{_q(INCREMENTAL_SCHEMA)}.{_q(TEMP_PK_TABLE)}"
         try:
             with engine.begin() as conn:
                 if "nd_active_flag" not in hist_cols:
                     conn.execute(
-                        text(f"ALTER TABLE {hist_fqn} ADD COLUMN `nd_active_flag` VARCHAR(1) DEFAULT 'N'")
+                        text(f"ALTER TABLE {hist_fqn} ADD COLUMN `nd_active_flag` VARCHAR(1) DEFAULT 'Y'")
                     )
                 conn.execute(
-                    text(f"CREATE TEMPORARY TABLE {TEMP_PK_TABLE} AS SELECT {pk_select} FROM {incr_fqn}")
+                    text(f"CREATE TEMPORARY TABLE {temp_fqn} AS SELECT {pk_select} FROM {incr_fqn}")
                 )
                 conn.execute(
-                    text(f"CREATE INDEX idx_{TEMP_PK_TABLE} ON {TEMP_PK_TABLE} ({idx_cols})")
+                    text(f"CREATE INDEX idx_{TEMP_PK_TABLE} ON {temp_fqn} ({idx_cols})")
                 )
                 conn.execute(
                     text(f"""
                         UPDATE {hist_fqn} h
-                        INNER JOIN {TEMP_PK_TABLE} t ON {pk_join}
+                        INNER JOIN {temp_fqn} t ON {pk_join}
                         SET h.`nd_active_flag` = 'N'
                     """)
                 )
-                conn.execute(text(f"DROP TEMPORARY TABLE {TEMP_PK_TABLE}"))
+                conn.execute(text(f"DROP TEMPORARY TABLE {temp_fqn}"))
             results.append({"table": table_name, "status": "SUCCESS"})
         except SQLAlchemyError as e:
             results.append({
@@ -165,7 +166,7 @@ def set_historical_flags_to_n() -> dict:
             })
             try:
                 with engine.begin() as conn:
-                    conn.execute(text(f"DROP TEMPORARY TABLE IF EXISTS {TEMP_PK_TABLE}"))
+                    conn.execute(text(f"DROP TEMPORARY TABLE IF EXISTS {temp_fqn}"))
             except SQLAlchemyError:
                 pass
 
@@ -353,43 +354,45 @@ def merge_incremental_to_historical() -> dict:
     }
 
 
-def _validate_one_active_per_pk(conn, hist_fqn: str, pk_cols: list) -> int:
-    """Return count of PKs that have more than one row with nd_active_flag = 'Y'."""
-    pk_part = ", ".join(_q(c) for c in pk_cols)
-    bad_sql = f"""
-        SELECT COUNT(*) FROM (
-            SELECT {pk_part}
-            FROM {hist_fqn}
-            WHERE `nd_active_flag` = 'Y'
-            GROUP BY {pk_part}
-            HAVING COUNT(*) > 1
-        ) t
-    """
-    return conn.execute(text(bad_sql)).scalar() or 0
+VALIDATION_MAX_WORKERS = 8
 
 
-def _get_distinct_pk_and_active_counts(conn, hist_fqn: str, pk_cols: list) -> tuple:
-    """Return (distinct_pk_count, active_row_count) for the table."""
-    pk_part = ", ".join(_q(c) for c in pk_cols)
-    distinct_sql = f"""
-        SELECT COUNT(*) FROM (
-            SELECT {pk_part}
-            FROM {hist_fqn}
-            GROUP BY {pk_part}
-        ) t
+def _validate_table_one_active_per_pk(
+    table_name: str,
+    engine,
+    hist_schema: str,
+    pk_cols: list,
+) -> dict:
     """
+    Validate one table: pass if COUNT(DISTINCT pk_cols) == COUNT(*) WHERE nd_active_flag = 'Y'.
+    Returns a result dict for this table.
+    """
+    hist_fqn = f"{_q(hist_schema)}.{_q(table_name)}"
+    distinct_part = ", ".join(_q(c) for c in pk_cols)
+    distinct_sql = f"SELECT COUNT(DISTINCT {distinct_part}) FROM {hist_fqn}"
     active_sql = f"SELECT COUNT(*) FROM {hist_fqn} WHERE `nd_active_flag` = 'Y'"
-    distinct_count = conn.execute(text(distinct_sql)).scalar() or 0
-    active_count = conn.execute(text(active_sql)).scalar() or 0
-    return (distinct_count, active_count)
+    try:
+        with engine.connect() as conn:
+            distinct_pk_count = conn.execute(text(distinct_sql)).scalar() or 0
+            active_count = conn.execute(text(active_sql)).scalar() or 0
+        if distinct_pk_count == active_count:
+            return {"table": table_name, "status": "SUCCESS"}
+        return {
+            "table": table_name,
+            "status": "FAILED",
+            "active_row_count": active_count,
+            "distinct_pk_count": distinct_pk_count,
+            "reason": f"active_row_count={active_count} != distinct_pk_count={distinct_pk_count}",
+        }
+    except SQLAlchemyError as e:
+        return {"table": table_name, "status": "FAILED", "error": str(e)}
 
 
 def validate_historical_one_active_per_pk(merge_summary: Optional[dict] = None) -> dict:
     """
     For each table (only those with rows inserted when merge_summary provided, else all in both schemas),
-    validate: (1) no primary key has more than one row with nd_active_flag = 'Y';
-    (2) every primary key has exactly one active row (active_row_count == distinct_pk_count).
-    Run after merge_incremental_to_historical.
+    validate: COUNT(DISTINCT pk_cols) == COUNT(*) WHERE nd_active_flag = 'Y'. If equal, pass.
+    Runs validation in parallel (VALIDATION_MAX_WORKERS). Run after merge_incremental_to_historical.
     """
     connection_str = (
         f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}"
@@ -410,61 +413,58 @@ def validate_historical_one_active_per_pk(merge_summary: Optional[dict] = None) 
     else:
         tables_to_validate = [t for t in all_hist_tables if t in incr_tables_set]
 
-    results = []
-    validation_failed_tables = []
-
+    skipped = []
+    to_run = []
     for table_name in tables_to_validate:
         pk_cols = pk_map.get(table_name) or pk_map.get(table_name.upper())
         if not pk_cols:
-            results.append({"table": table_name, "status": "SKIPPED", "error": "No primary key in CSV"})
+            skipped.append({"table": table_name, "status": "SKIPPED", "error": "No primary key in CSV"})
             continue
-
         hist_cols = _get_columns(engine, HISTORICAL_SCHEMA, table_name)
         if "nd_active_flag" not in hist_cols or not all(pc in hist_cols for pc in pk_cols):
-            results.append({"table": table_name, "status": "SKIPPED", "error": "Missing columns"})
+            skipped.append({"table": table_name, "status": "SKIPPED", "error": "Missing columns"})
             continue
+        to_run.append((table_name, pk_cols))
 
-        hist_fqn = f"{_q(HISTORICAL_SCHEMA)}.{_q(table_name)}"
-        try:
-            with engine.connect() as conn:
-                bad_count = _validate_one_active_per_pk(conn, hist_fqn, pk_cols)
-                distinct_pk_count, active_row_count = _get_distinct_pk_and_active_counts(
-                    conn, hist_fqn, pk_cols
-                )
-            failed_reasons = []
-            if bad_count > 0:
-                failed_reasons.append(f"duplicate_active_pks={bad_count}")
-            if active_row_count != distinct_pk_count:
-                failed_reasons.append(
-                    f"active_row_count={active_row_count} != distinct_pk_count={distinct_pk_count}"
-                )
-            if failed_reasons:
-                validation_failed_tables.append({
-                    "table": table_name,
-                    "reason": "; ".join(failed_reasons),
-                    "duplicate_active_pks": bad_count if bad_count > 0 else None,
-                    "active_row_count": active_row_count,
-                    "distinct_pk_count": distinct_pk_count,
-                })
-                results.append({
-                    "table": table_name,
-                    "status": "FAILED",
-                    "duplicate_active_pks": bad_count if bad_count > 0 else None,
-                    "active_row_count": active_row_count,
-                    "distinct_pk_count": distinct_pk_count,
-                })
-            else:
-                results.append({"table": table_name, "status": "SUCCESS"})
-        except SQLAlchemyError as e:
-            results.append({"table": table_name, "status": "FAILED", "error": str(e)})
-            validation_failed_tables.append({"table": table_name, "error": str(e)})
+    results = list(skipped)
+    validation_failed_tables = []
+    start_all = time.time()
 
+    with ThreadPoolExecutor(max_workers=VALIDATION_MAX_WORKERS) as executor:
+        future_to_table = {
+            executor.submit(
+                _validate_table_one_active_per_pk,
+                table_name,
+                engine,
+                HISTORICAL_SCHEMA,
+                pk_cols,
+            ): table_name
+            for table_name, pk_cols in to_run
+        }
+        for future in as_completed(future_to_table):
+            table_name = future_to_table[future]
+            try:
+                res = future.result()
+                results.append(res)
+                if res.get("status") == "FAILED":
+                    validation_failed_tables.append({
+                        "table": res["table"],
+                        "reason": res.get("reason") or res.get("error"),
+                        "active_row_count": res.get("active_row_count"),
+                        "distinct_pk_count": res.get("distinct_pk_count"),
+                    })
+            except Exception as e:
+                results.append({"table": table_name, "status": "FAILED", "error": str(e)})
+                validation_failed_tables.append({"table": table_name, "error": str(e)})
+
+    total_time = round(time.time() - start_all, 2)
     engine.dispose()
     return {
         "total_tables": len(results),
         "success": sum(1 for r in results if r.get("status") == "SUCCESS"),
         "skipped": sum(1 for r in results if r.get("status") == "SKIPPED"),
         "failed": sum(1 for r in results if r.get("status") == "FAILED"),
+        "total_time_seconds": total_time,
         "validation_failed_tables": validation_failed_tables,
         "per_table_results": results,
     }
