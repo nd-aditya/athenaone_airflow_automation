@@ -177,16 +177,21 @@ def create_deid_tasks_for_queue(queue_id: int, table_ids: list[int] | None = Non
 def get_table_ids_for_queue_by_names(queue_id: int, table_names: list[str]) -> list[int]:
     """
     Return table ids for the given queue whose metadata table_name is in table_names.
+    Matching is case-insensitive so e.g. "document" matches "DOCUMENT" in the DB.
     Used to get ids for "remaining" or "test" tables after register_dump.
     """
     _setup_django()
     from nd_api_v2.models import Table
 
+    requested_lower = {n.lower() for n in table_names}
     tables = Table.objects.filter(
         incremental_queue_id=queue_id,
-        metadata__table_name__in=table_names,
-    ).values_list("id", flat=True)
-    return list(tables)
+    ).select_related("metadata")
+    return [
+        t.id
+        for t in tables
+        if t.metadata and t.metadata.table_name.lower() in requested_lower
+    ]
 
 
 def get_table_id_batches_for_names(

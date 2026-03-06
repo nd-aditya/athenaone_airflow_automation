@@ -13,6 +13,9 @@ from services.config import (
     MYSQL_PASSWORD,
     MYSQL_HOST,
     HISTORICAL_SCHEMA,
+    DEID_WORKERS,
+    DEID_CONDA_ENV,
+    DEID_TABLE_BATCH_SIZE,
 )
 from services.extraction_service import extract_table
 from services.nd_date_service import add_extraction_date_to_all_tables
@@ -41,12 +44,8 @@ EXTRACT_SOURCE_CONFIGS = [
     {"schema": "financials", "table_rename_map": {}},
 ]
 
-DEID_WORKERS = 10
-DEID_CONDA_ENV = "py39"
-
 BATCH_SIZE = 20
 MAX_ACTIVE_TASKS = 5
-DEID_TABLE_BATCH_SIZE = 50
 
 # MySQL table names in historical/diff (ATHENAONE.appointment -> appointment_2 to avoid clash with scheduling.appointment)
 TEST_TABLE_NAMES = [
