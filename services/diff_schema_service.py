@@ -66,6 +66,29 @@ def _get_max_nd_extracted_date_for_table(engine, schema: str, table_name: str) -
 
 
 COPY_TO_DIFF_MAX_WORKERS = 10
+IDX_ND_EXTRACTED_DATE = "idx_nd_extracted_date"
+
+
+def _nd_extracted_date_index_exists(conn, schema: str, table_name: str) -> bool:
+    """Return True if the table has an index whose first column is nd_extracted_date."""
+    row = conn.execute(
+        text("""
+            SELECT 1 FROM information_schema.statistics
+            WHERE table_schema = :s AND table_name = :t
+              AND column_name = 'nd_extracted_date' AND seq_in_index = 1
+            LIMIT 1
+        """),
+        {"s": schema, "t": table_name},
+    ).fetchone()
+    return row is not None
+
+
+def _ensure_nd_extracted_date_index(conn, schema: str, table_name: str) -> None:
+    """Create index on nd_extracted_date if it does not exist (speeds up copy WHERE nd_extracted_date > cutoff)."""
+    if _nd_extracted_date_index_exists(conn, schema, table_name):
+        return
+    fqn = f"{_q(schema)}.{_q(table_name)}"
+    conn.execute(text(f"ALTER TABLE {fqn} ADD INDEX `{IDX_ND_EXTRACTED_DATE}` (`nd_extracted_date`)"))
 
 
 def _copy_one_table_to_diff(table_name: str, engine, diff_schema: str) -> dict:
@@ -84,6 +107,7 @@ def _copy_one_table_to_diff(table_name: str, engine, diff_schema: str) -> dict:
             columns = [c["name"] for c in inspector.get_columns(table_name, schema=HISTORICAL_SCHEMA)]
             has_nd_extracted_date = "nd_extracted_date" in [c.lower() for c in columns]
             if has_nd_extracted_date:
+                _ensure_nd_extracted_date_index(conn, HISTORICAL_SCHEMA, table_name)
                 cutoff = _get_max_nd_extracted_date_for_table(engine, DEIDENTIFIED_SCHEMA, table_name)
                 if cutoff is None:
                     cutoff = date.min
