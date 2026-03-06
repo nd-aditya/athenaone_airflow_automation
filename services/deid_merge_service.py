@@ -6,7 +6,7 @@ INSERTs from deid schema into merged, then sets nd_active_flag (one active row p
 import csv
 import os
 import time
-from urllib.parse import quote_plus
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from sqlalchemy import create_engine, inspect, text
 
@@ -21,6 +21,7 @@ TABLE_PRIMARY_KEYS_CSV = os.path.join(
     os.path.dirname(__file__), "..", "table_primary_keys.csv"
 )
 TEXT_PREFIX_LEN = 255
+MERGE_DEID_MAX_WORKERS = 10
 
 
 def _q(name: str) -> str:
@@ -175,18 +176,25 @@ def _merge_table(
 def merge_deid_to_merged(deid_schema: str) -> dict:
     """
     Merge tables from deid_schema (e.g. diff_20260225_deid) into DEIDENTIFIED_SCHEMA.
-    Uses table_primary_keys.csv for PK. Returns summary for XCom.
+    Uses table_primary_keys.csv for PK. Runs table merges in parallel (MERGE_DEID_MAX_WORKERS).
+    Returns summary for XCom.
     """
     connection_str = (
-        f"mysql+pymysql://{MYSQL_USER}:{quote_plus(MYSQL_PASSWORD)}"
-        f"@{MYSQL_HOST}"
+        f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}"
     )
-    engine = create_engine(connection_str, pool_pre_ping=True)
+    engine = create_engine(
+        connection_str,
+        pool_pre_ping=True,
+        pool_size=MERGE_DEID_MAX_WORKERS,
+        max_overflow=2,
+    )
 
     pk_map = _load_pk_config()
     table_map = _get_table_map(engine, deid_schema)
     results = []
 
+    # Skipped (no PK in CSV) — add first
+    merge_tasks = []
     for logical, (hist_tbl, incr_tbl) in table_map.items():
         if logical not in pk_map:
             results.append({
@@ -196,11 +204,37 @@ def merge_deid_to_merged(deid_schema: str) -> dict:
                 "logs": ["No primary key in CSV"],
             })
             continue
-        results.append(
-            _merge_table(engine, hist_tbl, incr_tbl, pk_map[logical], deid_schema)
-        )
+        merge_tasks.append((hist_tbl, incr_tbl, pk_map[logical]))
+
+    # Run merge in parallel
+    with ThreadPoolExecutor(max_workers=MERGE_DEID_MAX_WORKERS) as executor:
+        future_to_hist = {
+            executor.submit(
+                _merge_table,
+                engine,
+                hist_tbl,
+                incr_tbl,
+                pk_cols,
+                deid_schema,
+            ): hist_tbl
+            for (hist_tbl, incr_tbl, pk_cols) in merge_tasks
+        }
+        for future in as_completed(future_to_hist):
+            hist_tbl = future_to_hist[future]
+            try:
+                results.append(future.result())
+            except Exception as e:
+                results.append({
+                    "table": hist_tbl,
+                    "status": "FAILED",
+                    "duration": 0,
+                    "logs": [f"ERROR: {e}"],
+                })
 
     engine.dispose()
+
+    # Sort per_table by table name for deterministic output
+    results.sort(key=lambda r: r.get("table", ""))
 
     total = len(results)
     success = sum(1 for r in results if r["status"] == "SUCCESS")
