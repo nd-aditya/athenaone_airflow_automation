@@ -14,6 +14,7 @@ the last N diff/deid schema runs and drop older MySQL schemas.
 import json
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 from typing import Optional
 
@@ -64,6 +65,44 @@ def _get_max_nd_extracted_date_for_table(engine, schema: str, table_name: str) -
     return None
 
 
+COPY_TO_DIFF_MAX_WORKERS = 10
+
+
+def _copy_one_table_to_diff(table_name: str, engine, diff_schema: str) -> dict:
+    """
+    Copy one table from historical to diff schema. Creates diff table like historical,
+    then INSERT based on nd_extracted_date cutoff from DEIDENTIFIED_SCHEMA. Returns stats dict.
+    """
+    stats = {"table": table_name, "inserted": 0, "duration": None, "error": None}
+    start = time.time()
+    try:
+        inspector = inspect(engine)
+        hist_fqn = f"{_q(HISTORICAL_SCHEMA)}.{_q(table_name)}"
+        diff_fqn = f"{_q(diff_schema)}.{_q(table_name)}"
+        with engine.begin() as conn:
+            conn.execute(text(f"CREATE TABLE {diff_fqn} LIKE {hist_fqn}"))
+            columns = [c["name"] for c in inspector.get_columns(table_name, schema=HISTORICAL_SCHEMA)]
+            has_nd_extracted_date = "nd_extracted_date" in [c.lower() for c in columns]
+            if has_nd_extracted_date:
+                cutoff = _get_max_nd_extracted_date_for_table(engine, DEIDENTIFIED_SCHEMA, table_name)
+                if cutoff is None:
+                    cutoff = date.min
+                stats["cutoff_date"] = cutoff.isoformat()
+                result = conn.execute(
+                    text(f"INSERT INTO {diff_fqn} SELECT * FROM {hist_fqn} WHERE nd_extracted_date > :cutoff"),
+                    {"cutoff": cutoff},
+                )
+            else:
+                result = conn.execute(text(f"INSERT INTO {diff_fqn} SELECT * FROM {hist_fqn}"))
+            stats["inserted"] = result.rowcount if result.rowcount is not None else 0
+        stats["duration"] = round(time.time() - start, 3)
+        return stats
+    except SQLAlchemyError as e:
+        stats["error"] = f"{type(e).__name__}: {str(e)}"
+        stats["duration"] = round(time.time() - start, 3)
+        return stats
+
+
 def copy_historical_to_diff_schema(tables_to_copy: Optional[list[str]] = None) -> dict:
     """
     Create schema diff_<current_date> if not exists, then copy from historical.
@@ -79,7 +118,12 @@ def copy_historical_to_diff_schema(tables_to_copy: Optional[list[str]] = None) -
     """
     diff_schema = f"diff_{date.today().strftime('%Y%m%d')}"
     connection_str = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}"
-    engine = create_engine(connection_str, pool_pre_ping=True)
+    engine = create_engine(
+        connection_str,
+        pool_pre_ping=True,
+        pool_size=COPY_TO_DIFF_MAX_WORKERS,
+        max_overflow=2,
+    )
     inspector = inspect(engine)
 
     with engine.connect() as conn:
@@ -98,48 +142,26 @@ def copy_historical_to_diff_schema(tables_to_copy: Optional[list[str]] = None) -
     results = []
     start_all = time.time()
 
-    for table_name in tables_to_process:
-        stats = {
-            "table": table_name,
-            "inserted": 0,
-            "duration": None,
-            "error": None,
+    with ThreadPoolExecutor(max_workers=COPY_TO_DIFF_MAX_WORKERS) as executor:
+        future_to_table = {
+            executor.submit(_copy_one_table_to_diff, table_name, engine, diff_schema): table_name
+            for table_name in tables_to_process
         }
-        start = time.time()
-        try:
-            hist_fqn = f"{_q(HISTORICAL_SCHEMA)}.{_q(table_name)}"
-            diff_fqn = f"{_q(diff_schema)}.{_q(table_name)}"
-
-            with engine.begin() as conn:
-                create_sql = f"CREATE TABLE {diff_fqn} LIKE {hist_fqn};"
-                conn.execute(text(create_sql))
-
-                columns = [c["name"] for c in inspector.get_columns(table_name, schema=HISTORICAL_SCHEMA)]
-                has_nd_extracted_date = "nd_extracted_date" in [c.lower() for c in columns]
-
-                if has_nd_extracted_date:
-                    cutoff = _get_max_nd_extracted_date_for_table(engine, DEIDENTIFIED_SCHEMA, table_name)
-                    if cutoff is None:
-                        cutoff = date.min
-                    stats["cutoff_date"] = cutoff.isoformat()
-                    insert_sql = (
-                        f"INSERT INTO {diff_fqn} "
-                        f"SELECT * FROM {hist_fqn} WHERE nd_extracted_date > :cutoff"
-                    )
-                    result = conn.execute(text(insert_sql), {"cutoff": cutoff})
-                else:
-                    insert_sql = f"INSERT INTO {diff_fqn} SELECT * FROM {hist_fqn}"
-                    result = conn.execute(text(insert_sql))
-                stats["inserted"] = result.rowcount if result.rowcount is not None else 0
-
-            stats["duration"] = round(time.time() - start, 3)
-            results.append(stats)
-        except SQLAlchemyError as e:
-            stats["error"] = f"{type(e).__name__}: {str(e)}"
-            stats["duration"] = round(time.time() - start, 3)
-            results.append(stats)
+        for future in as_completed(future_to_table):
+            table_name = future_to_table[future]
+            try:
+                stats = future.result()
+                results.append(stats)
+            except Exception as e:
+                results.append({
+                    "table": table_name,
+                    "inserted": 0,
+                    "duration": None,
+                    "error": str(e),
+                })
 
     total_time = round(time.time() - start_all, 2)
+    engine.dispose()
     total_inserted = sum(r.get("inserted", 0) for r in results)
     failed = [r for r in results if r.get("error")]
 
