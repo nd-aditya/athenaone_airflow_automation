@@ -45,6 +45,19 @@ def _write_override_file(diff_schema: str):
         json.dump(data, f, indent=2)
 
 
+def _write_override_file_adhoc(adhoc_schema: str, deidentified_adhoc_schema: str):
+    """Write override so SchedulerConfig uses adhoc source and deidentified adhoc target schemas."""
+    config_dir = os.path.dirname(_override_file_path())
+    os.makedirs(config_dir, exist_ok=True)
+    path = _override_file_path()
+    data = {
+        "current_schema": adhoc_schema,
+        "deid_schema": deidentified_adhoc_schema,
+    }
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+
+
 def _remove_override_file():
     """Remove override file so next UI/manual run uses SchedulerConfig from DB."""
     try:
@@ -150,6 +163,41 @@ def run_deid_pipeline_for_airflow(diff_schema: str) -> dict:
     return {
         "queue_id": queue_id,
         "diff_schema": diff_schema,
+        "tables_registered": len(results),
+    }
+
+
+def run_adhoc_deid_pipeline_for_airflow(
+    adhoc_schema: str,
+    deidentified_adhoc_schema: str,
+) -> dict:
+    """
+    Same as run_deid_pipeline_for_airflow but for adhoc: override uses adhoc_schema and
+    deidentified_adhoc_schema. Register dump from adhoc_schema, set nd ranges from adhoc_schema.
+    Does not run mapping/master or create deid tasks. Returns dict with queue_id, tables_registered.
+    """
+    _setup_django()
+    _write_override_file_adhoc(adhoc_schema, deidentified_adhoc_schema)
+    _ensure_deid_database_exists(deidentified_adhoc_schema)
+
+    from nd_api_v2.models.scheduler_config import SchedulerConfig
+    from nd_api_v2.models.incremental_queue import IncrementalQueue
+    from nd_api_v2.services.register_dump import register_dump_in_queue
+
+    IncrementalQueue.objects.all().delete()
+    scheduler_config = SchedulerConfig.objects.last()
+    if scheduler_config is None:
+        raise RuntimeError("SchedulerConfig not found. Configure incremental pipeline in UI or DB.")
+    connection_string = scheduler_config.get_source_connection_str()
+    dump_date_str = datetime.now().strftime("%Y-%m-%d")
+    results, incremental_queue = register_dump_in_queue(connection_string, dump_date_str)
+    queue_id = incremental_queue.id
+    _update_table_nd_ranges_from_diff_schema(adhoc_schema, queue_id)
+
+    return {
+        "queue_id": queue_id,
+        "adhoc_schema": adhoc_schema,
+        "deidentified_adhoc_schema": deidentified_adhoc_schema,
         "tables_registered": len(results),
     }
 
