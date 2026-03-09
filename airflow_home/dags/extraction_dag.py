@@ -23,6 +23,7 @@ from services.merge_service import (
     set_historical_flags_to_n,
     merge_incremental_to_historical,
     validate_historical_one_active_per_pk,
+    fix_historical_one_active_per_pk,
 )
 from services.diff_schema_service import copy_historical_to_diff_schema, update_diff_schema_history_and_drop_old
 from services.deid_merge_service import merge_deid_to_merged
@@ -185,6 +186,11 @@ with DAG(
         """Validate each primary key has at most one row with nd_active_flag = 'Y'. Only tables with rows inserted."""
         return validate_historical_one_active_per_pk(merge_summary)
 
+    @task
+    def fix_validation_failures(validate_result: dict) -> dict:
+        """If validation had failed tables (count mismatch), fix nd_active_flag to one active per PK."""
+        return fix_historical_one_active_per_pk(validate_result)
+
     batches = get_table_batches()
     reset_task = reset_incremental_schema()
     expanded = extract_batch.expand(batch=batches)
@@ -192,7 +198,8 @@ with DAG(
     set_flags_task = set_historical_flags_to_n_task()
     merge_task = merge_to_historical()
     validate_task = validate_one_active_per_pk(merge_task)
-    reset_task >> batches >> expanded >> add_date_task >> set_flags_task >> merge_task >> validate_task
+    fix_task = fix_validation_failures(validate_task)
+    reset_task >> batches >> expanded >> add_date_task >> set_flags_task >> merge_task >> validate_task >> fix_task
 
 
 # =============================================================================

@@ -527,3 +527,85 @@ def validate_historical_one_active_per_pk(merge_summary: Optional[dict] = None) 
         "validation_failed_tables": validation_failed_tables,
         "per_table_results": results,
     }
+
+
+def fix_historical_one_active_per_pk(validation_summary: Optional[dict] = None) -> dict:
+    """
+    For each table in validation_summary["validation_failed_tables"], fix nd_active_flag so
+    exactly one row per PK is active: SET nd_active_flag = 'N' for all, then SET 'Y' for the
+    latest row per PK (by LASTUPDATED DESC, nd_auto_increment_id DESC). Run after validate.
+    """
+    if not validation_summary:
+        return {"fixed_tables": 0, "skipped": 0, "failed": 0, "per_table": []}
+    failed_list = validation_summary.get("validation_failed_tables") or []
+    if not failed_list:
+        return {"fixed_tables": 0, "skipped": 0, "failed": 0, "per_table": []}
+
+    connection_str = (
+        f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}"
+    )
+    engine = create_engine(connection_str, pool_pre_ping=True)
+    pk_map = _load_primary_keys_csv()
+    per_table = []
+    skipped = 0
+    fixed = 0
+    failed = 0
+
+    for entry in failed_list:
+        table_name = entry.get("table")
+        if not table_name:
+            skipped += 1
+            per_table.append({"table": None, "status": "SKIPPED", "error": "No table name"})
+            continue
+        pk_cols = pk_map.get(table_name) or pk_map.get(table_name.upper())
+        if not pk_cols:
+            skipped += 1
+            per_table.append({"table": table_name, "status": "SKIPPED", "error": "No primary key in CSV"})
+            continue
+        hist_fqn = f"{_q(HISTORICAL_SCHEMA)}.{_q(table_name)}"
+        try:
+            hist_cols = _get_columns(engine, HISTORICAL_SCHEMA, table_name)
+            if "nd_active_flag" not in hist_cols or not all(pc in hist_cols for pc in pk_cols):
+                skipped += 1
+                per_table.append({"table": table_name, "status": "SKIPPED", "error": "Missing columns"})
+                continue
+            pk_part = ", ".join(_q(c) for c in pk_cols)
+            if "LASTUPDATED" in [c.upper() for c in hist_cols]:
+                order_clause = "ORDER BY `LASTUPDATED` DESC, `nd_auto_increment_id` DESC"
+            else:
+                order_clause = "ORDER BY `nd_auto_increment_id` DESC"
+            with engine.begin() as conn:
+                conn.execute(text(f"UPDATE {hist_fqn} SET `nd_active_flag` = 'N'"))
+                conn.execute(text(f"""
+                    UPDATE {hist_fqn} h
+                    JOIN (
+                        SELECT nd_auto_increment_id
+                        FROM (
+                            SELECT
+                                nd_auto_increment_id,
+                                ROW_NUMBER() OVER (
+                                    PARTITION BY {pk_part}
+                                    {order_clause}
+                                ) rn
+                            FROM {hist_fqn}
+                        ) t WHERE rn = 1
+                    ) x ON h.nd_auto_increment_id = x.nd_auto_increment_id
+                    SET h.`nd_active_flag` = 'Y'
+                """))
+            fixed += 1
+            per_table.append({"table": table_name, "status": "SUCCESS"})
+        except SQLAlchemyError as e:
+            failed += 1
+            per_table.append({
+                "table": table_name,
+                "status": "FAILED",
+                "error": f"{type(e).__name__}: {str(e)}",
+            })
+
+    engine.dispose()
+    return {
+        "fixed_tables": fixed,
+        "skipped": skipped,
+        "failed": failed,
+        "per_table": per_table,
+    }

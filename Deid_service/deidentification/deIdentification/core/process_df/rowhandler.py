@@ -38,7 +38,9 @@ class InvalidRowHandler:
 
         rows_to_save = []
         for _, row in ignored_df.iterrows():
-            row_dict = row.apply(lambda x: "None" if pd.isna(x) else str(x)).to_dict()
+            row_dict = row.apply(
+                lambda x: "None" if pd.isna(x) else str(x).replace("\x00", "")
+            ).to_dict()
             try:
                 row_json = json.loads(json.dumps(row_dict, default=str))
                 rows_to_save.append(
