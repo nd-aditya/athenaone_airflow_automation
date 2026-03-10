@@ -46,13 +46,30 @@ def _load_pk_config() -> dict:
     return out
 
 
-def _get_table_map(engine, incr_schema: str) -> dict:
-    """Return {logical_name: (hist_table_name, incr_table_name)} for tables in both schemas."""
+def _get_table_map(engine, incr_schema: str) -> tuple[dict, dict]:
+    """
+    Return (common_map, incr_only).
+    common_map: {logical_name: (hist_table_name, incr_table_name)} for tables in both schemas.
+    incr_only: {logical_name: incr_table_name} for tables in incr_schema but not in DEIDENTIFIED_SCHEMA.
+    """
     insp = inspect(engine)
     hist = {_norm(t): t for t in insp.get_table_names(schema=DEIDENTIFIED_SCHEMA)}
     incr = {_norm(t): t for t in insp.get_table_names(schema=incr_schema)}
     common = set(hist) & set(incr)
-    return {t: (hist[t], incr[t]) for t in sorted(common)}
+    incr_only = {t: incr[t] for t in sorted(incr - hist)}
+    common_map = {t: (hist[t], incr[t]) for t in sorted(common)}
+    return common_map, incr_only
+
+
+def _create_table_from_deid(engine, incr_schema: str, table_name: str) -> None:
+    """Create table in DEIDENTIFIED_SCHEMA like incr_schema.table_name and add nd_active_flag if missing."""
+    hist_fqn = f"{_q(DEIDENTIFIED_SCHEMA)}.{_q(table_name)}"
+    incr_fqn = f"{_q(incr_schema)}.{_q(table_name)}"
+    with engine.begin() as conn:
+        conn.execute(text(f"CREATE TABLE {hist_fqn} LIKE {incr_fqn}"))
+        cols = [c["name"] for c in inspect(engine).get_columns(table_name, schema=DEIDENTIFIED_SCHEMA)]
+        if "nd_active_flag" not in [c.lower() for c in cols]:
+            conn.execute(text(f"ALTER TABLE {hist_fqn} ADD COLUMN `nd_active_flag` VARCHAR(1) DEFAULT 'Y'"))
 
 
 def _build_index_columns(conn, schema: str, table: str, cols: list) -> list:
@@ -190,7 +207,7 @@ def merge_deid_to_merged(deid_schema: str) -> dict:
     )
 
     pk_map = _load_pk_config()
-    table_map = _get_table_map(engine, deid_schema)
+    table_map, incr_only = _get_table_map(engine, deid_schema)
     results = []
 
     # Skipped (no PK in CSV) — add first
@@ -205,6 +222,27 @@ def merge_deid_to_merged(deid_schema: str) -> dict:
             })
             continue
         merge_tasks.append((hist_tbl, incr_tbl, pk_map[logical]))
+
+    # Tables only in deid schema: create in DEIDENTIFIED_SCHEMA then merge
+    for logical, incr_tbl in incr_only.items():
+        if logical not in pk_map:
+            results.append({
+                "table": incr_tbl,
+                "status": "SKIPPED",
+                "duration": 0,
+                "logs": ["No primary key in CSV"],
+            })
+            continue
+        try:
+            _create_table_from_deid(engine, deid_schema, incr_tbl)
+            merge_tasks.append((incr_tbl, incr_tbl, pk_map[logical]))
+        except Exception as e:
+            results.append({
+                "table": incr_tbl,
+                "status": "FAILED",
+                "duration": 0,
+                "logs": [f"Create table failed: {e}"],
+            })
 
     # Run merge in parallel
     with ThreadPoolExecutor(max_workers=MERGE_DEID_MAX_WORKERS) as executor:
