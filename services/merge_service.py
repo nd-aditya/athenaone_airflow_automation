@@ -303,9 +303,6 @@ def _process_table(table_name: str, engine, incr_schema: str, hist_schema: str, 
                     stats["src_count"] = conn.execute(
                         text(f"SELECT COUNT(*) FROM {src_fqn}")
                     ).scalar()
-                    stats["dst_before"] = conn.execute(
-                        text(f"SELECT COUNT(*) FROM {dst_fqn}")
-                    ).scalar()
 
                 insert_sql = (
                     f"INSERT INTO {dst_fqn} ({col_list_str}) "
@@ -314,12 +311,9 @@ def _process_table(table_name: str, engine, incr_schema: str, hist_schema: str, 
                 conn.execute(text(insert_sql))
 
                 if ROW_COUNTS:
-                    stats["dst_after"] = conn.execute(
-                        text(f"SELECT COUNT(*) FROM {dst_fqn}")
-                    ).scalar()
-                    stats["inserted"] = (stats["dst_after"] or 0) - (
-                        stats["dst_before"] or 0
-                    )
+                    stats["dst_before"] = None
+                    stats["dst_after"] = None
+                    stats["inserted"] = None
 
                 stats["duration"] = round(time.time() - start, 3)
                 return stats
