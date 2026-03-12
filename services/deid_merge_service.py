@@ -56,7 +56,7 @@ def _get_table_map(engine, incr_schema: str) -> tuple[dict, dict]:
     hist = {_norm(t): t for t in insp.get_table_names(schema=DEIDENTIFIED_SCHEMA)}
     incr = {_norm(t): t for t in insp.get_table_names(schema=incr_schema)}
     common = set(hist) & set(incr)
-    incr_only = {t: incr[t] for t in sorted(incr - hist)}
+    incr_only = {t: incr[t] for t in sorted(set(incr) - set(hist))}
     common_map = {t: (hist[t], incr[t]) for t in sorted(common)}
     return common_map, incr_only
 
