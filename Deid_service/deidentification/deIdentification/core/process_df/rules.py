@@ -325,7 +325,7 @@ class PatientDOBRule(BaseDateOffsetRule):
         # Ensure string type for regex search
         df[col_name] = df[col_name].astype(str)
         # Never leave string "None"/"nan" in column; use pd.NA so unmasked rows stay null
-        null_str_mask = df[col_name].str.strip().lower().isin(("none", "nan", ""))
+        null_str_mask = df[col_name].str.strip().str.lower().isin(("none", "nan", ""))
         df.loc[null_str_mask, col_name] = pd.NA
 
         mask = self.get_date_mask(df, col_name)
