@@ -21,6 +21,10 @@ export PYTHONPATH="${PROJECT_ROOT}:${PYTHONPATH:-}"
 export AIRFLOW__CORE__LOAD_EXAMPLES=False
 # Absolute path so scheduler/DAG processor always find your DAGs (avoids relative-path issues)
 export AIRFLOW__CORE__DAGS_FOLDER="${AIRFLOW_HOME}/dags"
+# SIGSEGV debugging: get traceback before crash; macOS fork/proxy workarounds
+export PYTHONFAULTHANDLER=true
+export no_proxy='*'
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
 
 echo "--------------------------------------"
 echo "Using CONDA ENV: $CONDA_ENV"
