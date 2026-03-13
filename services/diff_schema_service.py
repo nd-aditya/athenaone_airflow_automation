@@ -155,14 +155,11 @@ def copy_historical_to_diff_schema(tables_to_copy: Optional[list[str]] = None) -
         conn.commit()
 
     hist_tables_all = inspector.get_table_names(schema=HISTORICAL_SCHEMA)
-    # Map lowercase to actual table name so we match regardless of DB case (e.g. DOCUMENT vs document)
-    hist_by_lower = {t.lower(): t for t in hist_tables_all}
+    # Case-insensitive: include every historical table whose name (any case) was requested.
+    # Build from hist_tables_all so we use actual DB table names and never miss due to case.
     if tables_to_copy is not None:
-        tables_to_process = [
-            hist_by_lower[t.lower()]
-            for t in tables_to_copy
-            if t.lower() in hist_by_lower
-        ]
+        requested_lower = {t.lower() for t in tables_to_copy}
+        tables_to_process = [t for t in hist_tables_all if t.lower() in requested_lower]
     else:
         tables_to_process = [
             t for t in hist_tables_all
