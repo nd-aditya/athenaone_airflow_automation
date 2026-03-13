@@ -16,6 +16,7 @@ from services.config import (
     DEID_WORKERS,
     DEID_CONDA_ENV,
     DEID_TABLE_BATCH_SIZE,
+    EXTRACT_PRIORITY_TABLES_ONLY,
 )
 from services.extraction_service import extract_table
 from services.nd_date_service import add_extraction_date_to_all_tables
@@ -142,6 +143,9 @@ with DAG(
                     "table_name": table_name,
                     "target_table_name": target_table_name,
                 })
+        if EXTRACT_PRIORITY_TABLES_ONLY:
+            priority_upper = {t.upper() for t in TEST_TABLE_NAMES}
+            all_items = [x for x in all_items if x["target_table_name"].upper() in priority_upper]
         if not all_items:
             raise ValueError("No views found in any configured schema.")
         return [all_items[i : i + BATCH_SIZE] for i in range(0, len(all_items), BATCH_SIZE)]
