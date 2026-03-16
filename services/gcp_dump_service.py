@@ -5,6 +5,7 @@ Tables to dump: from optional CSV (TABLE_NAME column) or all tables in schema if
 import hashlib
 import os
 import subprocess
+from urllib.parse import unquote
 
 from sqlalchemy import create_engine, inspect
 
@@ -68,7 +69,7 @@ def run_mysqldump_dump(
             "stats_path": None,
         }
     env = os.environ.copy()
-    env["MYSQL_PWD"] = MYSQL_PASSWORD or ""
+    env["MYSQL_PWD"] = unquote(MYSQL_PASSWORD or "") if MYSQL_PASSWORD else ""
     dumped = []
     failed = []
     for table in tables:
@@ -170,13 +171,11 @@ def run_gcp_dump_pipeline() -> dict:
     tables = get_tables_to_dump()
     dump_result = run_mysqldump_dump(tables=tables)
     if dump_result["failed"]:
-        return {
-            "status": "PARTIAL",
-            "tables_requested": len(tables),
-            "dump": dump_result,
-            "upload": None,
-            "error": f"Dump failed for {len(dump_result['failed'])} table(s)",
-        }
+        failed_list = ", ".join(f["table"] for f in dump_result["failed"])
+        first_err = dump_result["failed"][0].get("error", "")
+        raise RuntimeError(
+            f"Dump failed for {len(dump_result['failed'])} table(s): {failed_list}. First error: {first_err}"
+        )
     if dump_result["dumped"] == 0:
         return {
             "status": "SKIPPED",
