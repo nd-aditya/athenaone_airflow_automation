@@ -93,7 +93,12 @@ def run_mysqldump_dump(
                 )
             dumped.append(table)
         except subprocess.CalledProcessError as e:
-            failed.append({"table": table, "error": (e.stderr or b"").decode().strip() or str(e)})
+            err = e.stderr
+            if err is None:
+                err = ""
+            elif isinstance(err, bytes):
+                err = err.decode("utf-8", errors="replace")
+            failed.append({"table": table, "error": (err or str(e)).strip()})
     file_data = []
     for root_walk, _dirs, files in os.walk(root):
         for f in files:
