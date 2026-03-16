@@ -93,7 +93,8 @@ def _ensure_nd_extracted_date_index(conn, schema: str, table_name: str) -> None:
 
 def _copy_one_table_to_diff(table_name: str, engine, diff_schema: str) -> dict:
     """
-    Copy one table from historical to diff schema. Creates diff table like historical,
+    Copy one table from historical to diff schema. Ensures index on nd_extracted_date
+    (historical and DEIDENTIFIED_SCHEMA when present), creates diff table like historical,
     then INSERT based on nd_extracted_date cutoff from DEIDENTIFIED_SCHEMA. Returns stats dict.
     """
     stats = {"table": table_name, "inserted": 0, "duration": None, "error": None}
@@ -102,23 +103,34 @@ def _copy_one_table_to_diff(table_name: str, engine, diff_schema: str) -> dict:
         inspector = inspect(engine)
         hist_fqn = f"{_q(HISTORICAL_SCHEMA)}.{_q(table_name)}"
         diff_fqn = f"{_q(diff_schema)}.{_q(table_name)}"
+        columns = [c["name"] for c in inspector.get_columns(table_name, schema=HISTORICAL_SCHEMA)]
+        has_nd_extracted_date = "nd_extracted_date" in [c.lower() for c in columns]
+
         with engine.begin() as conn:
-            conn.execute(text(f"CREATE TABLE {diff_fqn} LIKE {hist_fqn}"))
-            columns = [c["name"] for c in inspector.get_columns(table_name, schema=HISTORICAL_SCHEMA)]
-            has_nd_extracted_date = "nd_extracted_date" in [c.lower() for c in columns]
             if has_nd_extracted_date:
+                # Ensure index on historical BEFORE CREATE TABLE so diff gets it via LIKE.
                 _ensure_nd_extracted_date_index(conn, HISTORICAL_SCHEMA, table_name)
+                # Ensure index on DEIDENTIFIED_SCHEMA for fast MAX(nd_extracted_date) when table exists.
+                if table_name in inspector.get_table_names(schema=DEIDENTIFIED_SCHEMA):
+                    try:
+                        _ensure_nd_extracted_date_index(conn, DEIDENTIFIED_SCHEMA, table_name)
+                    except SQLAlchemyError:
+                        pass
+            conn.execute(text(f"CREATE TABLE {diff_fqn} LIKE {hist_fqn}"))
+            if has_nd_extracted_date:
                 cutoff = _get_max_nd_extracted_date_for_table(engine, DEIDENTIFIED_SCHEMA, table_name)
                 if cutoff is None:
-                    cutoff = date.min
-                stats["cutoff_date"] = cutoff.isoformat()
-                result = conn.execute(
-                    text(f"INSERT INTO {diff_fqn} SELECT * FROM {hist_fqn} WHERE nd_extracted_date > :cutoff"),
-                    {"cutoff": cutoff},
-                )
+                    result = conn.execute(text(f"INSERT INTO {diff_fqn} SELECT * FROM {hist_fqn}"))
+                else:
+                    stats["cutoff_date"] = cutoff.isoformat()
+                    result = conn.execute(
+                        text(f"INSERT INTO {diff_fqn} SELECT * FROM {hist_fqn} WHERE nd_extracted_date > :cutoff"),
+                        {"cutoff": cutoff},
+                    )
+                stats["inserted"] = result.rowcount if result.rowcount is not None else 0
             else:
                 result = conn.execute(text(f"INSERT INTO {diff_fqn} SELECT * FROM {hist_fqn}"))
-            stats["inserted"] = result.rowcount if result.rowcount is not None else 0
+                stats["inserted"] = result.rowcount if result.rowcount is not None else 0
         stats["duration"] = round(time.time() - start, 3)
         return stats
     except SQLAlchemyError as e:
@@ -131,8 +143,9 @@ def copy_historical_to_diff_schema(tables_to_copy: Optional[list[str]] = None) -
     """
     Create schema diff_<current_date> if not exists, then copy from historical.
     For each table, only rows with nd_extracted_date > max(nd_extracted_date) for
-    that same table in DEIDENTIFIED_SCHEMA are copied (per-table cutoff). If the
-    table has no data in DEIDENTIFIED_SCHEMA, date.min is used so all rows are copied.
+    that same table in DEIDENTIFIED_SCHEMA are copied (per-table cutoff). If no
+    date is found (table missing or empty in DEIDENTIFIED_SCHEMA), the WHERE
+    clause is omitted and all rows from historical are copied.
 
     Args:
         tables_to_copy: If provided, only these tables are copied. Must exist in HISTORICAL_SCHEMA.
@@ -145,8 +158,8 @@ def copy_historical_to_diff_schema(tables_to_copy: Optional[list[str]] = None) -
     engine = create_engine(
         connection_str,
         pool_pre_ping=True,
-        pool_size=COPY_TO_DIFF_MAX_WORKERS,
-        max_overflow=2,
+        pool_size=COPY_TO_DIFF_MAX_WORKERS+5,
+        max_overflow=5,
     )
     inspector = inspect(engine)
 

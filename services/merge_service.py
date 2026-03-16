@@ -458,12 +458,13 @@ def validate_historical_one_active_per_pk(merge_summary: Optional[dict] = None) 
     incr_tables_set = set(inspector.get_table_names(schema=INCREMENTAL_SCHEMA))
 
     if merge_summary and merge_summary.get("per_table_results"):
-        tables_with_inserts = {
+        # Tables that were merged successfully (no error). When inserted is not tracked, validate all of them.
+        tables_merged_ok = {
             r["table"]
             for r in merge_summary["per_table_results"]
-            if (r.get("inserted") or 0) > 0
+            if r.get("error") is None and ((r.get("inserted") or 0) > 0 or r.get("inserted") is None)
         }
-        tables_to_validate = [t for t in all_hist_tables if t in tables_with_inserts and t in incr_tables_set]
+        tables_to_validate = [t for t in all_hist_tables if t in tables_merged_ok and t in incr_tables_set]
     else:
         tables_to_validate = [t for t in all_hist_tables if t in incr_tables_set]
 
