@@ -93,9 +93,9 @@ def _ensure_nd_extracted_date_index(conn, schema: str, table_name: str) -> None:
 
 def _copy_one_table_to_diff(table_name: str, engine, diff_schema: str) -> dict:
     """
-    Copy one table from historical to diff schema. Ensures index on nd_extracted_date
-    (historical and DEIDENTIFIED_SCHEMA when present), creates diff table like historical,
-    then INSERT based on nd_extracted_date cutoff from DEIDENTIFIED_SCHEMA. Returns stats dict.
+    Copy one table from historical to diff schema using CREATE TABLE AS SELECT.
+    Ensures index on nd_extracted_date (historical and DEIDENTIFIED_SCHEMA when present)
+    for fast SELECT. No indexes added on the diff table afterwards.
     """
     stats = {"table": table_name, "inserted": 0, "duration": None, "error": None}
     start = time.time()
@@ -108,29 +108,25 @@ def _copy_one_table_to_diff(table_name: str, engine, diff_schema: str) -> dict:
 
         with engine.begin() as conn:
             if has_nd_extracted_date:
-                # Ensure index on historical BEFORE CREATE TABLE so diff gets it via LIKE.
                 _ensure_nd_extracted_date_index(conn, HISTORICAL_SCHEMA, table_name)
-                # Ensure index on DEIDENTIFIED_SCHEMA for fast MAX(nd_extracted_date) when table exists.
                 if table_name in inspector.get_table_names(schema=DEIDENTIFIED_SCHEMA):
                     try:
                         _ensure_nd_extracted_date_index(conn, DEIDENTIFIED_SCHEMA, table_name)
                     except SQLAlchemyError:
                         pass
-            conn.execute(text(f"CREATE TABLE {diff_fqn} LIKE {hist_fqn}"))
             if has_nd_extracted_date:
                 cutoff = _get_max_nd_extracted_date_for_table(engine, DEIDENTIFIED_SCHEMA, table_name)
                 if cutoff is None:
-                    result = conn.execute(text(f"INSERT INTO {diff_fqn} SELECT * FROM {hist_fqn}"))
+                    conn.execute(text(f"CREATE TABLE {diff_fqn} AS SELECT * FROM {hist_fqn}"))
                 else:
                     stats["cutoff_date"] = cutoff.isoformat()
-                    result = conn.execute(
-                        text(f"INSERT INTO {diff_fqn} SELECT * FROM {hist_fqn} WHERE nd_extracted_date > :cutoff"),
+                    conn.execute(
+                        text(f"CREATE TABLE {diff_fqn} AS SELECT * FROM {hist_fqn} WHERE nd_extracted_date > :cutoff"),
                         {"cutoff": cutoff},
                     )
-                stats["inserted"] = result.rowcount if result.rowcount is not None else 0
             else:
-                result = conn.execute(text(f"INSERT INTO {diff_fqn} SELECT * FROM {hist_fqn}"))
-                stats["inserted"] = result.rowcount if result.rowcount is not None else 0
+                conn.execute(text(f"CREATE TABLE {diff_fqn} AS SELECT * FROM {hist_fqn}"))
+            stats["inserted"] = conn.execute(text(f"SELECT COUNT(*) FROM {diff_fqn}")).scalar() or 0
         stats["duration"] = round(time.time() - start, 3)
         return stats
     except SQLAlchemyError as e:

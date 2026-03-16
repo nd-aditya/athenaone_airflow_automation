@@ -17,6 +17,7 @@ from services.config import (
     DEID_CONDA_ENV,
     DEID_TABLE_BATCH_SIZE,
     EXTRACT_PRIORITY_TABLES_ONLY,
+    EXTRACTION_DAG_SCHEDULE,
 )
 from services.extraction_service import extract_table
 from services.nd_date_service import add_extraction_date_to_all_tables
@@ -106,7 +107,7 @@ TEST_TABLE_NAMES = [
 with DAG(
     dag_id="Athenaone_Extract_Merge",
     start_date=datetime(2026, 1, 1),
-    schedule=None,
+    schedule=EXTRACTION_DAG_SCHEDULE,
     catchup=False,
     max_active_tasks=MAX_ACTIVE_TASKS,
     tags=["athenaone", "extract", "merge"],
