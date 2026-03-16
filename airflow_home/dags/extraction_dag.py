@@ -46,7 +46,7 @@ EXTRACT_SOURCE_CONFIGS = [
     {"schema": "financials", "table_rename_map": {}},
 ]
 
-BATCH_SIZE = 20
+BATCH_SIZE = 40
 MAX_ACTIVE_TASKS = 5
 
 # MySQL table names in historical/diff (ATHENAONE.appointment -> appointment_2 to avoid clash with scheduling.appointment)
@@ -96,6 +96,8 @@ TEST_TABLE_NAMES = [
     "visit",
     "VITALATTRIBUTEREADING",
     "VITALSIGN",
+    "PROVIDER",
+    "PROVIDERGROUP"
 ]
 
 # =============================================================================

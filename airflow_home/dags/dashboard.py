@@ -8,7 +8,7 @@ PROJECT_DIR = "/Users/adityaneuroAI/dashboard_automation"
 with DAG(
     dag_id="dashboard_table_mysql",
     start_date=datetime(2026, 1, 1),
-    schedule_interval="@daily",  # or "@hourly", "0 2 * * *", etc.
+    schedule= None,  # or "@hourly", "0 2 * * *", etc.
     catchup=False,
     tags=["dashboard", "mysql", "reporting"],
 ) as dag:
