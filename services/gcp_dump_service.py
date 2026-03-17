@@ -4,6 +4,7 @@ Tables to dump: from optional CSV (TABLE_NAME column) or all tables in schema if
 """
 import hashlib
 import os
+import shutil
 import subprocess
 from urllib.parse import unquote
 
@@ -23,6 +24,34 @@ from services.config import (
 
 def _project_root() -> str:
     return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+
+def clear_dump_directory(
+    schema: str = DEIDENTIFIED_SCHEMA,
+    output_dir: str | None = None,
+    clear_entire_root: bool = True,
+) -> dict:
+    """
+    Clear the dump output dir so each run starts clean.
+    If clear_entire_root is True (default), remove everything under the dump root so that
+    when the schema name changes between runs, no old schema-named subdirs remain.
+    Then create the current schema subdir.
+    Returns summary with cleared path.
+    """
+    root = output_dir or os.path.join(_project_root(), GCP_DUMP_OUTPUT_DIR)
+    if clear_entire_root and os.path.isdir(root):
+        for name in os.listdir(root):
+            path = os.path.join(root, name)
+            if os.path.isdir(path):
+                shutil.rmtree(path)
+            else:
+                os.remove(path)
+    schema_dir = os.path.join(root, schema)
+    if os.path.isdir(schema_dir):
+        shutil.rmtree(schema_dir)
+    os.makedirs(schema_dir, exist_ok=True)
+    os.makedirs(root, exist_ok=True)
+    return {"output_dir": root, "schema": schema, "cleared_path": schema_dir}
 
 
 def get_tables_to_dump(schema: str = DEIDENTIFIED_SCHEMA, csv_path: str | None = None) -> list[str]:
@@ -59,6 +88,14 @@ def run_mysqldump_dump(
     """
     root = output_dir or os.path.join(_project_root(), GCP_DUMP_OUTPUT_DIR)
     schema_dir = os.path.join(root, schema)
+    # Clear entire root so old schema-named dirs don't accumulate when schema changes
+    if os.path.isdir(root):
+        for name in os.listdir(root):
+            path = os.path.join(root, name)
+            if os.path.isdir(path):
+                shutil.rmtree(path)
+            else:
+                os.remove(path)
     os.makedirs(schema_dir, exist_ok=True)
     if not tables:
         return {

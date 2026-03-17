@@ -1,7 +1,7 @@
 """
 GCP dump DAG: dump DEIDENTIFIED_SCHEMA tables to local SQL files and upload to GCS.
 Tables come from optional gcp_transfer.csv (TABLE_NAME column) or all tables in schema.
-Two tasks: run_dump (mysqldump) then run_upload (gsutil to GCS).
+Tasks: clear_dump_dir → run_dump (mysqldump) → run_upload (gsutil to GCS).
 """
 from datetime import datetime
 
@@ -9,6 +9,7 @@ from airflow import DAG
 from airflow.decorators import task
 
 from services.gcp_dump_service import (
+    clear_dump_directory,
     get_tables_to_dump,
     run_mysqldump_dump,
     upload_dump_to_gcs,
@@ -22,6 +23,11 @@ with DAG(
     catchup=False,
     tags=["gcp", "dump", "upload"],
 ) as dag_gcp_dump:
+
+    @task
+    def clear_dump_dir() -> dict:
+        """Clear the dump output directory (schema subdir) before creating new dumps."""
+        return clear_dump_directory()
 
     @task
     def run_dump() -> dict:
@@ -47,4 +53,5 @@ with DAG(
             return {"bucket": None, "destination_prefix": None, "uploaded": 0, "errors": []}
         return upload_dump_to_gcs(source_folder=dump_result["output_dir"])
 
-    run_upload(run_dump())
+    dump_result = run_dump()
+    clear_dump_dir() >> dump_result >> run_upload(dump_result)
