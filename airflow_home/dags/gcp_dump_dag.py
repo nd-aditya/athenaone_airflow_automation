@@ -10,6 +10,7 @@ from airflow.decorators import task
 
 from services.gcp_dump_service import (
     clear_dump_directory,
+    gcp_dump_date_root,
     get_tables_to_dump,
     run_mysqldump_dump,
     upload_dump_to_gcs,
@@ -53,8 +54,16 @@ with DAG(
         """Upload date folder to GCS under EHR/<MMDDYYYY>/ (gsutil)."""
         if dump_result.get("dumped", 0) == 0:
             return {"bucket": None, "destination_prefix": None, "uploaded": 0, "errors": []}
+        date_folder = dump_result.get("date_folder")
+        if not date_folder:
+            return {
+                "bucket": None,
+                "destination_prefix": None,
+                "uploaded": 0,
+                "errors": [{"error": "date_folder missing from dump_result"}],
+            }
         return upload_dump_to_gcs(
-            source_folder=dump_result["output_dir"],
+            source_folder=gcp_dump_date_root(date_folder),
             destination_prefix=dump_result.get("gcs_prefix"),
         )
 

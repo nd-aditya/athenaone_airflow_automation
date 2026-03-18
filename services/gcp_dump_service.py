@@ -33,6 +33,15 @@ def _gcp_date_folder() -> str:
     return datetime.now().strftime("%m%d%Y")
 
 
+def gcp_dump_date_root(date_folder: str, output_dir: str | None = None) -> str:
+    """
+    Absolute path to gcp_dump/<date_folder>/ only (not the whole gcp_dump root).
+    Use as upload source_folder so only this run's date directory is uploaded.
+    """
+    root_base = output_dir or os.path.join(_project_root(), GCP_DUMP_OUTPUT_DIR)
+    return os.path.abspath(os.path.join(root_base, date_folder))
+
+
 def clear_dump_directory(
     schema: str = DEIDENTIFIED_SCHEMA,
     output_dir: str | None = None,
@@ -183,9 +192,17 @@ def upload_dump_to_gcs(
     destination_prefix: str | None = None,
 ) -> dict:
     """
-    Upload all .sql and sql_dump_stats.csv under source_folder to
-    gs://bucket/<destination_prefix>/... (relative paths preserved).
+    Upload .sql and sql_dump_stats.csv under source_folder only (must be the date
+    folder path, e.g. gcp_dump/03182026 — not gcp_dump root).
     """
+    source_folder = os.path.abspath(source_folder)
+    if not os.path.isdir(source_folder):
+        return {
+            "bucket": bucket,
+            "destination_prefix": (destination_prefix or GCP_DESTINATION_PREFIX).strip("/"),
+            "uploaded": 0,
+            "errors": [{"path": source_folder, "gcs": "", "error": "source_folder does not exist"}],
+        }
     prefix = (destination_prefix or GCP_DESTINATION_PREFIX).strip("/")
     uploaded = 0
     errors = []
@@ -235,7 +252,7 @@ def run_gcp_dump_pipeline() -> dict:
             "upload": None,
         }
     upload_result = upload_dump_to_gcs(
-        source_folder=dump_result["output_dir"],
+        source_folder=gcp_dump_date_root(dump_result["date_folder"]),
         destination_prefix=dump_result["gcs_prefix"],
     )
     return {
