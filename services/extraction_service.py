@@ -1,4 +1,5 @@
 from sqlalchemy import create_engine, text
+from sqlalchemy.engine import Engine
 from datetime import datetime, timedelta
 import pandas as pd
 import os
@@ -104,6 +105,47 @@ data_type_mapping = {
 # Helpers
 # --------------------------------------------
 
+IDX_LASTUPDATED_NAME = "idx_lastupdated"
+
+
+def ensure_lastupdated_index(engine: Engine, schema: str, table_name: str) -> bool:
+    """
+    Ensure an index on LASTUPDATED exists for the table so MAX(LASTUPDATED) is fast.
+    Uses information_schema (metadata only, negligible cost). Returns True if index was
+    created, False if it already existed or table has no LASTUPDATED column.
+    """
+    with engine.connect() as conn:
+        # Check if table has LASTUPDATED column
+        has_col = conn.execute(
+            text("""
+                SELECT 1 FROM information_schema.columns
+                WHERE table_schema = :s AND table_name = :t
+                AND LOWER(column_name) = 'lastupdated'
+                LIMIT 1
+            """),
+            {"s": schema, "t": table_name},
+        ).scalar() is not None
+        if not has_col:
+            return False
+        # Check if an index on LASTUPDATED already exists (any index containing that column)
+        has_idx = conn.execute(
+            text("""
+                SELECT 1 FROM information_schema.statistics
+                WHERE table_schema = :s AND table_name = :t
+                AND LOWER(column_name) = 'lastupdated'
+                LIMIT 1
+            """),
+            {"s": schema, "t": table_name},
+        ).scalar() is not None
+        if has_idx:
+            return False
+    with engine.begin() as conn:
+        conn.execute(
+            text(f"CREATE INDEX `{IDX_LASTUPDATED_NAME}` ON `{schema}`.`{table_name}` (`LASTUPDATED`)")
+        )
+    return True
+
+
 def get_date_range(table_name: str | None = None):
     """
     Get (start_date, end_date) for extraction.
@@ -189,6 +231,10 @@ def extract_table(table_name: str, schema: str, target_table_name: str | None = 
     target = target_table_name if target_table_name is not None else table_name
     snowflake_engine = get_snowflake_engine(schema)
     mysql_engine = get_mysql_engine()
+
+    hist_engine = get_historical_mysql_engine()
+    ensure_lastupdated_index(hist_engine, HISTORICAL_SCHEMA, target)
+    hist_engine.dispose()
 
     start_date, end_date = get_date_range(table_name=target)
 

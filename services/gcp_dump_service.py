@@ -1,11 +1,13 @@
 """
 GCP dump: dump MySQL tables (DEIDENTIFIED_SCHEMA) to local SQL files and upload to GCS.
-Tables to dump: from optional CSV (TABLE_NAME column) or all tables in schema if CSV missing.
+Each run writes under gcp_dump/<MMDDYYYY>/ (e.g. 03182026): sql_dump_stats.csv + <schema>/*.sql.
+Uploads to gs://bucket/<prefix>/<MMDDYYYY>/...
 """
 import hashlib
 import os
 import shutil
 import subprocess
+from datetime import datetime
 from urllib.parse import unquote
 
 from sqlalchemy import create_engine, inspect
@@ -26,32 +28,32 @@ def _project_root() -> str:
     return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
+def _gcp_date_folder() -> str:
+    """Folder name per run: MMDDYYYY e.g. 03182026."""
+    return datetime.now().strftime("%m%d%Y")
+
+
 def clear_dump_directory(
     schema: str = DEIDENTIFIED_SCHEMA,
     output_dir: str | None = None,
-    clear_entire_root: bool = True,
+    clear_entire_root: bool = False,
 ) -> dict:
     """
-    Clear the dump output dir so each run starts clean.
-    If clear_entire_root is True (default), remove everything under the dump root so that
-    when the schema name changes between runs, no old schema-named subdirs remain.
-    Then create the current schema subdir.
-    Returns summary with cleared path.
+    Remove and recreate today's date folder under gcp_dump (e.g. gcp_dump/03182026/).
+    Does not delete other date folders. Returns date_folder and date_root.
     """
     root = output_dir or os.path.join(_project_root(), GCP_DUMP_OUTPUT_DIR)
-    if clear_entire_root and os.path.isdir(root):
-        for name in os.listdir(root):
-            path = os.path.join(root, name)
-            if os.path.isdir(path):
-                shutil.rmtree(path)
-            else:
-                os.remove(path)
-    schema_dir = os.path.join(root, schema)
-    if os.path.isdir(schema_dir):
-        shutil.rmtree(schema_dir)
-    os.makedirs(schema_dir, exist_ok=True)
-    os.makedirs(root, exist_ok=True)
-    return {"output_dir": root, "schema": schema, "cleared_path": schema_dir}
+    date_folder = _gcp_date_folder()
+    date_root = os.path.join(root, date_folder)
+    if os.path.isdir(date_root):
+        shutil.rmtree(date_root)
+    os.makedirs(date_root, exist_ok=True)
+    return {
+        "output_dir": root,
+        "date_folder": date_folder,
+        "date_root": date_root,
+        "schema": schema,
+    }
 
 
 def get_tables_to_dump(schema: str = DEIDENTIFIED_SCHEMA, csv_path: str | None = None) -> list[str]:
@@ -83,28 +85,30 @@ def run_mysqldump_dump(
     output_dir: str | None = None,
 ) -> dict:
     """
-    Run mysqldump for each table into output_dir/schema/table.sql.
-    Returns summary with dumped count, failed list, and path to sql_dump_stats.csv.
+    Dump into gcp_dump/<MMDDYYYY>/<schema>/table.sql and write sql_dump_stats.csv in the date folder.
+    file_path in CSV is relative like 03182026/schema/TABLE.sql (from gcp_dump base).
     """
-    root = output_dir or os.path.join(_project_root(), GCP_DUMP_OUTPUT_DIR)
-    schema_dir = os.path.join(root, schema)
-    # Clear entire root so old schema-named dirs don't accumulate when schema changes
-    if os.path.isdir(root):
-        for name in os.listdir(root):
-            path = os.path.join(root, name)
-            if os.path.isdir(path):
-                shutil.rmtree(path)
-            else:
-                os.remove(path)
+    root_base = output_dir or os.path.join(_project_root(), GCP_DUMP_OUTPUT_DIR)
+    date_folder = _gcp_date_folder()
+    date_root = os.path.join(root_base, date_folder)
+    schema_dir = os.path.join(date_root, schema)
+
+    if os.path.isdir(date_root):
+        shutil.rmtree(date_root)
     os.makedirs(schema_dir, exist_ok=True)
+
     if not tables:
         return {
-            "output_dir": root,
+            "output_dir": date_root,
+            "root_base": root_base,
+            "date_folder": date_folder,
+            "gcs_prefix": f"{GCP_DESTINATION_PREFIX.strip('/')}/{date_folder}",
             "schema": schema,
             "dumped": 0,
             "failed": [],
             "stats_path": None,
         }
+
     env = os.environ.copy()
     env["MYSQL_PWD"] = unquote(MYSQL_PASSWORD or "") if MYSQL_PASSWORD else ""
     dumped = []
@@ -137,26 +141,35 @@ def run_mysqldump_dump(
             elif isinstance(err, bytes):
                 err = err.decode("utf-8", errors="replace")
             failed.append({"table": table, "error": (err or str(e)).strip()})
+
     file_data = []
-    for root_walk, _dirs, files in os.walk(root):
+    for root_walk, _dirs, files in os.walk(date_root):
         for f in files:
-            if f.endswith(".sql"):
-                path = os.path.join(root_walk, f)
-                with open(path, "rb") as fp:
-                    h = hashlib.md5()
-                    for chunk in iter(lambda: fp.read(4096), b""):
-                        h.update(chunk)
-                file_data.append({
-                    "file_path": path,
-                    "checksum": h.hexdigest(),
-                    "file_size_bytes": os.path.getsize(path),
-                })
-    stats_path = os.path.join(root, "sql_dump_stats.csv")
+            if not f.endswith(".sql"):
+                continue
+            path = os.path.join(root_walk, f)
+            rel_from_base = os.path.relpath(path, root_base).replace("\\", "/")
+            with open(path, "rb") as fp:
+                h = hashlib.md5()
+                for chunk in iter(lambda: fp.read(4096), b""):
+                    h.update(chunk)
+            file_data.append({
+                "file_path": rel_from_base,
+                "checksum": h.hexdigest(),
+                "file_size_bytes": os.path.getsize(path),
+            })
+
+    stats_path = os.path.join(date_root, "sql_dump_stats.csv")
     if file_data:
         import pandas as pd
         pd.DataFrame(file_data).to_csv(stats_path, index=False)
+
+    gcs_prefix = f"{GCP_DESTINATION_PREFIX.strip('/')}/{date_folder}"
     return {
-        "output_dir": root,
+        "output_dir": date_root,
+        "root_base": root_base,
+        "date_folder": date_folder,
+        "gcs_prefix": gcs_prefix,
         "schema": schema,
         "dumped": len(dumped),
         "failed": failed,
@@ -167,12 +180,13 @@ def run_mysqldump_dump(
 def upload_dump_to_gcs(
     source_folder: str,
     bucket: str = GCP_BUCKET,
-    destination_prefix: str = GCP_DESTINATION_PREFIX,
+    destination_prefix: str | None = None,
 ) -> dict:
     """
-    Upload all .sql under source_folder to gs://bucket/destination_prefix/..., and sql_dump_stats.csv.
-    Uses gsutil (assumes gcloud auth already done). Returns summary.
+    Upload all .sql and sql_dump_stats.csv under source_folder to
+    gs://bucket/<destination_prefix>/... (relative paths preserved).
     """
+    prefix = (destination_prefix or GCP_DESTINATION_PREFIX).strip("/")
     uploaded = 0
     errors = []
     for root, _dirs, files in os.walk(source_folder):
@@ -181,7 +195,7 @@ def upload_dump_to_gcs(
                 continue
             path = os.path.join(root, f)
             rel = os.path.relpath(path, source_folder).replace("\\", "/")
-            gcs_uri = f"gs://{bucket}/{destination_prefix}/{rel}"
+            gcs_uri = f"gs://{bucket}/{prefix}/{rel}"
             try:
                 subprocess.run(
                     ["gsutil", "cp", path, gcs_uri],
@@ -194,7 +208,7 @@ def upload_dump_to_gcs(
                 errors.append({"path": path, "gcs": gcs_uri, "error": (e.stderr or e.stdout or str(e))[:200]})
     return {
         "bucket": bucket,
-        "destination_prefix": destination_prefix,
+        "destination_prefix": prefix,
         "uploaded": uploaded,
         "errors": errors,
     }
@@ -220,7 +234,10 @@ def run_gcp_dump_pipeline() -> dict:
             "dump": dump_result,
             "upload": None,
         }
-    upload_result = upload_dump_to_gcs(source_folder=dump_result["output_dir"])
+    upload_result = upload_dump_to_gcs(
+        source_folder=dump_result["output_dir"],
+        destination_prefix=dump_result["gcs_prefix"],
+    )
     return {
         "status": "SUCCESS" if not upload_result["errors"] else "PARTIAL",
         "tables_requested": len(tables),

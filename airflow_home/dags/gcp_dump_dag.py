@@ -1,6 +1,6 @@
 """
-GCP dump DAG: dump DEIDENTIFIED_SCHEMA tables to local SQL files and upload to GCS.
-Tables come from optional gcp_transfer.csv (TABLE_NAME column) or all tables in schema.
+GCP dump DAG: dump DEIDENTIFIED_SCHEMA tables under gcp_dump/<MMDDYYYY>/, upload to
+gs://bucket/EHR/<MMDDYYYY>/ (see config GCP_DESTINATION_PREFIX).
 Tasks: clear_dump_dir → run_dump (mysqldump) → run_upload (gsutil to GCS).
 """
 from datetime import datetime
@@ -26,7 +26,7 @@ with DAG(
 
     @task
     def clear_dump_dir() -> dict:
-        """Clear the dump output directory (schema subdir) before creating new dumps."""
+        """Clear today's date folder under gcp_dump (e.g. gcp_dump/03182026/) before dump."""
         return clear_dump_directory()
 
     @task
@@ -44,14 +44,19 @@ with DAG(
             "output_dir": result["output_dir"],
             "dumped": result["dumped"],
             "stats_path": result.get("stats_path"),
+            "gcs_prefix": result.get("gcs_prefix"),
+            "date_folder": result.get("date_folder"),
         }
 
     @task
     def run_upload(dump_result: dict) -> dict:
-        """Upload dump output_dir to GCS (gsutil)."""
+        """Upload date folder to GCS under EHR/<MMDDYYYY>/ (gsutil)."""
         if dump_result.get("dumped", 0) == 0:
             return {"bucket": None, "destination_prefix": None, "uploaded": 0, "errors": []}
-        return upload_dump_to_gcs(source_folder=dump_result["output_dir"])
+        return upload_dump_to_gcs(
+            source_folder=dump_result["output_dir"],
+            destination_prefix=dump_result.get("gcs_prefix"),
+        )
 
     dump_result = run_dump()
     clear_dump_dir() >> dump_result >> run_upload(dump_result)
