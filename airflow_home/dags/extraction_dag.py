@@ -1,5 +1,7 @@
 from airflow import DAG
 from airflow.decorators import task
+from airflow.operators.empty import EmptyOperator
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from datetime import datetime
 from sqlalchemy import create_engine, inspect, text
 
@@ -18,6 +20,7 @@ from services.config import (
     DEID_TABLE_BATCH_SIZE,
     EXTRACT_PRIORITY_TABLES_ONLY,
     EXTRACTION_DAG_SCHEDULE,
+    TRIGGER_DAG2_FROM_DAG1_ENABLED,
 )
 from services.extraction_service import extract_table
 from services.nd_date_service import add_extraction_date_to_all_tables
@@ -28,7 +31,11 @@ from services.merge_service import (
     fix_historical_one_active_per_pk,
 )
 from services.diff_schema_service import copy_historical_to_diff_schema, update_diff_schema_history_and_drop_old
-from services.deid_merge_service import merge_deid_to_merged
+from services.deid_merge_service import (
+    merge_deid_to_merged_phase_fix,
+    merge_deid_to_merged_phase_insert,
+    merge_deid_to_merged_phase_validate,
+)
 from services.schema_reset_service import reset_incremental_schema as reset_schema
 from services.deid_runner import (
     run_deid_pipeline_for_airflow,
@@ -38,6 +45,7 @@ from services.deid_runner import (
 )
 from services.mapping_master_service import update_mapping_and_master_tables
 from services.worker_lifecycle import clear_worker_logs, start_workers, stop_workers
+from services.google_chat_service import extract_merge_chat_failure, extract_merge_chat_success
 
 # Snowflake schemas to extract from. Each can have table_rename_map for MySQL target names
 # (e.g. ATHENAONE.appointment -> appointment_2 so it does not clash with scheduling.appointment).
@@ -111,6 +119,8 @@ with DAG(
     catchup=False,
     max_active_tasks=MAX_ACTIVE_TASKS,
     tags=["athenaone", "extract", "merge"],
+    on_success_callback=[extract_merge_chat_success],
+    on_failure_callback=[extract_merge_chat_failure],
 ) as dag_extract_merge:
 
     @task
@@ -206,7 +216,19 @@ with DAG(
     merge_task = merge_to_historical()
     validate_task = validate_one_active_per_pk(merge_task)
     fix_task = fix_validation_failures(validate_task)
-    reset_task >> batches >> expanded >> add_date_task >> set_flags_task >> merge_task >> validate_task >> fix_task
+    trigger_deid_priority_dag = (
+        TriggerDagRunOperator(
+            task_id="trigger_deid_priority_dag",
+            trigger_dag_id="Athenaone_Deid_Priority_Tables",
+            wait_for_completion=False,
+            reset_dag_run=False,
+            trigger_rule="all_success",
+        )
+        if TRIGGER_DAG2_FROM_DAG1_ENABLED
+        else EmptyOperator(task_id="trigger_deid_priority_dag_disabled")
+    )
+
+    reset_task >> batches >> expanded >> add_date_task >> set_flags_task >> merge_task >> validate_task >> fix_task >> trigger_deid_priority_dag
 
 
 # =============================================================================
@@ -269,12 +291,21 @@ with DAG(
         return stop_workers()
 
     @task
-    def merge_deid_to_merged_task(diff_result: dict) -> dict:
-        """Merge diff_<date>_deid into DEIDENTIFIED_SCHEMA (config)."""
+    def merge_deid_insert_task(diff_result: dict) -> dict:
+        """Phase 1: set N for matching PKs + INSERT from deid as Y into DEIDENTIFIED_SCHEMA."""
         if not diff_result or "diff_schema" not in diff_result:
             raise ValueError("diff_result missing diff_schema")
-        deid_schema = diff_result["diff_schema"] + "_deid"
-        return merge_deid_to_merged(deid_schema)
+        return merge_deid_to_merged_phase_insert(diff_result["diff_schema"] + "_deid")
+
+    @task
+    def validate_deid_merge_task(merge_insert_summary: dict) -> dict:
+        """Phase 2: validate one active row per PK per merged table."""
+        return merge_deid_to_merged_phase_validate(merge_insert_summary or {})
+
+    @task
+    def fix_deid_merge_task(validation_summary: dict) -> dict:
+        """Phase 3: fix tables that failed validation (all N then one Y per PK)."""
+        return merge_deid_to_merged_phase_fix(validation_summary or {})
 
     @task
     def trim_diff_schemas(diff_result: dict) -> dict:
@@ -291,9 +322,24 @@ with DAG(
     create_deid_tasks_task = create_deid_tasks(start_workers_task)
     wait_deid_task = wait_for_deid(create_deid_tasks_task)
     stop_workers_task = stop_deid_workers(wait_deid_task)
-    merge_deid_task = merge_deid_to_merged_task(diff_task)
+    merge_deid_insert = merge_deid_insert_task(diff_task)
+    validate_deid_merge = validate_deid_merge_task(merge_deid_insert)
+    fix_deid_merge = fix_deid_merge_task(validate_deid_merge)
     trim_task = trim_diff_schemas(diff_task)
-    diff_task >> deid_run_task >> mapping_master_task >> priority_table_ids_task >> start_workers_task >> create_deid_tasks_task >> wait_deid_task >> stop_workers_task >> merge_deid_task >> trim_task
+    (
+        diff_task
+        >> deid_run_task
+        >> mapping_master_task
+        >> priority_table_ids_task
+        >> start_workers_task
+        >> create_deid_tasks_task
+        >> wait_deid_task
+        >> stop_workers_task
+        >> merge_deid_insert
+        >> validate_deid_merge
+        >> fix_deid_merge
+        >> trim_task
+    )
 
 
 # =============================================================================
@@ -375,12 +421,21 @@ with DAG(
         return stop_workers()
 
     @task
-    def merge_deid_to_merged_task_rem(diff_result: dict) -> dict:
-        """Merge diff_<date>_deid into DEIDENTIFIED_SCHEMA (config)."""
+    def merge_deid_insert_task_rem(diff_result: dict) -> dict:
+        """Phase 1: set N + INSERT from deid into DEIDENTIFIED_SCHEMA."""
         if not diff_result or "diff_schema" not in diff_result:
             raise ValueError("diff_result missing diff_schema")
-        deid_schema = diff_result["diff_schema"] + "_deid"
-        return merge_deid_to_merged(deid_schema)
+        return merge_deid_to_merged_phase_insert(diff_result["diff_schema"] + "_deid")
+
+    @task
+    def validate_deid_merge_task_rem(merge_insert_summary: dict) -> dict:
+        """Phase 2: validate one active per PK."""
+        return merge_deid_to_merged_phase_validate(merge_insert_summary or {})
+
+    @task
+    def fix_deid_merge_task_rem(validation_summary: dict) -> dict:
+        """Phase 3: fix failed validation tables."""
+        return merge_deid_to_merged_phase_fix(validation_summary or {})
 
     @task
     def trim_diff_schemas_rem(diff_result: dict) -> dict:
@@ -398,8 +453,22 @@ with DAG(
     create_deid_tasks_task = create_deid_tasks_rem(start_workers_task)
     wait_deid_task = wait_for_deid_rem(create_deid_tasks_task)
     stop_workers_task = stop_deid_workers_rem(wait_deid_task)
-    merge_deid_task = merge_deid_to_merged_task_rem(diff_task)
+    merge_deid_insert_rem = merge_deid_insert_task_rem(diff_task)
+    validate_deid_rem = validate_deid_merge_task_rem(merge_deid_insert_rem)
+    fix_deid_rem = fix_deid_merge_task_rem(validate_deid_rem)
     trim_task = trim_diff_schemas_rem(diff_task)
-    (remaining_tables_task >> diff_task >> deid_run_task >> mapping_master_task
-     >> remaining_table_ids_task >> start_workers_task >> create_deid_tasks_task
-     >> wait_deid_task >> stop_workers_task >> merge_deid_task >> trim_task)
+    (
+        remaining_tables_task
+        >> diff_task
+        >> deid_run_task
+        >> mapping_master_task
+        >> remaining_table_ids_task
+        >> start_workers_task
+        >> create_deid_tasks_task
+        >> wait_deid_task
+        >> stop_workers_task
+        >> merge_deid_insert_rem
+        >> validate_deid_rem
+        >> fix_deid_rem
+        >> trim_task
+    )

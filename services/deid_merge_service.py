@@ -1,10 +1,12 @@
 """
-Merge deidentified data from diff_<date>_deid schema into DEIDENTIFIED_SCHEMA (config).
-Optimized flow (like merge_service):
-1. set_deid_merged_flags_to_n: UPDATE merged SET nd_active_flag = 'N' only for rows whose PK exists in deid_schema.
-2. INSERT from deid_schema into merged with nd_active_flag = 'Y' (new rows).
-3. validate_deid_merged_one_active_per_pk: check one active row per PK per table.
-4. fix_deid_merged_one_active_per_pk: for tables that failed validation, SET all to N then one per PK to Y.
+Merge deidentified data from diff_<date>_deid into DEIDENTIFIED_SCHEMA (config).
+
+Airflow: three tasks — merge_deid_to_merged_phase_insert → _phase_validate → _phase_fix.
+1–2. set_deid_merged_flags_to_n + INSERT from deid as Y (phase_insert).
+3. validate_deid_merged_one_active_per_pk (phase_validate).
+4. fix_deid_merged_one_active_per_pk for failures (phase_fix).
+
+merge_deid_to_merged() runs all three in one call for non-DAG use.
 """
 import csv
 import os
@@ -430,115 +432,164 @@ def fix_deid_merged_one_active_per_pk(
     return {"fixed_tables": fixed, "skipped": len(failed_list) - fixed - failed, "failed": failed, "per_table": per_table}
 
 
-def merge_deid_to_merged(deid_schema: str) -> dict:
-    """
-    Merge tables from deid_schema (e.g. diff_20260225_deid) into DEIDENTIFIED_SCHEMA.
-    Optimized flow: set existing (matched on PK) to N → insert new as Y → validate → fix failed tables.
-    Returns summary for XCom.
-    """
-    connection_str = (
-        f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}"
-    )
-    engine = create_engine(
+def _deid_merge_engine():
+    connection_str = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}"
+    return create_engine(
         connection_str,
         pool_pre_ping=True,
-        pool_size=max(MERGE_DEID_MAX_WORKERS, SET_DEID_FLAGS_MAX_WORKERS, VALIDATION_DEID_MAX_WORKERS, FIX_DEID_MAX_WORKERS),
+        pool_size=max(
+            MERGE_DEID_MAX_WORKERS,
+            SET_DEID_FLAGS_MAX_WORKERS,
+            VALIDATION_DEID_MAX_WORKERS,
+            FIX_DEID_MAX_WORKERS,
+        ),
         max_overflow=2,
     )
 
-    pk_map = _load_pk_config()
-    table_map, incr_only = _get_table_map(engine, deid_schema)
-    results = []
-    merge_tasks = []
-    common_tasks = []
 
-    # Build common_tasks (for set N) and merge_tasks
-    for logical, (hist_tbl, incr_tbl) in table_map.items():
-        if logical not in pk_map:
-            results.append({
-                "table": hist_tbl,
-                "status": "SKIPPED",
-                "duration": 0,
-                "logs": ["No primary key in CSV"],
-            })
-            continue
-        common_tasks.append((hist_tbl, incr_tbl, pk_map[logical]))
-        merge_tasks.append((hist_tbl, incr_tbl, pk_map[logical]))
+def merge_deid_to_merged_phase_insert(deid_schema: str) -> dict:
+    """
+    Phase 1 (Airflow task 1): set existing rows (PK in deid) to N, then INSERT from deid as Y.
+    Returns summary with per_table for the validate phase.
+    """
+    engine = _deid_merge_engine()
+    try:
+        pk_map = _load_pk_config()
+        table_map, incr_only = _get_table_map(engine, deid_schema)
+        results = []
+        merge_tasks = []
+        common_tasks = []
 
-    # Tables only in deid schema: create in DEIDENTIFIED_SCHEMA then add to merge_tasks (no set N)
-    for logical, incr_tbl in incr_only.items():
-        if logical not in pk_map:
-            results.append({
-                "table": incr_tbl,
-                "status": "SKIPPED",
-                "duration": 0,
-                "logs": ["No primary key in CSV"],
-            })
-            continue
-        try:
-            _create_table_from_deid(engine, deid_schema, incr_tbl)
-            merge_tasks.append((incr_tbl, incr_tbl, pk_map[logical]))
-        except Exception as e:
-            results.append({
-                "table": incr_tbl,
-                "status": "FAILED",
-                "duration": 0,
-                "logs": [f"Create table failed: {e}"],
-            })
-
-    # 1. Set existing rows (PK in deid_schema) to N
-    set_flags_results = set_deid_merged_flags_to_n(engine, deid_schema, common_tasks)
-
-    # 2. Insert from deid_schema with nd_active_flag = 'Y'
-    with ThreadPoolExecutor(max_workers=MERGE_DEID_MAX_WORKERS) as executor:
-        future_to_hist = {
-            executor.submit(
-                _merge_table,
-                engine,
-                hist_tbl,
-                incr_tbl,
-                pk_cols,
-                deid_schema,
-            ): hist_tbl
-            for (hist_tbl, incr_tbl, pk_cols) in merge_tasks
-        }
-        for future in as_completed(future_to_hist):
-            hist_tbl = future_to_hist[future]
-            try:
-                results.append(future.result())
-            except Exception as e:
+        for logical, (hist_tbl, incr_tbl) in table_map.items():
+            if logical not in pk_map:
                 results.append({
                     "table": hist_tbl,
+                    "status": "SKIPPED",
+                    "duration": 0,
+                    "logs": ["No primary key in CSV"],
+                })
+                continue
+            common_tasks.append((hist_tbl, incr_tbl, pk_map[logical]))
+            merge_tasks.append((hist_tbl, incr_tbl, pk_map[logical]))
+
+        for logical, incr_tbl in incr_only.items():
+            if logical not in pk_map:
+                results.append({
+                    "table": incr_tbl,
+                    "status": "SKIPPED",
+                    "duration": 0,
+                    "logs": ["No primary key in CSV"],
+                })
+                continue
+            try:
+                _create_table_from_deid(engine, deid_schema, incr_tbl)
+                merge_tasks.append((incr_tbl, incr_tbl, pk_map[logical]))
+            except Exception as e:
+                results.append({
+                    "table": incr_tbl,
                     "status": "FAILED",
                     "duration": 0,
-                    "logs": [f"ERROR: {e}"],
-                    "inserted": 0,
+                    "logs": [f"Create table failed: {e}"],
                 })
 
-    results.sort(key=lambda r: r.get("table", ""))
+        set_flags_results = set_deid_merged_flags_to_n(engine, deid_schema, common_tasks)
 
-    # 3. Validate one active per PK for all merged tables
-    validation_summary = validate_deid_merged_one_active_per_pk(engine, results, pk_map)
+        with ThreadPoolExecutor(max_workers=MERGE_DEID_MAX_WORKERS) as executor:
+            future_to_hist = {
+                executor.submit(
+                    _merge_table,
+                    engine,
+                    hist_tbl,
+                    incr_tbl,
+                    pk_cols,
+                    deid_schema,
+                ): hist_tbl
+                for (hist_tbl, incr_tbl, pk_cols) in merge_tasks
+            }
+            for future in as_completed(future_to_hist):
+                hist_tbl = future_to_hist[future]
+                try:
+                    results.append(future.result())
+                except Exception as e:
+                    results.append({
+                        "table": hist_tbl,
+                        "status": "FAILED",
+                        "duration": 0,
+                        "logs": [f"ERROR: {e}"],
+                        "inserted": 0,
+                    })
 
-    # 4. Fix tables that failed validation (full table: all N then one Y per PK)
-    fix_summary = fix_deid_merged_one_active_per_pk(engine, validation_summary)
+        results.sort(key=lambda r: r.get("table", ""))
+        total = len(results)
+        success = sum(1 for r in results if r["status"] == "SUCCESS")
+        skipped = sum(1 for r in results if r["status"] == "SKIPPED")
+        failed = sum(1 for r in results if r["status"] == "FAILED")
 
-    engine.dispose()
+        return {
+            "deid_schema": deid_schema,
+            "target_schema": DEIDENTIFIED_SCHEMA,
+            "total_tables": total,
+            "success": success,
+            "skipped": skipped,
+            "failed": failed,
+            "per_table": results,
+            "set_flags_per_table": set_flags_results,
+        }
+    finally:
+        engine.dispose()
 
-    total = len(results)
-    success = sum(1 for r in results if r["status"] == "SUCCESS")
-    skipped = sum(1 for r in results if r["status"] == "SKIPPED")
-    failed = sum(1 for r in results if r["status"] == "FAILED")
 
+def merge_deid_to_merged_phase_validate(merge_insert_summary: dict) -> dict:
+    """
+    Phase 2 (Airflow task 2): validate one active row per PK for tables merged in phase 1.
+    Expects merge_insert_summary from merge_deid_to_merged_phase_insert (must include per_table).
+    """
+    if not merge_insert_summary or "per_table" not in merge_insert_summary:
+        return {
+            "per_table_results": [],
+            "validation_failed_tables": [],
+            "success": 0,
+            "failed": 0,
+            "skipped": 0,
+        }
+    engine = _deid_merge_engine()
+    try:
+        pk_map = _load_pk_config()
+        return validate_deid_merged_one_active_per_pk(
+            engine, merge_insert_summary["per_table"], pk_map
+        )
+    finally:
+        engine.dispose()
+
+
+def merge_deid_to_merged_phase_fix(validation_summary: dict) -> dict:
+    """
+    Phase 3 (Airflow task 3): for tables that failed validation, SET all N then one Y per PK.
+    """
+    engine = _deid_merge_engine()
+    try:
+        return fix_deid_merged_one_active_per_pk(engine, validation_summary)
+    finally:
+        engine.dispose()
+
+
+def merge_deid_to_merged(deid_schema: str) -> dict:
+    """
+    Full pipeline in one call: phase insert → validate → fix.
+    For Airflow, prefer merge_deid_to_merged_phase_insert, _phase_validate, _phase_fix as separate tasks.
+    """
+    p1 = merge_deid_to_merged_phase_insert(deid_schema)
+    val = merge_deid_to_merged_phase_validate(p1)
+    fix = merge_deid_to_merged_phase_fix(val)
     return {
-        "deid_schema": deid_schema,
-        "target_schema": DEIDENTIFIED_SCHEMA,
-        "total_tables": total,
-        "success": success,
-        "skipped": skipped,
-        "failed": failed,
-        "per_table": results,
-        "set_flags_per_table": set_flags_results,
-        "validation": validation_summary,
-        "fix": fix_summary,
+        "deid_schema": p1["deid_schema"],
+        "target_schema": p1["target_schema"],
+        "total_tables": p1["total_tables"],
+        "success": p1["success"],
+        "skipped": p1["skipped"],
+        "failed": p1["failed"],
+        "per_table": p1["per_table"],
+        "set_flags_per_table": p1["set_flags_per_table"],
+        "validation": val,
+        "fix": fix,
     }
