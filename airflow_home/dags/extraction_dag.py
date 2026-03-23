@@ -119,8 +119,8 @@ with DAG(
     catchup=False,
     max_active_tasks=MAX_ACTIVE_TASKS,
     tags=["athenaone", "extract", "merge"],
-    on_success_callback=[extract_merge_chat_success],
-    on_failure_callback=[extract_merge_chat_failure],
+    on_success_callback=extract_merge_chat_success,
+    on_failure_callback=extract_merge_chat_failure,
 ) as dag_extract_merge:
 
     @task
