@@ -181,13 +181,14 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
     for r in rows:
         color = "#d4edda" if r["status"] == "PASS" else "#fff3cd"
         badge_color = "#28a745" if r["status"] == "PASS" else "#e67e22"
+        ignore_display = "N/A" if r["ignore_rows"] is None else f"{r['ignore_rows']:,}"
         table_rows_html += f"""
         <tr style="background:{color};">
             <td>{r['table']}</td>
             <td style="text-align:right;">{r['orig_count']:,}</td>
             <td style="text-align:right;">{r['deid_count']:,}</td>
             <td style="text-align:right;">{r['diff']:,}</td>
-            <td style="text-align:right;">{'N/A' if r['ignore_rows'] is None else f"{r['ignore_rows']:,"}</td>
+            <td style="text-align:right;">{ignore_display}</td>
             <td style="text-align:center;">
                 <span style="background:{badge_color};color:#fff;padding:2px 8px;border-radius:4px;font-weight:bold;">
                     {r['status']}
