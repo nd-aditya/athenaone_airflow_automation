@@ -9,6 +9,7 @@ from services.config import (
     MYSQL_PASSWORD,
     MYSQL_HOST,
     HISTORICAL_SCHEMA,
+    CLIENT_NAME,
 )
 
 MAPPING_SCHEMA = "mapping_prod"
@@ -217,7 +218,7 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
 
     report_html = f"""<!DOCTYPE html>
 <html><body style="font-family:Arial,sans-serif;font-size:13px;color:#222;max-width:1100px;margin:auto;padding:24px;">
-<h2 style="margin-bottom:4px;">QC Report</h2>
+<h2 style="margin-bottom:4px;">{CLIENT_NAME} Deidentification Quantitative QC Report</h2>
 <p style="color:#555;margin-top:0;">{diff_schema} &nbsp;vs&nbsp; {deid_schema}</p>
 
 <div style="display:flex;gap:16px;margin-bottom:20px;">
