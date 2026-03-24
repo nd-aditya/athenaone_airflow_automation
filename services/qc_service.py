@@ -177,8 +177,10 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
     pass_count = sum(1 for r in rows if r["status"] == "PASS")
     fail_count = sum(1 for r in rows if r["status"] == "NEED_TO_CHECK")
 
+    report_rows = [r for r in rows if r["orig_count"] > 0]
+
     table_rows_html = ""
-    for r in rows:
+    for r in report_rows:
         color = "#d4edda" if r["status"] == "PASS" else "#fff3cd"
         badge_color = "#28a745" if r["status"] == "PASS" else "#e67e22"
         ignore_display = "N/A" if r["ignore_rows"] is None else f"{r['ignore_rows']:,}"
