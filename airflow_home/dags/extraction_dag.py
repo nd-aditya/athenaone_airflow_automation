@@ -46,6 +46,8 @@ from services.deid_runner import (
 from services.mapping_master_service import update_mapping_and_master_tables
 from services.worker_lifecycle import clear_worker_logs, start_workers, stop_workers
 from services.google_chat_service import extract_merge_chat_failure, extract_merge_chat_success
+from services.qc_service import run_qc
+from services.email_service import send_qc_report_email
 
 # Snowflake schemas to extract from. Each can have table_rename_map for MySQL target names
 # (e.g. ATHENAONE.appointment -> appointment_2 so it does not clash with scheduling.appointment).
@@ -145,7 +147,7 @@ with DAG(
             )
             with engine.connect() as conn:
                 result = conn.execute(
-                    text("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = :schema ORDER BY TABLE_NAME"),
+                    text("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = :schema ORDER BY TABLE_NAME"),
                     {"schema": schema_name},
                 )
                 tables = [row[0] for row in result.fetchall()]
@@ -314,6 +316,23 @@ with DAG(
             raise ValueError("diff_result missing diff_schema")
         return update_diff_schema_history_and_drop_old(diff_result["diff_schema"], keep_last_n=3)
 
+    @task
+    def run_qc_and_email(diff_result: dict) -> dict:
+        """Run QC comparison between diff and deid schemas, email results to EMAIL_RECIPIENTS."""
+        if not diff_result or "diff_schema" not in diff_result:
+            raise ValueError("diff_result missing diff_schema")
+        diff_schema = diff_result["diff_schema"]
+        deid_schema = diff_schema + "_deid"
+        result = run_qc(diff_schema, deid_schema)
+        send_qc_report_email(result)
+        return {
+            "diff_schema": diff_schema,
+            "deid_schema": deid_schema,
+            "pass_count": result["pass_count"],
+            "fail_count": result["fail_count"],
+            "error_count": len(result["errors"]),
+        }
+
     diff_task = copy_to_diff_priority()
     deid_run_task = run_deid_pipeline(diff_task)
     mapping_master_task = update_mapping_master(deid_run_task)
@@ -322,6 +341,8 @@ with DAG(
     create_deid_tasks_task = create_deid_tasks(start_workers_task)
     wait_deid_task = wait_for_deid(create_deid_tasks_task)
     stop_workers_task = stop_deid_workers(wait_deid_task)
+    qc_task = run_qc_and_email(diff_task)
+    stop_workers_task >> qc_task
     merge_deid_insert = merge_deid_insert_task(diff_task)
     validate_deid_merge = validate_deid_merge_task(merge_deid_insert)
     fix_deid_merge = fix_deid_merge_task(validate_deid_merge)
@@ -335,6 +356,7 @@ with DAG(
         >> create_deid_tasks_task
         >> wait_deid_task
         >> stop_workers_task
+        >> qc_task
         >> merge_deid_insert
         >> validate_deid_merge
         >> fix_deid_merge
