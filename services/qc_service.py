@@ -166,7 +166,7 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
                 "diff": diff,
                 "ignore_rows": ignore_rows,
                 "status": status,
-                "comment": comment,
+                "comment": comment if diff != 0 else "",
             })
         except Exception as e:
             errors.append({"table": table, "error": str(e)})
@@ -174,10 +174,10 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
     orig_engine.dispose()
     deid_engine.dispose()
 
-    pass_count = sum(1 for r in rows if r["status"] == "PASS")
-    fail_count = sum(1 for r in rows if r["status"] == "NEED_TO_CHECK")
-
     report_rows = [r for r in rows if r["orig_count"] > 0]
+
+    pass_count = sum(1 for r in report_rows if r["status"] == "PASS")
+    fail_count = sum(1 for r in report_rows if r["status"] == "NEED_TO_CHECK")
 
     table_rows_html = ""
     for r in report_rows:
