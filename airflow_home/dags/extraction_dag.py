@@ -51,8 +51,8 @@ from services.google_chat_service import extract_merge_chat_failure, extract_mer
 # (e.g. ATHENAONE.appointment -> appointment_2 so it does not clash with scheduling.appointment).
 EXTRACT_SOURCE_CONFIGS = [
     {"schema": "ATHENAONE", "table_rename_map": {"APPOINTMENT": "appointment_2"}},
-    {"schema": "scheduling", "table_rename_map": {}},
-    {"schema": "financials", "table_rename_map": {}},
+    {"schema": "SCHEDULING", "table_rename_map": {}},
+    {"schema": "FINANCIALS", "table_rename_map": {}},
 ]
 
 BATCH_SIZE = 40
