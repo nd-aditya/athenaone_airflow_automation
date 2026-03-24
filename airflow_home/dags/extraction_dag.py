@@ -342,7 +342,6 @@ with DAG(
     wait_deid_task = wait_for_deid(create_deid_tasks_task)
     stop_workers_task = stop_deid_workers(wait_deid_task)
     qc_task = run_qc_and_email(diff_task)
-    stop_workers_task >> qc_task
     merge_deid_insert = merge_deid_insert_task(diff_task)
     validate_deid_merge = validate_deid_merge_task(merge_deid_insert)
     fix_deid_merge = fix_deid_merge_task(validate_deid_merge)
@@ -356,12 +355,10 @@ with DAG(
         >> create_deid_tasks_task
         >> wait_deid_task
         >> stop_workers_task
-        >> qc_task
-        >> merge_deid_insert
-        >> validate_deid_merge
-        >> fix_deid_merge
-        >> trim_task
+        >> [qc_task, merge_deid_insert]
     )
+    merge_deid_insert >> validate_deid_merge >> fix_deid_merge >> trim_task
+    [qc_task, fix_deid_merge] >> trim_task
 
 
 # =============================================================================

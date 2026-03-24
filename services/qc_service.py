@@ -177,32 +177,77 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
     pass_count = sum(1 for r in rows if r["status"] == "PASS")
     fail_count = sum(1 for r in rows if r["status"] == "NEED_TO_CHECK")
 
-    lines = [
-        f"QC Report: {diff_schema}  vs  {deid_schema}",
-        "=" * 142,
-        (
-            f"{'TABLE':30}{'ORIG_CNT':>12}{'DEID_CNT':>12}{'DIFF':>10}"
-            f"{'IGNORE_ROWS':>14}{'STATUS':>14}{'COMMENTS':>50}"
-        ),
-        "-" * 142,
-    ]
+    table_rows_html = ""
     for r in rows:
-        lines.append(
-            f"{r['table']:30}{r['orig_count']:12}{r['deid_count']:12}{r['diff']:10}"
-            f"{'N/A' if r['ignore_rows'] is None else str(r['ignore_rows']):>14}"
-            f"{r['status']:>14}{r['comment']:>50}"
-        )
-    lines += [
-        "",
-        f"Summary: {pass_count} PASS  |  {fail_count} NEED_TO_CHECK  |  {len(errors)} errors",
-    ]
+        color = "#d4edda" if r["status"] == "PASS" else "#fff3cd"
+        badge_color = "#28a745" if r["status"] == "PASS" else "#e67e22"
+        table_rows_html += f"""
+        <tr style="background:{color};">
+            <td>{r['table']}</td>
+            <td style="text-align:right;">{r['orig_count']:,}</td>
+            <td style="text-align:right;">{r['deid_count']:,}</td>
+            <td style="text-align:right;">{r['diff']:,}</td>
+            <td style="text-align:right;">{'N/A' if r['ignore_rows'] is None else f"{r['ignore_rows']:,"}</td>
+            <td style="text-align:center;">
+                <span style="background:{badge_color};color:#fff;padding:2px 8px;border-radius:4px;font-weight:bold;">
+                    {r['status']}
+                </span>
+            </td>
+            <td style="color:#555;">{r['comment']}</td>
+        </tr>"""
+
+    errors_html = ""
     if errors:
-        lines += ["", "ERROR SUMMARY", "=" * 100]
-        for e in errors:
-            lines.append(f"{e['table']:30} {e['error']}")
+        error_rows = "".join(
+            f"<tr><td>{e['table']}</td><td style='color:red;'>{e['error']}</td></tr>"
+            for e in errors
+        )
+        errors_html = f"""
+        <h3 style="color:#c0392b;margin-top:32px;">Errors ({len(errors)})</h3>
+        <table style="{_TABLE_STYLE}">
+            <thead><tr style="background:#c0392b;color:#fff;">
+                <th style="text-align:left;padding:8px;">Table</th>
+                <th style="text-align:left;padding:8px;">Error</th>
+            </tr></thead>
+            <tbody>{error_rows}</tbody>
+        </table>"""
+
+    report_html = f"""<!DOCTYPE html>
+<html><body style="font-family:Arial,sans-serif;font-size:13px;color:#222;max-width:1100px;margin:auto;padding:24px;">
+<h2 style="margin-bottom:4px;">QC Report</h2>
+<p style="color:#555;margin-top:0;">{diff_schema} &nbsp;vs&nbsp; {deid_schema}</p>
+
+<div style="display:flex;gap:16px;margin-bottom:20px;">
+    <div style="background:#d4edda;border-radius:6px;padding:12px 24px;font-size:15px;">
+        ✅ <strong>{pass_count}</strong> PASS
+    </div>
+    <div style="background:#fff3cd;border-radius:6px;padding:12px 24px;font-size:15px;">
+        ⚠️ <strong>{fail_count}</strong> NEED TO CHECK
+    </div>
+    <div style="background:#f8d7da;border-radius:6px;padding:12px 24px;font-size:15px;">
+        ❌ <strong>{len(errors)}</strong> Errors
+    </div>
+</div>
+
+<table style="{_TABLE_STYLE}">
+    <thead>
+        <tr style="background:#343a40;color:#fff;">
+            <th style="text-align:left;padding:8px;">Table</th>
+            <th style="text-align:right;padding:8px;">Orig Count</th>
+            <th style="text-align:right;padding:8px;">Deid Count</th>
+            <th style="text-align:right;padding:8px;">Diff</th>
+            <th style="text-align:right;padding:8px;">Ignore Rows</th>
+            <th style="text-align:center;padding:8px;">Status</th>
+            <th style="text-align:left;padding:8px;">Comments</th>
+        </tr>
+    </thead>
+    <tbody>{table_rows_html}</tbody>
+</table>
+{errors_html}
+</body></html>"""
 
     return {
-        "report": "\n".join(lines),
+        "report": report_html,
         "rows": rows,
         "errors": errors,
         "pass_count": pass_count,
@@ -210,3 +255,9 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
         "diff_schema": diff_schema,
         "deid_schema": deid_schema,
     }
+
+
+_TABLE_STYLE = (
+    "width:100%;border-collapse:collapse;border:1px solid #dee2e6;"
+    "font-size:13px;"
+)

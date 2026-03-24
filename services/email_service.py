@@ -11,12 +11,12 @@ from email.mime.text import MIMEText
 
 
 def send_email(subject: str, body: str, recipients: list, sender: str, app_password: str) -> bool:
-    """Send a plain-text email via Gmail SMTP SSL. Returns True on success."""
-    msg = MIMEMultipart()
+    """Send an HTML email via Gmail SMTP SSL. Returns True on success."""
+    msg = MIMEMultipart("alternative")
     msg["From"] = sender
     msg["To"] = ", ".join(recipients)
     msg["Subject"] = subject
-    msg.attach(MIMEText(body, "plain"))
+    msg.attach(MIMEText(body, "html"))
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(sender, app_password)
