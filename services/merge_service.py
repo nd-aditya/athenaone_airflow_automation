@@ -281,8 +281,13 @@ def _process_table(table_name: str, engine, incr_schema: str, hist_schema: str, 
 
                 incr_cols = _get_columns(engine, incr_schema, table_name)
                 hist_cols = _get_columns(engine, hist_schema, table_name)
-                if "nd_auto_increment_id" in hist_cols:
-                    hist_cols = [c for c in hist_cols if c != "nd_auto_increment_id"]
+                if "nd_auto_increment_id" not in hist_cols:
+                    conn.execute(text(
+                        f"ALTER TABLE {dst_fqn} ADD COLUMN `nd_auto_increment_id` "
+                        f"BIGINT NOT NULL AUTO_INCREMENT UNIQUE"
+                    ))
+                    hist_cols = _get_columns(engine, hist_schema, table_name)
+                hist_cols = [c for c in hist_cols if c != "nd_auto_increment_id"]
                 common_cols = sorted(list(set(incr_cols).intersection(hist_cols)))
                 if "nd_active_flag" in common_cols:
                     common_cols = [c for c in common_cols if c != "nd_active_flag"]
