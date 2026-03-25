@@ -146,12 +146,27 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
     rows = []
     errors = []
 
+    deid_tables = set(_all_tables(deid_engine, deid_schema))
+
     for table in tables:
         try:
             with orig_engine.connect() as conn:
                 orig_count = conn.execute(
                     text(f"SELECT COUNT(*) FROM `{diff_schema}`.`{table}`")
                 ).scalar() or 0
+
+            if table not in deid_tables:
+                rows.append({
+                    "table": table,
+                    "orig_count": orig_count,
+                    "deid_count": 0,
+                    "diff": orig_count,
+                    "ignore_rows": None,
+                    "status": "NEED_TO_CHECK",
+                    "comment": "Table not deidentified",
+                })
+                continue
+
             with deid_engine.connect() as conn:
                 deid_count = conn.execute(
                     text(f"SELECT COUNT(*) FROM `{deid_schema}`.`{table}`")
