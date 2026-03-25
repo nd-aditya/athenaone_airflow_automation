@@ -29,12 +29,9 @@ def send_email(subject: str, body: str, recipients: list, sender: str, app_passw
 
 def send_qc_report_email(qc_result: dict) -> bool:
     """Send QC report email using config values."""
-    from services.config import EMAIL_RECIPIENTS, EMAIL_SENDER, EMAIL_APP_PASSWORD
+    from services.config import EMAIL_RECIPIENTS, EMAIL_SENDER, EMAIL_APP_PASSWORD, CLIENT_NAME
 
-    subject = (
-        f"[QC] {qc_result['diff_schema']} — "
-        f"{qc_result['pass_count']} PASS / {qc_result['fail_count']} NEED_TO_CHECK"
-    )
+    subject = f"{CLIENT_NAME} QC Report for Today's Deidentification"
     return send_email(
         subject,
         qc_result["report"],
