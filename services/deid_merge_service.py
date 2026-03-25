@@ -73,14 +73,28 @@ def _get_table_map(engine, incr_schema: str) -> tuple[dict, dict]:
 
 
 def _create_table_from_deid(engine, incr_schema: str, table_name: str) -> None:
-    """Create table in DEIDENTIFIED_SCHEMA like incr_schema.table_name and add nd_active_flag if missing."""
+    """Create table in DEIDENTIFIED_SCHEMA like incr_schema.table_name, add nd_active_flag and
+    ensure nd_auto_increment_id has a UNIQUE constraint to prevent duplicates."""
     hist_fqn = f"{_q(DEIDENTIFIED_SCHEMA)}.{_q(table_name)}"
     incr_fqn = f"{_q(incr_schema)}.{_q(table_name)}"
     with engine.begin() as conn:
         conn.execute(text(f"CREATE TABLE {hist_fqn} LIKE {incr_fqn}"))
         cols = [c["name"] for c in inspect(engine).get_columns(table_name, schema=DEIDENTIFIED_SCHEMA)]
-        if "nd_active_flag" not in [c.lower() for c in cols]:
+        col_names_lower = [c.lower() for c in cols]
+        if "nd_active_flag" not in col_names_lower:
             conn.execute(text(f"ALTER TABLE {hist_fqn} ADD COLUMN `nd_active_flag` VARCHAR(1) DEFAULT 'Y'"))
+        if "nd_auto_increment_id" in col_names_lower:
+            unique_exists = conn.execute(text("""
+                SELECT 1 FROM information_schema.statistics
+                WHERE table_schema = :s AND table_name = :t
+                  AND column_name = 'nd_auto_increment_id'
+                  AND non_unique = 0
+                LIMIT 1
+            """), {"s": DEIDENTIFIED_SCHEMA, "t": table_name}).scalar() is not None
+            if not unique_exists:
+                conn.execute(text(
+                    f"ALTER TABLE {hist_fqn} ADD UNIQUE KEY `uq_nd_auto_increment_id` (`nd_auto_increment_id`)"
+                ))
 
 
 def _build_index_columns(conn, schema: str, table: str, cols: list) -> list:

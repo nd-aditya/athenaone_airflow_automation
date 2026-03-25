@@ -160,7 +160,8 @@ def copy_historical_to_diff_schema(tables_to_copy: Optional[list[str]] = None) -
     inspector = inspect(engine)
 
     with engine.connect() as conn:
-        conn.execute(text(f"CREATE DATABASE IF NOT EXISTS {_q(diff_schema)}"))
+        conn.execute(text(f"DROP DATABASE IF EXISTS {_q(diff_schema)}"))
+        conn.execute(text(f"CREATE DATABASE {_q(diff_schema)}"))
         conn.commit()
 
     hist_tables_all = inspector.get_table_names(schema=HISTORICAL_SCHEMA)

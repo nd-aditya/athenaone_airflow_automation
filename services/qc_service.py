@@ -162,7 +162,7 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
                     "deid_count": 0,
                     "diff": orig_count,
                     "ignore_rows": None,
-                    "status": "NEED_TO_CHECK",
+                    "status": "FAILED",
                     "comment": "Table not deidentified",
                 })
                 continue
@@ -197,8 +197,8 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
 
     table_rows_html = ""
     for r in report_rows:
-        color = "#d4edda" if r["status"] == "PASS" else "#fff3cd"
-        badge_color = "#28a745" if r["status"] == "PASS" else "#e67e22"
+        color = "#d4edda" if r["status"] == "PASS" else "#f8d7da" if r["status"] == "FAILED" else "#fff3cd"
+        badge_color = "#28a745" if r["status"] == "PASS" else "#c0392b" if r["status"] == "FAILED" else "#e67e22"
         ignore_display = "N/A" if r["ignore_rows"] is None else f"{r['ignore_rows']:,}"
         table_rows_html += f"""
         <tr style="background:{color};">
