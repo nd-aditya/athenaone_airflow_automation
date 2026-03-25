@@ -9,17 +9,24 @@ from nd_api_v2.services.utils import get_default_table_details_for_ui
 import threading
 
 def ensure_table_metadata(table_name: str, connection_string: Optional[str] = None, columns: Optional[list[str]] = None, primary_key: Optional[list[str]] = None):
-    table_metadata, created = TableMetadata.objects.get_or_create(table_name=table_name)
-    if created:
-        nd_db_handler = NDDBHandler(connection_string)
-        if columns is None:
-            columns = nd_db_handler.get_column_names(table_name)
-        if primary_key is None:
-            primary_key = nd_db_handler.get_primary_key(table_name)
-        table_metadata.columns = columns
-        table_metadata.primary_key = primary_key
-        table_metadata.table_details_for_ui = get_default_table_details_for_ui(columns)
-        table_metadata.save()
+    # Case-insensitive lookup so existing config for e.g. "patientmedication" is reused
+    # when the table is now registered as "PATIENTMEDICATION".
+    table_metadata = TableMetadata.objects.filter(table_name__iexact=table_name).first()
+    if table_metadata is not None:
+        return table_metadata
+    # Not found — create with uppercase name so all new registrations are consistent.
+    nd_db_handler = NDDBHandler(connection_string)
+    if columns is None:
+        columns = nd_db_handler.get_column_names(table_name)
+    if primary_key is None:
+        primary_key = nd_db_handler.get_primary_key(table_name)
+    table_metadata = TableMetadata(
+        table_name=table_name.upper(),
+        columns=columns,
+        primary_key=primary_key,
+        table_details_for_ui=get_default_table_details_for_ui(columns),
+    )
+    table_metadata.save()
     return table_metadata
 
 def update_auto_increment_values(table_metadata: TableMetadata, table_obj: Table, max_rows: int):
@@ -49,6 +56,7 @@ def register_dump_in_queue(connection_string: str, dump_date: str):
 
     def table_pipeline(table):
         db_handler = get_threadlocal_dbhandler()
+        table = table.upper()
         # Reuse ensure_table_metadata
         table_metadata = ensure_table_metadata(table, connection_string)
         table_obj, _ = Table.register_table(table_metadata, incremental_queue)
