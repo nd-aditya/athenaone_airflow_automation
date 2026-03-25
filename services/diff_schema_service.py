@@ -293,3 +293,133 @@ def update_diff_schema_history_and_drop_old(
         "dropped_schemas": dropped,
         "kept_last_n": keep_last_n,
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Dropped-records copy: historical rows whose nd_auto_increment_id is absent
+# from DEIDENTIFIED_SCHEMA (records never deidentified). Used by DAG 4.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _ensure_nd_auto_increment_index(conn, schema: str, table_name: str) -> None:
+    """Add an index on nd_auto_increment_id in schema.table if one does not exist."""
+    exists = conn.execute(text("""
+        SELECT 1 FROM information_schema.statistics
+        WHERE table_schema = :s AND table_name = :t
+          AND column_name = 'nd_auto_increment_id' AND seq_in_index = 1
+        LIMIT 1
+    """), {"s": schema, "t": table_name}).fetchone() is not None
+    if not exists:
+        conn.execute(text(
+            f"ALTER TABLE {_q(schema)}.{_q(table_name)} "
+            f"ADD INDEX `idx_nd_auto_increment_id` (`nd_auto_increment_id`)"
+        ))
+
+
+def _copy_one_table_to_dropped(table_name: str, engine, dropped_schema: str) -> dict:
+    """
+    Copy rows from HISTORICAL_SCHEMA that are absent from DEIDENTIFIED_SCHEMA
+    using a LEFT JOIN anti-join on nd_auto_increment_id.
+    Skips tables missing from DEIDENTIFIED_SCHEMA or lacking nd_auto_increment_id.
+    """
+    stats = {"table": table_name, "inserted": 0, "duration": None, "error": None}
+    start = time.time()
+    try:
+        inspector = inspect(engine)
+
+        deid_tables = [t.lower() for t in inspector.get_table_names(schema=DEIDENTIFIED_SCHEMA)]
+        if table_name.lower() not in deid_tables:
+            stats["error"] = "Table not in DEIDENTIFIED_SCHEMA — skipped"
+            stats["duration"] = round(time.time() - start, 3)
+            return stats
+
+        hist_cols = [c["name"] for c in inspector.get_columns(table_name, schema=HISTORICAL_SCHEMA)]
+        deid_cols = [c["name"] for c in inspector.get_columns(table_name, schema=DEIDENTIFIED_SCHEMA)]
+
+        if "nd_auto_increment_id" not in hist_cols or "nd_auto_increment_id" not in deid_cols:
+            stats["error"] = "nd_auto_increment_id missing — skipped"
+            stats["duration"] = round(time.time() - start, 3)
+            return stats
+
+        hist_fqn    = f"{_q(HISTORICAL_SCHEMA)}.{_q(table_name)}"
+        deid_fqn    = f"{_q(DEIDENTIFIED_SCHEMA)}.{_q(table_name)}"
+        dropped_fqn = f"{_q(dropped_schema)}.{_q(table_name)}"
+
+        with engine.begin() as conn:
+            _ensure_nd_auto_increment_index(conn, DEIDENTIFIED_SCHEMA, table_name)
+            conn.execute(text(f"""
+                CREATE TABLE {dropped_fqn} AS
+                SELECT h.*
+                FROM {hist_fqn} h
+                LEFT JOIN {deid_fqn} d ON h.`nd_auto_increment_id` = d.`nd_auto_increment_id`
+                WHERE d.`nd_auto_increment_id` IS NULL
+            """))
+            stats["inserted"] = conn.execute(
+                text(f"SELECT COUNT(*) FROM {dropped_fqn}")
+            ).scalar() or 0
+
+        stats["duration"] = round(time.time() - start, 3)
+        return stats
+    except SQLAlchemyError as e:
+        stats["error"] = f"{type(e).__name__}: {str(e)}"
+        stats["duration"] = round(time.time() - start, 3)
+        return stats
+
+
+def copy_historical_to_dropped_schema(tables_to_copy: Optional[list[str]] = None) -> dict:
+    """
+    Drop + create diff_<date>_dropped schema, then for each requested table copy rows
+    from HISTORICAL_SCHEMA whose nd_auto_increment_id is absent in DEIDENTIFIED_SCHEMA.
+    Returns summary dict with diff_schema key for downstream DAG task compatibility.
+    """
+    dropped_schema = f"diff_{date.today().strftime('%Y%m%d')}_dropped"
+    connection_str = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}"
+    engine = create_engine(
+        connection_str,
+        pool_pre_ping=True,
+        pool_size=COPY_TO_DIFF_MAX_WORKERS + 5,
+        max_overflow=5,
+    )
+    inspector = inspect(engine)
+
+    with engine.connect() as conn:
+        conn.execute(text(f"DROP DATABASE IF EXISTS {_q(dropped_schema)}"))
+        conn.execute(text(f"CREATE DATABASE {_q(dropped_schema)}"))
+        conn.commit()
+
+    hist_tables_all = inspector.get_table_names(schema=HISTORICAL_SCHEMA)
+    if tables_to_copy is not None:
+        requested_lower = {t.lower() for t in tables_to_copy}
+        tables_to_process = [t for t in hist_tables_all if t.lower() in requested_lower]
+    else:
+        tables_to_process = hist_tables_all
+
+    results = []
+    start_all = time.time()
+
+    with ThreadPoolExecutor(max_workers=COPY_TO_DIFF_MAX_WORKERS) as executor:
+        future_to_table = {
+            executor.submit(_copy_one_table_to_dropped, table_name, engine, dropped_schema): table_name
+            for table_name in tables_to_process
+        }
+        for future in as_completed(future_to_table):
+            table_name = future_to_table[future]
+            try:
+                results.append(future.result())
+            except Exception as e:
+                results.append({"table": table_name, "inserted": 0, "duration": None, "error": str(e)})
+
+    total_time = round(time.time() - start_all, 2)
+    engine.dispose()
+    failed = [r for r in results if r.get("error")]
+
+    return {
+        "diff_schema": dropped_schema,
+        "total_tables": len(results),
+        "succeeded": len(results) - len(failed),
+        "failed": len(failed),
+        "total_rows_inserted": sum(r.get("inserted", 0) for r in results),
+        "total_time_seconds": total_time,
+        "failed_tables": [{"table": r["table"], "error": r["error"]} for r in failed],
+        "per_table_results": results,
+        "tables_to_copy": tables_to_process,
+    }

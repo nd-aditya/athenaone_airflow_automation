@@ -30,7 +30,7 @@ from services.merge_service import (
     validate_historical_one_active_per_pk,
     fix_historical_one_active_per_pk,
 )
-from services.diff_schema_service import copy_historical_to_diff_schema, update_diff_schema_history_and_drop_old
+from services.diff_schema_service import copy_historical_to_diff_schema, update_diff_schema_history_and_drop_old, copy_historical_to_dropped_schema
 from services.deid_merge_service import (
     merge_deid_to_merged_phase_fix,
     merge_deid_to_merged_phase_insert,
@@ -491,3 +491,129 @@ with DAG(
         >> fix_deid_rem
         >> trim_task
     )
+
+
+# =============================================================================
+# DAG 4: Dropped records — deidentify historical rows absent from
+#        DEIDENTIFIED_SCHEMA (anti-join on nd_auto_increment_id).
+#        Same pipeline as DAG 2 but copy uses dropped schema logic.
+# =============================================================================
+with DAG(
+    dag_id="Athenaone_Deid_Dropped_Records",
+    start_date=datetime(2026, 1, 1),
+    schedule=None,
+    catchup=False,
+    max_active_tasks=MAX_ACTIVE_TASKS,
+    tags=["athenaone", "deid", "dropped_records"],
+) as dag_deid_dropped:
+
+    @task
+    def copy_to_diff_dropped() -> dict:
+        return copy_historical_to_dropped_schema(tables_to_copy=TEST_TABLE_NAMES)
+
+    @task
+    def run_deid_pipeline_dropped(diff_result: dict) -> dict:
+        if not diff_result or "diff_schema" not in diff_result:
+            raise ValueError("copy_to_diff_dropped did not return diff_schema")
+        return run_deid_pipeline_for_airflow(diff_result["diff_schema"])
+
+    @task
+    def update_mapping_master_dropped(pipe_result: dict) -> dict:
+        if not pipe_result or "queue_id" not in pipe_result:
+            raise ValueError("run_deid_pipeline did not return queue_id")
+        return update_mapping_and_master_tables(pipe_result["queue_id"])
+
+    @task
+    def get_dropped_table_ids(mapping_result: dict) -> dict:
+        if not mapping_result or "queue_id" not in mapping_result:
+            raise ValueError("mapping_result missing queue_id")
+        table_ids = get_table_ids_for_queue_by_names(mapping_result["queue_id"], TEST_TABLE_NAMES)
+        return {**(mapping_result or {}), "table_ids": table_ids}
+
+    @task
+    def start_deid_workers_dropped(mapping_result: dict) -> dict:
+        out = clear_worker_logs()
+        out_start = start_workers(n=DEID_WORKERS, conda_env=DEID_CONDA_ENV)
+        return {**(mapping_result or {}), "cleared_logs": out.get("cleared", []), **out_start}
+
+    @task
+    def create_deid_tasks_dropped(pipe_result: dict) -> dict:
+        if not pipe_result or "queue_id" not in pipe_result or "table_ids" not in pipe_result:
+            raise ValueError("pipe_result missing queue_id or table_ids")
+        out = create_deid_tasks_for_queue(pipe_result["queue_id"], table_ids=pipe_result["table_ids"])
+        return {**out, "table_ids": pipe_result["table_ids"]}
+
+    @task
+    def wait_for_deid_dropped(deid_result: dict) -> dict:
+        if not deid_result or "queue_id" not in deid_result or "table_ids" not in deid_result:
+            raise ValueError("deid_result missing queue_id or table_ids")
+        return wait_for_deid_completion(deid_result["queue_id"], table_ids=deid_result["table_ids"])
+
+    @task
+    def stop_deid_workers_dropped(_: dict) -> dict:
+        return stop_workers()
+
+    @task
+    def run_qc_and_email_dropped(diff_result: dict) -> dict:
+        if not diff_result or "diff_schema" not in diff_result:
+            raise ValueError("diff_result missing diff_schema")
+        diff_schema = diff_result["diff_schema"]
+        deid_schema = diff_schema + "_deid"
+        result = run_qc(diff_schema, deid_schema)
+        send_qc_report_email(result)
+        return {
+            "diff_schema": diff_schema,
+            "deid_schema": deid_schema,
+            "pass_count": result["pass_count"],
+            "fail_count": result["fail_count"],
+            "error_count": len(result["errors"]),
+        }
+
+    @task
+    def merge_deid_insert_dropped(diff_result: dict) -> dict:
+        """Phase 1: set N for matching PKs + INSERT from deid as Y into DEIDENTIFIED_SCHEMA."""
+        if not diff_result or "diff_schema" not in diff_result:
+            raise ValueError("diff_result missing diff_schema")
+        return merge_deid_to_merged_phase_insert(diff_result["diff_schema"] + "_deid")
+
+    @task
+    def validate_deid_merge_dropped(merge_insert_summary: dict) -> dict:
+        return merge_deid_to_merged_phase_validate(merge_insert_summary or {})
+
+    @task
+    def fix_deid_merge_dropped(validation_summary: dict) -> dict:
+        return merge_deid_to_merged_phase_fix(validation_summary or {})
+
+    @task
+    def trim_diff_schemas_dropped(diff_result: dict) -> dict:
+        if not diff_result or "diff_schema" not in diff_result:
+            raise ValueError("diff_result missing diff_schema")
+        return update_diff_schema_history_and_drop_old(diff_result["diff_schema"], keep_last_n=3)
+
+    diff_dropped_task        = copy_to_diff_dropped()
+    deid_run_dropped         = run_deid_pipeline_dropped(diff_dropped_task)
+    mapping_dropped          = update_mapping_master_dropped(deid_run_dropped)
+    table_ids_dropped        = get_dropped_table_ids(mapping_dropped)
+    start_workers_dropped    = start_deid_workers_dropped(table_ids_dropped)
+    create_tasks_dropped     = create_deid_tasks_dropped(start_workers_dropped)
+    wait_dropped             = wait_for_deid_dropped(create_tasks_dropped)
+    stop_dropped             = stop_deid_workers_dropped(wait_dropped)
+    qc_dropped               = run_qc_and_email_dropped(diff_dropped_task)
+    merge_insert_dropped     = merge_deid_insert_dropped(diff_dropped_task)
+    validate_dropped         = validate_deid_merge_dropped(merge_insert_dropped)
+    fix_dropped              = fix_deid_merge_dropped(validate_dropped)
+    trim_dropped             = trim_diff_schemas_dropped(diff_dropped_task)
+
+    (
+        diff_dropped_task
+        >> deid_run_dropped
+        >> mapping_dropped
+        >> table_ids_dropped
+        >> start_workers_dropped
+        >> create_tasks_dropped
+        >> wait_dropped
+        >> stop_dropped
+        >> [qc_dropped, merge_insert_dropped]
+    )
+    merge_insert_dropped >> validate_dropped >> fix_dropped >> trim_dropped
+    [qc_dropped, fix_dropped] >> trim_dropped
