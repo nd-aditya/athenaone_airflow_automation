@@ -83,6 +83,8 @@ data_type_mapping = {
    'NUMBER(18,6)': 'DECIMAL(18,6)',
 
    'TIMESTAMP_NTZ(9)': 'DATETIME',
+   'TIMESTAMP_LTZ(9)': 'DATETIME',
+   'TIMESTAMP_TZ(9)':  'DATETIME',
 
    'VARCHAR(1)': 'VARCHAR(1)',
    'VARCHAR(2)': 'VARCHAR(2)',
