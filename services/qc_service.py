@@ -194,6 +194,7 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
 
     pass_count = sum(1 for r in report_rows if r["status"] == "PASS")
     fail_count = sum(1 for r in report_rows if r["status"] == "NEED_TO_CHECK")
+    failed_count = sum(1 for r in report_rows if r["status"] == "FAILED")
 
     table_rows_html = ""
     for r in report_rows:
@@ -244,7 +245,10 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
         ⚠️ <strong>{fail_count}</strong> NEED TO CHECK
     </div>
     <div style="background:#f8d7da;border-radius:6px;padding:12px 24px;font-size:15px;">
-        ❌ <strong>{len(errors)}</strong> Errors
+        ❌ <strong>{failed_count}</strong> FAILED
+    </div>
+    <div style="background:#f8d7da;border-radius:6px;padding:12px 24px;font-size:15px;">
+        🔴 <strong>{len(errors)}</strong> Errors
     </div>
 </div>
 
@@ -271,6 +275,7 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
         "errors": errors,
         "pass_count": pass_count,
         "fail_count": fail_count,
+        "failed_count": failed_count,
         "diff_schema": diff_schema,
         "deid_schema": deid_schema,
     }
