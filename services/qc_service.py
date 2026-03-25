@@ -237,20 +237,38 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
 <h2 style="margin-bottom:4px;">{CLIENT_NAME} Deidentification Quantitative QC Report</h2>
 <p style="color:#555;margin-top:0;">{diff_schema} &nbsp;vs&nbsp; {deid_schema}</p>
 
-<div style="display:flex;gap:16px;margin-bottom:20px;">
-    <div style="background:#d4edda;border-radius:6px;padding:12px 24px;font-size:15px;">
-        ✅ <strong>{pass_count}</strong> PASS
-    </div>
-    <div style="background:#fff3cd;border-radius:6px;padding:12px 24px;font-size:15px;">
-        ⚠️ <strong>{fail_count}</strong> NEED TO CHECK
-    </div>
-    <div style="background:#f8d7da;border-radius:6px;padding:12px 24px;font-size:15px;">
-        ❌ <strong>{failed_count}</strong> FAILED
-    </div>
-    <div style="background:#f8d7da;border-radius:6px;padding:12px 24px;font-size:15px;">
-        🔴 <strong>{len(errors)}</strong> Errors
-    </div>
-</div>
+<table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:20px;">
+  <tr>
+    <td style="padding-right:12px;">
+      <table cellpadding="0" cellspacing="0" border="0">
+        <tr><td style="background:#d4edda;border-radius:6px;padding:12px 24px;font-size:15px;white-space:nowrap;">
+          &#9989; <strong>{pass_count}</strong> PASS
+        </td></tr>
+      </table>
+    </td>
+    <td style="padding-right:12px;">
+      <table cellpadding="0" cellspacing="0" border="0">
+        <tr><td style="background:#fff3cd;border-radius:6px;padding:12px 24px;font-size:15px;white-space:nowrap;">
+          &#9888; <strong>{fail_count}</strong> NEED TO CHECK
+        </td></tr>
+      </table>
+    </td>
+    <td style="padding-right:12px;">
+      <table cellpadding="0" cellspacing="0" border="0">
+        <tr><td style="background:#f8d7da;border-radius:6px;padding:12px 24px;font-size:15px;white-space:nowrap;">
+          &#10060; <strong>{failed_count}</strong> FAILED
+        </td></tr>
+      </table>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0" border="0">
+        <tr><td style="background:#f8d7da;border-radius:6px;padding:12px 24px;font-size:15px;white-space:nowrap;">
+          &#128308; <strong>{len(errors)}</strong> Errors
+        </td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
 
 <table style="{_TABLE_STYLE}">
     <thead>
