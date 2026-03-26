@@ -173,7 +173,7 @@ def get_date_range(table_name: str | None = None):
                 return start, end
         except Exception:
             pass
-        start = fallback_start
+        start = None          # empty table — no LASTUPDATED filter, pull all data
     else:
         start = fallback_start
 
@@ -267,11 +267,14 @@ def extract_table(table_name: str, schema: str, target_table_name: str | None = 
         conn.execute(text(create_table_sql))
         conn.commit()
 
-    where_clause = (
-        f"contextid IN {CONTEXT_IDS} "
-        f"AND LASTUPDATED > '{start_date}' "
-        f"AND LASTUPDATED < '{end_date}'"
-    )
+    if start_date is None:
+        where_clause = f"contextid IN {CONTEXT_IDS}"
+    else:
+        where_clause = (
+            f"contextid IN {CONTEXT_IDS} "
+            f"AND LASTUPDATED > '{start_date}' "
+            f"AND LASTUPDATED < '{end_date}'"
+        )
 
     select_query = (
         f"SELECT * FROM {SNOWFLAKE_DATABASE}.{schema}.{table_name} "
