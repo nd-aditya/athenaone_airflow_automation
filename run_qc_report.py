@@ -62,7 +62,11 @@ TABLE_IDENTIFIER_MAP = {
         "col": "patientID",
     },
     "ALLERGY": {"col": "CHARTID"},
-    "APPOINTMENT": {"col": "PATIENT_ID"},
+    "APPOINTMENT": {
+        "join_col": "PATIENT_ID",
+        "mapping_table": "patient_mapping_table",
+        "mapping_col": "patient_id",
+    },
     "APPOINTMENTVIEW": {"col": "PATIENTID"},
     "CHART": {"col": "CHARTID"},
     "CHARTQUESTIONNAIRE": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
@@ -90,8 +94,8 @@ TABLE_IDENTIFIER_MAP = {
     "PATIENTSOCIALHISTORY": {"col": "CHARTID"},
     "SOCIALHXFORMRESPONSE": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
     "SOCIALHXFORMRESPONSEANSWER": {
-        "chain": [("SOCIALHXFORMRESPONSE", "SOCIALHXFORMRESPONSEID"), ("DOCUMENT", "DOCUMENTID")],
-        "col": "CHARTID",
+        "chain": [("SOCIALHXFORMRESPONSE", "SOCIALHXFORMRESPONSEID"), ("DOCUMENT", "CHARTID")],
+        "col": "PATIENTID",
     },
     "VISIT": {"col": "PATIENTID"},
     "VITALSIGN": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
