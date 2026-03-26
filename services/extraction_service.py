@@ -236,7 +236,6 @@ def extract_table(table_name: str, schema: str, target_table_name: str | None = 
     hist_engine.dispose()
 
     start_date, end_date = get_date_range(table_name=target)
-    print(f"[extract_table] {target}: start_date={start_date!r}, end_date={end_date!r}")
 
     desc_query = f"DESC VIEW {SNOWFLAKE_DATABASE}.{schema}.{table_name};"
 
@@ -278,8 +277,6 @@ def extract_table(table_name: str, schema: str, target_table_name: str | None = 
         f"SELECT * FROM {SNOWFLAKE_DATABASE}.{schema}.{table_name} "
         f"WHERE {where_clause}"
     )
-    print(f"[extract_table] {target}: query={select_query!r}")
-
     with snowflake_engine.connect() as conn:
         result = conn.execute(text(select_query))
         data = result.fetchall()
