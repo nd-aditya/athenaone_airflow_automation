@@ -10,8 +10,8 @@ import os
 sys.path.insert(0, os.path.dirname(__file__))
 
 # ─── SET YOUR SCHEMA NAMES HERE ───────────────────────────────────────────────
-DIFF_SCHEMA = "diff_20260324"
-DEID_SCHEMA  = "diff_20260324_deid"
+DIFF_SCHEMA = "diff_20260325"
+DEID_SCHEMA  = "diff_20260325_deid"
 # ──────────────────────────────────────────────────────────────────────────────
 
 from sqlalchemy import text
@@ -65,7 +65,7 @@ TABLE_IDENTIFIER_MAP = {
     "APPOINTMENT": {
         "join_col": "PATIENT_ID",
         "mapping_table": "patient_mapping_table",
-        "mapping_col": "patient_id",
+        "mapping_col": "patientid",
     },
     "APPOINTMENTVIEW": {"col": "PATIENTID"},
     "CHART": {"col": "CHARTID"},
