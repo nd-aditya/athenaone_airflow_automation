@@ -131,7 +131,7 @@ def _count_from_spec(engine, schema: str, table: str, spec: dict) -> tuple:
         for i, (join_table, join_col) in enumerate(chain):
             alias  = aliases[i]
             joins += (
-                f"\nJOIN `{HISTORICAL_SCHEMA}`.`{join_table}` {alias} "
+                f"\nLEFT JOIN `{HISTORICAL_SCHEMA}`.`{join_table}` {alias} "
                 f"ON {prev_alias}.`{join_col}` = {alias}.`{join_col}`"
             )
             prev_alias = alias
@@ -156,7 +156,7 @@ def _count_from_spec(engine, schema: str, table: str, spec: dict) -> tuple:
             count = conn.execute(text(f"""
                 SELECT COUNT(DISTINCT t.nd_auto_increment_id)
                 FROM `{schema}`.`{table}` t
-                JOIN `{HISTORICAL_SCHEMA}`.`{ref_table}` r ON t.`{join_col}` = r.`{join_col}`
+                LEFT JOIN `{HISTORICAL_SCHEMA}`.`{ref_table}` r ON t.`{join_col}` = r.`{join_col}`
                 WHERE NOT EXISTS (
                     SELECT 1 FROM `{MAPPING_SCHEMA}`.`{MAPPING_TABLE}` m
                     WHERE m.`{ref_col}` = r.`{ref_col}`
