@@ -69,7 +69,7 @@ TABLE_IDENTIFIER_MAP = {
     },
     "APPOINTMENTVIEW": {"col": "PATIENTID"},
     "CHART": {"col": "CHARTID"},
-    "CHARTQUESTIONNAIRE": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
+    "CHARTQUESTIONNAIRE": {"col": "CHARTID"},
     "CLINICALENCOUNTER": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
     "CLINICALENCOUNTERDATA": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
     "CLINICALENCOUNTERDIAGNOSIS": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
@@ -92,14 +92,14 @@ TABLE_IDENTIFIER_MAP = {
     "PATIENTSURGERY": {"col": "CHARTID"},
     "PATIENTSURGICALHISTORY": {"col": "CHARTID"},
     "PATIENTSOCIALHISTORY": {"col": "CHARTID"},
-    "SOCIALHXFORMRESPONSE": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
+    "SOCIALHXFORMRESPONSE": {"col": "CHARTID"},
     "SOCIALHXFORMRESPONSEANSWER": {
         "chain": [("SOCIALHXFORMRESPONSE", "SOCIALHXFORMRESPONSEID"), ("DOCUMENT", "CHARTID")],
         "col": "PATIENTID",
     },
     "VISIT": {"col": "PATIENTID"},
     "VITALSIGN": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
-    "VITALATTRIBUTEREADING": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
+    "VITALATTRIBUTEREADING": {"col": "CHARTID"},
 }
 
 
