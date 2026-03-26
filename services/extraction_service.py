@@ -151,10 +151,10 @@ def ensure_lastupdated_index(engine: Engine, schema: str, table_name: str) -> bo
 def get_date_range(table_name: str | None = None):
     """
     Get (start_date, end_date) for extraction.
-    If table_name is provided, start_date is max(LASTUPDATED) from that table in the
-    historical MySQL schema (athenaone) so no data is lost between runs; otherwise start = today - 3 days.
+    start_date is MAX(LASTUPDATED) from the historical table when available.
+    Returns None as start_date if the table is empty, missing, or has no LASTUPDATED —
+    callers must omit the LASTUPDATED filter entirely in that case (full extract).
     """
-    fallback_start = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
     end = datetime.now().strftime("%Y-%m-%d")
 
     if table_name:
@@ -173,11 +173,8 @@ def get_date_range(table_name: str | None = None):
                 return start, end
         except Exception:
             pass
-        start = None          # empty table — no LASTUPDATED filter, pull all data
-    else:
-        start = fallback_start
 
-    return start, end
+    return None, end
 
 
 def get_snowflake_engine(schema: str):
