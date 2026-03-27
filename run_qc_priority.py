@@ -42,7 +42,7 @@ from services.config import HISTORICAL_SCHEMA, MYSQL_USER, MYSQL_PASSWORD, MYSQL
 
 TABLE_IDENTIFIER_MAP = {
     "CLINICALSERVICE": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
-    "APPOINTMENTNOTE": {"ref_table": "APPOINTMENT_2", "join_col": "APPOINTMENTID", "ref_col": "patientID"},
+    "APPOINTMENTNOTE": {"join_col": "APPOINTMENTID", "mapping_schema": BRIDGE_TABLE_SCHEMA, "mapping_table": "bridge_table_APPOINTMENTNOTE", "mapping_col": "APPOINTEMNTID"},
     "CLINICALRESULTOBSERVATION": {"join_col": "CLINICALRESULTID", "mapping_schema": BRIDGE_TABLE_SCHEMA, "mapping_table": "bridge_table_clinicalresultobservation", "mapping_col": "CLINICALRESULTID"},
     "ALLERGY": {"col": "CHARTID"},
     "APPOINTMENT": {"join_col": "PATIENT_ID", "mapping_table": "patient_mapping_table", "mapping_col": "patientid"},
