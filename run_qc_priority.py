@@ -177,7 +177,8 @@ def run_qc_priority(diff_schema: str, deid_schema: str) -> None:
 
     all_diff_tables = _all_tables(orig_engine, diff_schema)
     priority_diff_tables = [t for t in all_diff_tables if t.upper() in PRIORITY_TABLES]
-    deid_tables = set(_all_tables(deid_engine, deid_schema))
+    # Case-insensitive map: uppercase name → actual name stored in deid schema
+    deid_tables = {t.upper(): t for t in _all_tables(deid_engine, deid_schema)}
 
     rows = []
     errors = []
@@ -192,7 +193,8 @@ def run_qc_priority(diff_schema: str, deid_schema: str) -> None:
             if orig_count == 0:
                 continue
 
-            if table not in deid_tables:
+            deid_actual = deid_tables.get(table.upper())
+            if deid_actual is None:
                 rows.append({
                     "table": table, "orig": orig_count, "deid": 0,
                     "diff": orig_count, "ignore": None,
@@ -202,7 +204,7 @@ def run_qc_priority(diff_schema: str, deid_schema: str) -> None:
 
             with deid_engine.connect() as conn:
                 deid_count = conn.execute(
-                    text(f"SELECT COUNT(*) FROM `{deid_schema}`.`{table}`")
+                    text(f"SELECT COUNT(*) FROM `{deid_schema}`.`{deid_actual}`")
                 ).scalar() or 0
 
             ignore_rows, comment = _ignore_row_count_v2(orig_engine, diff_schema, table)
