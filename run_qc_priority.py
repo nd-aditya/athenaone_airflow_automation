@@ -38,7 +38,7 @@ from services.qc_service import (
     MAPPING_SCHEMA, MAPPING_TABLE, DOCUMENT_TABLE,
     _col_exists, _col_has_non_null,
 )
-from services.config import HISTORICAL_SCHEMA, MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST
+from services.config import HISTORICAL_SCHEMA, MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST, BRIDGE_TABLE_SCHEMA
 
 TABLE_IDENTIFIER_MAP = {
     "CLINICALSERVICE": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
@@ -56,7 +56,7 @@ TABLE_IDENTIFIER_MAP = {
     "CLINICALENCOUNTERDATA": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
     "CLINICALENCOUNTERDIAGNOSIS": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
     "CLINICALENCOUNTERPREPNOTE": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
-    "CLINICALPRESCRIPTION": {"ref_table": "DOCUMENT", "join_col": "DOCUMENTID", "ref_col": "PATIENTID"},
+    "CLINICALPRESCRIPTION": {"join_col": "DOCUMENTID", "mapping_schema": BRIDGE_TABLE_SCHEMA, "mapping_table": "bridge_table_clinicalprescription", "mapping_col": "DOCUMENTID"},
     "CLINICALRESULT": {"ref_table": "DOCUMENT", "join_col": "DOCUMENTID", "ref_col": "PATIENTID"},
     "CLINICALTEMPLATE": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
     "DOCUMENT": {"col": "CHARTID"},
@@ -84,13 +84,16 @@ def _engine(schema: str):
 
 
 def _count_from_spec(engine, schema: str, table: str, spec: dict) -> tuple:
+    # Use per-entry mapping_schema if provided, otherwise fall back to default
+    ms = spec.get("mapping_schema", MAPPING_SCHEMA)
+
     if "mapping_table" in spec:
         join_col, mapping_table, mapping_col = spec["join_col"], spec["mapping_table"], spec["mapping_col"]
         with engine.connect() as conn:
             count = conn.execute(text(f"""
                 SELECT COUNT(*) FROM `{schema}`.`{table}` t
                 WHERE NOT EXISTS (
-                    SELECT 1 FROM `{MAPPING_SCHEMA}`.`{mapping_table}` m
+                    SELECT 1 FROM `{ms}`.`{mapping_table}` m
                     WHERE m.`{mapping_col}` = t.`{join_col}`
                 )
             """)).scalar()
@@ -110,7 +113,7 @@ def _count_from_spec(engine, schema: str, table: str, spec: dict) -> tuple:
                 SELECT COUNT(DISTINCT t.nd_auto_increment_id)
                 FROM `{schema}`.`{table}` t{joins}
                 WHERE NOT EXISTS (
-                    SELECT 1 FROM `{MAPPING_SCHEMA}`.`{MAPPING_TABLE}` m
+                    SELECT 1 FROM `{ms}`.`{MAPPING_TABLE}` m
                     WHERE m.`{col}` = {last_alias}.`{col}`
                 )
             """)).scalar()
@@ -124,7 +127,7 @@ def _count_from_spec(engine, schema: str, table: str, spec: dict) -> tuple:
                 FROM `{schema}`.`{table}` t
                 LEFT JOIN `{HISTORICAL_SCHEMA}`.`{ref_table}` r ON t.`{join_col}` = r.`{join_col}`
                 WHERE NOT EXISTS (
-                    SELECT 1 FROM `{MAPPING_SCHEMA}`.`{MAPPING_TABLE}` m
+                    SELECT 1 FROM `{ms}`.`{MAPPING_TABLE}` m
                     WHERE m.`{ref_col}` = r.`{ref_col}`
                 )
             """)).scalar()
@@ -137,7 +140,7 @@ def _count_from_spec(engine, schema: str, table: str, spec: dict) -> tuple:
         count = conn.execute(text(f"""
             SELECT COUNT(*) FROM `{schema}`.`{table}` t
             WHERE NOT EXISTS (
-                SELECT 1 FROM `{MAPPING_SCHEMA}`.`{MAPPING_TABLE}` m
+                SELECT 1 FROM `{ms}`.`{MAPPING_TABLE}` m
                 WHERE m.`{col}` = t.`{col}`
             )
         """)).scalar()
@@ -246,8 +249,8 @@ def run_qc_priority(diff_schema: str, deid_schema: str) -> None:
         else:
             failed_count += 1
         print(
-            f"{r['table']:<{W['table']}} {r['orig']:>{W['orig']},} {r['deid']:>{W['deid']},} "
-            f"{r['diff']:>{W['diff']},} {ignore_display:>{W['ignore']}} {status:<{W['status']}} {r['comment']}"
+            f"{r['table']:<{W['table']}} {r['orig']:>{W['orig']}} {r['deid']:>{W['deid']}} "
+            f"{r['diff']:>{W['diff']}} {ignore_display:>{W['ignore']}} {status:<{W['status']}} {r['comment']}"
         )
 
     print(sep)
