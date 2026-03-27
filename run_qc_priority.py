@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 # ─── SET YOUR SCHEMA NAMES HERE ───────────────────────────────────────────────
 DIFF_SCHEMA = "Tng-athenaone"
-DEID_SCHEMA  = "deidentified_schema"
+DEID_SCHEMA  = "deidentified_merged"
 # ──────────────────────────────────────────────────────────────────────────────
 
 # Priority tables (mirrors TEST_TABLE_NAMES in extraction_dag.py)
@@ -43,10 +43,7 @@ from services.config import HISTORICAL_SCHEMA, MYSQL_USER, MYSQL_PASSWORD, MYSQL
 TABLE_IDENTIFIER_MAP = {
     "CLINICALSERVICE": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
     "APPOINTMENTNOTE": {"ref_table": "APPOINTMENT_2", "join_col": "APPOINTMENTID", "ref_col": "patientID"},
-    "CLINICALRESULTOBSERVATION": {
-        "chain": [("CLINICALRESULT", "CLINICALRESULTID"), ("DOCUMENT", "DOCUMENTID")],
-        "col": "patientID",
-    },
+    "CLINICALRESULTOBSERVATION": {"join_col": "DOCUMENTID", "mapping_schema": BRIDGE_TABLE_SCHEMA, "mapping_table": "bridge_table_clinicalresultobservation", "mapping_col": "DOCUMENTID"},
     "ALLERGY": {"col": "CHARTID"},
     "APPOINTMENT": {"join_col": "PATIENT_ID", "mapping_table": "patient_mapping_table", "mapping_col": "patientid"},
     "APPOINTMENTVIEW": {"col": "PATIENTID"},
@@ -57,7 +54,7 @@ TABLE_IDENTIFIER_MAP = {
     "CLINICALENCOUNTERDIAGNOSIS": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
     "CLINICALENCOUNTERPREPNOTE": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
     "CLINICALPRESCRIPTION": {"join_col": "DOCUMENTID", "mapping_schema": BRIDGE_TABLE_SCHEMA, "mapping_table": "bridge_table_clinicalprescription", "mapping_col": "DOCUMENTID"},
-    "CLINICALRESULT": {"ref_table": "DOCUMENT", "join_col": "DOCUMENTID", "ref_col": "PATIENTID"},
+    "CLINICALRESULT":{"join_col": "DOCUMENTID", "mapping_schema": BRIDGE_TABLE_SCHEMA, "mapping_table": "bridge_table_clinicalresult", "mapping_col": "DOCUMENTID"},
     "CLINICALTEMPLATE": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
     "DOCUMENT": {"col": "CHARTID"},
     "PATIENTMEDICATION": {"col": "CHARTID"},
