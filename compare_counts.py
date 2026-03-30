@@ -53,7 +53,7 @@ def _load_pk_map() -> dict:
 _PK_MAP = _load_pk_map()
 
 # Set to True to only compare priority tables (same list as DAG 2 / run_qc_priority.py)
-PRIORITY_TABLES_ONLY = False
+PRIORITY_TABLES_ONLY = True
 
 PRIORITY_TABLES = {t.upper() for t in [
     "ALLERGY", "APPOINTMENT", "APPOINTMENTELIGIBILITYINFO", "APPOINTMENTNOTE",
