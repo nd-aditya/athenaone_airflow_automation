@@ -16,20 +16,41 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__))
 
+import csv
+
 from sqlalchemy import create_engine, text
 
 from services.config import (
     SNOWFLAKE_USER, SNOWFLAKE_PASSWORD, SNOWFLAKE_ACCOUNT,
     SNOWFLAKE_DATABASE, SNOWFLAKE_WAREHOUSE,
     MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST, HISTORICAL_SCHEMA,
+    CONTEXT_IDS,
 )
 
 # ── Same as extraction_dag.py ──────────────────────────────────────────────────
+# context_filter=True  → adds WHERE contextid IN (...) to Snowflake count
 EXTRACT_SOURCE_CONFIGS = [
-    {"schema": "ATHENAONE",  "table_rename_map": {"APPOINTMENT": "appointment_2"}},
-    {"schema": "SCHEDULING", "table_rename_map": {}},
-    {"schema": "FINANCIALS", "table_rename_map": {}},
+    {"schema": "ATHENAONE",  "table_rename_map": {"APPOINTMENT": "appointment_2"}, "context_filter": True},
+    {"schema": "SCHEDULING", "table_rename_map": {}, "context_filter": False},
+    {"schema": "FINANCIALS", "table_rename_map": {}, "context_filter": False},
 ]
+
+# ── Load primary keys from CSV ─────────────────────────────────────────────────
+_PK_CSV = os.path.join(os.path.dirname(__file__), "table_primary_keys.csv")
+
+def _load_pk_map() -> dict:
+    pk_map = {}
+    try:
+        with open(_PK_CSV, newline="") as f:
+            for row in csv.DictReader(f):
+                table = row["table_name"].strip().upper()
+                cols  = [c.strip() for c in row["primary_key"].split("|") if c.strip()]
+                pk_map[table] = cols
+    except FileNotFoundError:
+        print(f"WARNING: {_PK_CSV} not found — MYSQL_DIST_PK will show NO PK")
+    return pk_map
+
+_PK_MAP = _load_pk_map()
 
 # Set to True to only compare priority tables (same list as DAG 2 / run_qc_priority.py)
 PRIORITY_TABLES_ONLY = False
@@ -90,11 +111,12 @@ def _sf_tables(engine, schema: str) -> list:
     return [r[0] for r in rows]
 
 
-def _sf_count(engine, schema: str, table: str):
+def _sf_count(engine, schema: str, table: str, context_filter: bool = False):
     try:
+        where = f" WHERE contextid IN {CONTEXT_IDS}" if context_filter else ""
         with engine.connect() as conn:
             return conn.execute(text(
-                f"SELECT COUNT(*) FROM {SNOWFLAKE_DATABASE}.{schema}.{table}"
+                f"SELECT COUNT(*) FROM {SNOWFLAKE_DATABASE}.{schema}.{table}{where}"
             )).scalar()
     except Exception as e:
         return f"ERR({e})"
@@ -110,15 +132,8 @@ def _mysql_table_exists(engine, table: str) -> bool:
         ), {"s": HISTORICAL_SCHEMA, "t": table}).scalar() is not None
 
 
-def _pk_columns(engine, table: str) -> list:
-    with engine.connect() as conn:
-        rows = conn.execute(text(
-            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE "
-            "WHERE TABLE_SCHEMA = :s AND TABLE_NAME = :t "
-            "AND CONSTRAINT_NAME = 'PRIMARY' "
-            "ORDER BY ORDINAL_POSITION"
-        ), {"s": HISTORICAL_SCHEMA, "t": table}).fetchall()
-    return [r[0] for r in rows]
+def _pk_columns(table: str) -> list:
+    return _PK_MAP.get(table.upper(), [])
 
 
 def _mysql_counts(engine, table: str):
@@ -139,7 +154,7 @@ def _mysql_counts(engine, table: str):
         except Exception:
             active = "N/A"
 
-        pk_cols = _pk_columns(engine, table)
+        pk_cols = _pk_columns(table)
         if not pk_cols:
             dist_pk = "NO PK"
         else:
@@ -191,6 +206,7 @@ def run():
         _print_row(_HEADERS)
         _separator()
 
+        context_filter = cfg.get("context_filter", False)
         try:
             sf_eng = _sf_engine(sf_schema)
             tables = _sf_tables(sf_eng, sf_schema)
@@ -205,7 +221,7 @@ def run():
         for sf_table in tables:
             mysql_table = rename_map.get(sf_table.upper(), sf_table)
 
-            sf_cnt   = _sf_count(sf_eng, sf_schema, sf_table)
+            sf_cnt   = _sf_count(sf_eng, sf_schema, sf_table, context_filter=context_filter)
             total, active, dist_pk = _mysql_counts(mysql_engine, mysql_table)
 
             if isinstance(sf_cnt, int) and isinstance(active, int):
