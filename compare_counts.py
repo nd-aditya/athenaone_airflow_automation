@@ -74,8 +74,8 @@ PRIORITY_TABLES = {t.upper() for t in [
 # ──────────────────────────────────────────────────────────────────────────────
 
 # Column widths for terminal output
-_W = [40, 12, 14, 14, 14, 6]
-_HEADERS = ["TABLE (mysql)", "SF_COUNT", "MYSQL_TOTAL", "MYSQL_ACTIVE", "MYSQL_DIST_PK", "MATCH"]
+_W = [40, 12, 14, 14, 12, 14, 6]
+_HEADERS = ["TABLE (mysql)", "SF_COUNT", "MYSQL_TOTAL", "MYSQL_ACTIVE", "DIFF", "MYSQL_DIST_PK", "MATCH"]
 
 
 # ── Engine helpers ─────────────────────────────────────────────────────────────
@@ -225,12 +225,14 @@ def run():
             total, active, dist_pk = _mysql_counts(mysql_engine, mysql_table)
 
             if isinstance(sf_cnt, int) and isinstance(active, int):
-                match = "OK" if sf_cnt == active else "DIFF"
+                diff  = sf_cnt - active
+                match = "OK" if diff == 0 else "DIFF"
                 if match == "OK":
                     schema_match += 1
                 else:
                     schema_diff += 1
             else:
+                diff  = "-"
                 match = "?"
 
             _print_row([
@@ -238,6 +240,7 @@ def run():
                 sf_cnt   if sf_cnt  is not None else "MISSING",
                 total    if total   is not None else "MISSING",
                 active   if active  is not None else "MISSING",
+                diff,
                 dist_pk  if dist_pk is not None else "MISSING",
                 match,
             ])

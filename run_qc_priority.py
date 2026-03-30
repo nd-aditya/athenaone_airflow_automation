@@ -63,10 +63,7 @@ TABLE_IDENTIFIER_MAP = {
     "PATIENTSURGICALHISTORY": {"col": "CHARTID"},
     "PATIENTSOCIALHISTORY": {"col": "CHARTID"},
     "SOCIALHXFORMRESPONSE": {"col": "CHARTID"},
-    "SOCIALHXFORMRESPONSEANSWER": {
-        "chain": [("SOCIALHXFORMRESPONSE", "SOCIALHXFORMRESPONSEID"), ("DOCUMENT", "CHARTID")],
-        "col": "PATIENTID",
-    },
+    "SOCIALHXFORMRESPONSEANSWER": {"join_col": "SOCIALHXFORMRESPONSEID", "mapping_schema": BRIDGE_TABLE_SCHEMA, "mapping_table": "bridge_table_socialhxformresponseanswer", "mapping_col": "SOCIALHXFORMRESPONSEID"},
     "VISIT": {"col": "PATIENTID"},
     "VITALSIGN": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
     "VITALATTRIBUTEREADING": {"col": "CHARTID"},
