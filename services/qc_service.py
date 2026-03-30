@@ -10,11 +10,63 @@ from services.config import (
     MYSQL_HOST,
     HISTORICAL_SCHEMA,
     CLIENT_NAME,
+    BRIDGE_TABLE_SCHEMA,
 )
 
 MAPPING_SCHEMA = "mapping_prod"
-MAPPING_TABLE = "patient_mapping_table"
+MAPPING_TABLE  = "patient_mapping_table"
 DOCUMENT_TABLE = "DOCUMENT"
+
+# ---------------------------------------------------------------------------
+# Per-table patient-identifier spec.
+# Tables NOT listed here fall back to auto-detection
+# (patientID → chartID → documentID column scan).
+#
+# Supported forms (pick one set of keys per entry):
+#
+#   Direct column on the table itself:
+#     {"col": "CHARTID"}
+#
+#   Custom mapping table join (most common):
+#     {"join_col": "clinicalencounterid",
+#      "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"}
+#     Optional: add "mapping_schema": "other_schema" to override MAPPING_SCHEMA
+#
+#   Single reference hop — join one historical table then check patient col:
+#     {"ref_table": "APPOINTMENT_2", "join_col": "APPOINTMENTID", "ref_col": "patientID"}
+#
+#   Reference chain — multiple LEFT JOIN hops, final col checked against mapping:
+#     {"chain": [("CLINICALRESULT", "CLINICALRESULTID"), ("DOCUMENT", "DOCUMENTID")],
+#      "col": "patientID"}
+# ---------------------------------------------------------------------------
+TABLE_IDENTIFIER_MAP = {
+    "CLINICALSERVICE":           {"join_col": "clinicalencounterid",   "mapping_table": "encounter_mapping_table",             "mapping_col": "encounter_id"},
+    "APPOINTMENTNOTE":           {"join_col": "APPOINTMENTID",         "mapping_schema": BRIDGE_TABLE_SCHEMA, "mapping_table": "bridge_table_APPOINTMENTNOTE",             "mapping_col": "APPOINTMENTID"},
+    "CLINICALRESULTOBSERVATION": {"join_col": "CLINICALRESULTID",      "mapping_schema": BRIDGE_TABLE_SCHEMA, "mapping_table": "bridge_table_clinicalresultobservation",    "mapping_col": "CLINICALRESULTID"},
+    "ALLERGY":                   {"col": "CHARTID"},
+    "APPOINTMENT":               {"join_col": "PATIENT_ID",            "mapping_table": "patient_mapping_table",               "mapping_col": "patientid"},
+    "APPOINTMENTVIEW":           {"col": "PATIENTID"},
+    "CHART":                     {"col": "CHARTID"},
+    "CHARTQUESTIONNAIRE":        {"col": "CHARTID"},
+    "CLINICALENCOUNTER":         {"join_col": "clinicalencounterid",   "mapping_table": "encounter_mapping_table",             "mapping_col": "encounter_id"},
+    "CLINICALENCOUNTERDATA":     {"join_col": "clinicalencounterid",   "mapping_table": "encounter_mapping_table",             "mapping_col": "encounter_id"},
+    "CLINICALENCOUNTERDIAGNOSIS":{"join_col": "clinicalencounterid",   "mapping_table": "encounter_mapping_table",             "mapping_col": "encounter_id"},
+    "CLINICALENCOUNTERPREPNOTE": {"join_col": "clinicalencounterid",   "mapping_table": "encounter_mapping_table",             "mapping_col": "encounter_id"},
+    "CLINICALPRESCRIPTION":      {"join_col": "DOCUMENTID",            "mapping_schema": BRIDGE_TABLE_SCHEMA, "mapping_table": "bridge_table_clinicalprescription",        "mapping_col": "DOCUMENTID"},
+    "CLINICALRESULT":            {"join_col": "DOCUMENTID",            "mapping_schema": BRIDGE_TABLE_SCHEMA, "mapping_table": "bridge_table_clinicalresult",              "mapping_col": "DOCUMENTID"},
+    "CLINICALTEMPLATE":          {"join_col": "clinicalencounterid",   "mapping_table": "encounter_mapping_table",             "mapping_col": "encounter_id"},
+    "DOCUMENT":                  {"col": "CHARTID"},
+    "PATIENTMEDICATION":         {"col": "CHARTID"},
+    "PATIENTPASTMEDICALHISTORY": {"col": "CHARTID"},
+    "PATIENTSURGERY":            {"col": "CHARTID"},
+    "PATIENTSURGICALHISTORY":    {"col": "CHARTID"},
+    "PATIENTSOCIALHISTORY":      {"col": "CHARTID"},
+    "SOCIALHXFORMRESPONSE":      {"col": "CHARTID"},
+    "SOCIALHXFORMRESPONSEANSWER":{"join_col": "SOCIALHXFORMRESPONSEID","mapping_schema": BRIDGE_TABLE_SCHEMA, "mapping_table": "bridge_table_socialhxformresponseanswer",  "mapping_col": "SOCIALHXFORMRESPONSEID"},
+    "VISIT":                     {"col": "PATIENTID"},
+    "VITALSIGN":                 {"join_col": "clinicalencounterid",   "mapping_table": "encounter_mapping_table",             "mapping_col": "encounter_id"},
+    "VITALATTRIBUTEREADING":     {"col": "CHARTID"},
+}
 
 
 def _engine(schema: str):
@@ -51,154 +103,125 @@ def _col_has_non_null(engine, schema: str, table: str, column: str) -> bool:
         ).fetchone() is not None
 
 
+def _count_from_spec(engine, schema: str, table: str, spec: dict) -> tuple:
+    """Build and run the ignore-row count query for a given spec."""
+    ms = spec.get("mapping_schema", MAPPING_SCHEMA)
+
+    # ── Custom / bridge mapping table ────────────────────────────────────────
+    if "mapping_table" in spec:
+        join_col      = spec["join_col"]
+        mapping_table = spec["mapping_table"]
+        mapping_col   = spec["mapping_col"]
+        with engine.connect() as conn:
+            count = conn.execute(text(f"""
+                SELECT COUNT(*) FROM `{schema}`.`{table}` t
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM `{ms}`.`{mapping_table}` m
+                    WHERE m.`{mapping_col}` = t.`{join_col}`
+                )
+            """)).scalar()
+        return count, "Patient Identifier missing at reference table"
+
+    # ── Reference chain (multi-hop LEFT JOINs) ───────────────────────────────
+    if "chain" in spec:
+        chain, col = spec["chain"], spec["col"]
+        aliases = [f"r{i}" for i in range(len(chain))]
+        joins, prev_alias = "", "t"
+        for i, (join_table, join_col) in enumerate(chain):
+            alias = aliases[i]
+            joins += (
+                f"\nLEFT JOIN `{HISTORICAL_SCHEMA}`.`{join_table}` {alias} "
+                f"ON {prev_alias}.`{join_col}` = {alias}.`{join_col}`"
+            )
+            prev_alias = alias
+        last_alias = aliases[-1]
+        with engine.connect() as conn:
+            count = conn.execute(text(f"""
+                SELECT COUNT(DISTINCT t.nd_auto_increment_id)
+                FROM `{schema}`.`{table}` t{joins}
+                WHERE {last_alias}.`{col}` IS NOT NULL
+                  AND NOT EXISTS (
+                    SELECT 1 FROM `{ms}`.`{MAPPING_TABLE}` m
+                    WHERE m.`{col}` = {last_alias}.`{col}`
+                )
+            """)).scalar()
+        return count, "Patient Identifier missing at reference table"
+
+    # ── Single reference hop ─────────────────────────────────────────────────
+    if "ref_table" in spec:
+        ref_table = spec["ref_table"]
+        join_col  = spec["join_col"]
+        ref_col   = spec["ref_col"]
+        with engine.connect() as conn:
+            count = conn.execute(text(f"""
+                SELECT COUNT(DISTINCT t.nd_auto_increment_id)
+                FROM `{schema}`.`{table}` t
+                LEFT JOIN `{HISTORICAL_SCHEMA}`.`{ref_table}` r ON t.`{join_col}` = r.`{join_col}`
+                WHERE r.`{ref_col}` IS NOT NULL
+                  AND NOT EXISTS (
+                    SELECT 1 FROM `{ms}`.`{MAPPING_TABLE}` m
+                    WHERE m.`{ref_col}` = r.`{ref_col}`
+                )
+            """)).scalar()
+        return count, "Patient Identifier missing at reference table"
+
+    # ── Direct column ────────────────────────────────────────────────────────
+    col = spec["col"]
+    if not _col_has_non_null(engine, schema, table, col):
+        return None, "Patient Identifier missing at source table"
+    with engine.connect() as conn:
+        count = conn.execute(text(f"""
+            SELECT COUNT(*) FROM `{schema}`.`{table}` t
+            WHERE NOT EXISTS (
+                SELECT 1 FROM `{ms}`.`{MAPPING_TABLE}` m
+                WHERE m.`{col}` = t.`{col}`
+            )
+        """)).scalar()
+    return count, "Patient Identifier missing at source table"
+
+
 def _ignore_row_count(engine, schema: str, table: str) -> tuple:
-    """Return (ignore_count, comment). ignore_count is None when no patient identifier applies."""
-    tl = table.lower()
+    """
+    Map-first ignore-row count.
+    Checks TABLE_IDENTIFIER_MAP first; falls back to column auto-detection
+    for tables not listed in the map.
+    """
+    spec = TABLE_IDENTIFIER_MAP.get(table.upper())
+    if spec is not None:
+        return _count_from_spec(engine, schema, table, spec)
 
-    if tl == "clinicalservice":
-        with engine.connect() as conn:
-            count = conn.execute(text(f"""
-                SELECT COUNT(*)
-                FROM `{schema}`.`{table}` t
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM `{MAPPING_SCHEMA}`.`encounter_mapping_table` m
-                    WHERE m.encounter_id = t.clinicalencounterid
-                )
-            """)).scalar()
-        return count, "Patient Identifier missing at reference table"
-
-    if tl == "appointmentnote":
-        with engine.connect() as conn:
-            count = conn.execute(text(f"""
-                SELECT COUNT(DISTINCT t.nd_auto_increment_id)
-                FROM `{schema}`.`{table}` t
-                JOIN `{HISTORICAL_SCHEMA}`.`APPOINTMENT_2` a ON t.APPOINTMENTID = a.APPOINTMENTID
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM `{MAPPING_SCHEMA}`.`{MAPPING_TABLE}` m
-                    WHERE m.patientID = a.patientID
-                )
-            """)).scalar()
-        return count, "Patient Identifier missing at reference table"
-
-    if tl == "clinicalresultobservation":
-        with engine.connect() as conn:
-            count = conn.execute(text(f"""
-                SELECT COUNT(DISTINCT t.nd_auto_increment_id)
-                FROM `{schema}`.`{table}` t
-                JOIN `{HISTORICAL_SCHEMA}`.`CLINICALRESULT` cr ON t.CLINICALRESULTID = cr.CLINICALRESULTID
-                JOIN `{HISTORICAL_SCHEMA}`.`{DOCUMENT_TABLE}` d ON cr.DOCUMENTID = d.DOCUMENTID
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM `{MAPPING_SCHEMA}`.`{MAPPING_TABLE}` m
-                    WHERE m.patientID = d.patientID
-                )
-            """)).scalar()
-        return count, "Patient Identifier missing at reference table"
-
+    # ── Auto-detection fallback ───────────────────────────────────────────────
     for col in ("patientID", "chartID"):
         if _col_exists(engine, schema, table, col):
             if not _col_has_non_null(engine, schema, table, col):
                 return None, "Patient Identifier missing at source table"
-            with engine.connect() as conn:
-                count = conn.execute(text(f"""
-                    SELECT COUNT(*) FROM `{schema}`.`{table}` t
-                    WHERE NOT EXISTS (
-                        SELECT 1 FROM `{MAPPING_SCHEMA}`.`{MAPPING_TABLE}` m
-                        WHERE m.`{col}` = t.`{col}`
-                    )
-                """)).scalar()
-            return count, "Patient Identifier missing at source table"
+            return _count_from_spec(engine, schema, table, {"col": col})
 
     if _col_exists(engine, schema, table, "documentID"):
         if not _col_has_non_null(engine, schema, table, "documentID"):
             return None, "Patient Identifier missing at source table"
-        with engine.connect() as conn:
-            count = conn.execute(text(f"""
-                SELECT COUNT(DISTINCT t.nd_auto_increment_id)
-                FROM `{schema}`.`{table}` t
-                JOIN `{HISTORICAL_SCHEMA}`.`{DOCUMENT_TABLE}` d ON t.documentID = d.documentID
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM `{MAPPING_SCHEMA}`.`{MAPPING_TABLE}` m
-                    WHERE m.patientID = d.patientID
-                )
-            """)).scalar()
-        return count, "Patient Identifier missing at reference table"
+        return _count_from_spec(engine, schema, table, {
+            "ref_table": DOCUMENT_TABLE,
+            "join_col":  "documentID",
+            "ref_col":   "patientID",
+        })
 
     return None, "No patient identifier column in this table"
 
 
-def run_qc(diff_schema: str, deid_schema: str) -> dict:
+def build_qc_report(rows: list, errors: list, diff_schema: str, deid_schema: str) -> dict:
     """
-    Compare diff_schema vs deid_schema row counts for every table.
-
-    Returns:
-        report      : formatted plain-text string ready for email body
-        rows        : per-table list of dicts
-        errors      : tables that raised exceptions
-        pass_count  : tables with status PASS
-        fail_count  : tables with status NEED_TO_CHECK
-        diff_schema : as passed in
-        deid_schema : as passed in
+    Build the HTML report and result dict from pre-computed rows.
+    rows must use keys: table, orig_count, deid_count, diff, ignore_rows, status, comment.
     """
-    orig_engine = _engine(diff_schema)
-    deid_engine = _engine(deid_schema)
-
-    tables = _all_tables(orig_engine, diff_schema)
-    rows = []
-    errors = []
-
-    deid_tables = set(_all_tables(deid_engine, deid_schema))
-
-    for table in tables:
-        try:
-            with orig_engine.connect() as conn:
-                orig_count = conn.execute(
-                    text(f"SELECT COUNT(*) FROM `{diff_schema}`.`{table}`")
-                ).scalar() or 0
-
-            if table not in deid_tables:
-                rows.append({
-                    "table": table,
-                    "orig_count": orig_count,
-                    "deid_count": 0,
-                    "diff": orig_count,
-                    "ignore_rows": None,
-                    "status": "FAILED",
-                    "comment": "Table not deidentified",
-                })
-                continue
-
-            with deid_engine.connect() as conn:
-                deid_count = conn.execute(
-                    text(f"SELECT COUNT(*) FROM `{deid_schema}`.`{table}`")
-                ).scalar() or 0
-            ignore_rows, comment = _ignore_row_count(orig_engine, diff_schema, table)
-            diff = orig_count - deid_count
-            ignore_val = ignore_rows or 0
-            status = "PASS" if abs(diff) - ignore_val == 0 else "NEED_TO_CHECK"
-            rows.append({
-                "table": table,
-                "orig_count": orig_count,
-                "deid_count": deid_count,
-                "diff": diff,
-                "ignore_rows": ignore_rows,
-                "status": status,
-                "comment": comment if diff != 0 else "",
-            })
-        except Exception as e:
-            errors.append({"table": table, "error": str(e)})
-
-    orig_engine.dispose()
-    deid_engine.dispose()
-
-    report_rows = [r for r in rows if r["orig_count"] > 0]
-
-    pass_count = sum(1 for r in report_rows if r["status"] == "PASS")
-    fail_count = sum(1 for r in report_rows if r["status"] == "NEED_TO_CHECK")
+    report_rows  = [r for r in rows if r["orig_count"] > 0]
+    pass_count   = sum(1 for r in report_rows if r["status"] == "PASS")
+    fail_count   = sum(1 for r in report_rows if r["status"] == "NEED_TO_CHECK")
     failed_count = sum(1 for r in report_rows if r["status"] == "FAILED")
 
     table_rows_html = ""
     for r in report_rows:
-        color = "#d4edda" if r["status"] == "PASS" else "#f8d7da" if r["status"] == "FAILED" else "#fff3cd"
+        color       = "#d4edda" if r["status"] == "PASS" else "#f8d7da" if r["status"] == "FAILED" else "#fff3cd"
         badge_color = "#28a745" if r["status"] == "PASS" else "#c0392b" if r["status"] == "FAILED" else "#e67e22"
         ignore_display = "N/A" if r["ignore_rows"] is None else f"{r['ignore_rows']:,}"
         table_rows_html += f"""
@@ -288,15 +311,88 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
 </body></html>"""
 
     return {
-        "report": report_html,
-        "rows": rows,
-        "errors": errors,
-        "pass_count": pass_count,
-        "fail_count": fail_count,
+        "report":       report_html,
+        "rows":         rows,
+        "errors":       errors,
+        "pass_count":   pass_count,
+        "fail_count":   fail_count,
         "failed_count": failed_count,
-        "diff_schema": diff_schema,
-        "deid_schema": deid_schema,
+        "diff_schema":  diff_schema,
+        "deid_schema":  deid_schema,
     }
+
+
+def run_qc(diff_schema: str, deid_schema: str) -> dict:
+    """
+    Compare diff_schema vs deid_schema row counts for every table.
+
+    Returns:
+        report      : HTML string ready for email body
+        rows        : per-table list of dicts
+        errors      : tables that raised exceptions
+        pass_count  : tables with status PASS
+        fail_count  : tables with status NEED_TO_CHECK
+        failed_count: tables with status FAILED
+        diff_schema : as passed in
+        deid_schema : as passed in
+    """
+    orig_engine = _engine(diff_schema)
+    deid_engine = _engine(deid_schema)
+
+    tables = _all_tables(orig_engine, diff_schema)
+
+    # Case-insensitive lookup: uppercase name → actual stored name
+    deid_tables_map = {t.upper(): t for t in _all_tables(deid_engine, deid_schema)}
+
+    rows   = []
+    errors = []
+
+    for table in tables:
+        try:
+            with orig_engine.connect() as conn:
+                orig_count = conn.execute(
+                    text(f"SELECT COUNT(*) FROM `{diff_schema}`.`{table}`")
+                ).scalar() or 0
+
+            deid_table_actual = deid_tables_map.get(table.upper())
+
+            if deid_table_actual is None:
+                rows.append({
+                    "table":       table,
+                    "orig_count":  orig_count,
+                    "deid_count":  0,
+                    "diff":        orig_count,
+                    "ignore_rows": None,
+                    "status":      "FAILED",
+                    "comment":     "Table not deidentified",
+                })
+                continue
+
+            with deid_engine.connect() as conn:
+                deid_count = conn.execute(
+                    text(f"SELECT COUNT(*) FROM `{deid_schema}`.`{deid_table_actual}`")
+                ).scalar() or 0
+
+            ignore_rows, comment = _ignore_row_count(orig_engine, diff_schema, table)
+            diff        = orig_count - deid_count
+            ignore_val  = ignore_rows or 0
+            status      = "PASS" if abs(diff) - ignore_val == 0 else "NEED_TO_CHECK"
+            rows.append({
+                "table":       table,
+                "orig_count":  orig_count,
+                "deid_count":  deid_count,
+                "diff":        diff,
+                "ignore_rows": ignore_rows,
+                "status":      status,
+                "comment":     comment if diff != 0 else "",
+            })
+        except Exception as e:
+            errors.append({"table": table, "error": str(e)})
+
+    orig_engine.dispose()
+    deid_engine.dispose()
+
+    return build_qc_report(rows, errors, diff_schema, deid_schema)
 
 
 _TABLE_STYLE = (

@@ -10,8 +10,9 @@ import os
 sys.path.insert(0, os.path.dirname(__file__))
 
 # ─── SET YOUR SCHEMA NAMES HERE ───────────────────────────────────────────────
-DIFF_SCHEMA = "Tng-athenaone"
+DIFF_SCHEMA  = "Tng-athenaone"
 DEID_SCHEMA  = "deidentified_merged"
+SEND_EMAIL   = False   # Set to True to also send results via email
 # ──────────────────────────────────────────────────────────────────────────────
 
 # Priority tables (mirrors TEST_TABLE_NAMES in extraction_dag.py)
@@ -33,12 +34,12 @@ PRIORITY_TABLES = {t.upper() for t in [
 ]}
 
 from sqlalchemy import text, create_engine
-import services.qc_service as _qc_mod
 from services.qc_service import (
     MAPPING_SCHEMA, MAPPING_TABLE, DOCUMENT_TABLE,
-    _col_exists, _col_has_non_null,
+    _col_exists, _col_has_non_null, build_qc_report,
 )
 from services.config import HISTORICAL_SCHEMA, MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST, BRIDGE_TABLE_SCHEMA
+from services.email_service import send_qc_report_email
 
 TABLE_IDENTIFIER_MAP = {
     "CLINICALSERVICE": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
@@ -254,6 +255,27 @@ def run_qc_priority(diff_schema: str, deid_schema: str) -> None:
         print("\nErrors:")
         for e in errors:
             print(f"  {e['table']}: {e['error']}")
+
+    if SEND_EMAIL:
+        # Normalize keys to match build_qc_report expectations
+        normalized = [
+            {
+                "table":       r["table"],
+                "orig_count":  r["orig"],
+                "deid_count":  r["deid"],
+                "diff":        r["diff"],
+                "ignore_rows": r["ignore"],
+                "status":      r["status"],
+                "comment":     r["comment"],
+            }
+            for r in rows
+        ]
+        result = build_qc_report(normalized, errors, diff_schema, deid_schema)
+        sent = send_qc_report_email(result)
+        if sent:
+            print("\nEmail sent successfully.")
+        else:
+            print("\nEmail failed — check EMAIL_SENDER / EMAIL_APP_PASSWORD in services/config.py")
 
 
 if __name__ == "__main__":
