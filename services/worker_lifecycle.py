@@ -65,10 +65,44 @@ def start_workers(
     return {"workers_started": n, "repo_root": root, "stdout": proc.stdout or ""}
 
 
-def stop_workers() -> dict:
+_NULL_ENCOUNTERID_TABLES = [
+    "CLINICALENCOUNTERDATA",
+    "CLINICALENCOUNTERDIAGNOSIS",
+    "CLINICALTEMPLATE",
+    "CLINICALPRESCRIPTION",
+    "VITALSIGN",
+]
+
+
+def _cleanup_null_encounterid(deid_schema: str) -> dict:
+    """Delete rows with NULL clinicalencounterid from the deid schema."""
+    from sqlalchemy import create_engine, text
+    from services.config import MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST
+
+    engine = create_engine(
+        f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{deid_schema}",
+        pool_pre_ping=True,
+    )
+    summary = {}
+    with engine.connect() as conn:
+        for table in _NULL_ENCOUNTERID_TABLES:
+            try:
+                result = conn.execute(text(
+                    f"DELETE FROM `{deid_schema}`.`{table}` WHERE `clinicalencounterid` IS NULL"
+                ))
+                conn.commit()
+                summary[table] = result.rowcount
+            except Exception as e:
+                summary[table] = f"SKIPPED: {e}"
+    engine.dispose()
+    return summary
+
+
+def stop_workers(deid_schema: str | None = None) -> dict:
     """
     Stop all processes running manage.py start_worker (deid workers).
     Uses pkill -f "manage.py start_worker". Safe if no workers are running.
+    If deid_schema is provided, also cleans up NULL clinicalencounterid rows.
     """
     proc = subprocess.run(
         ["pkill", "-f", "manage.py start_worker"],
@@ -81,4 +115,7 @@ def stop_workers() -> dict:
         raise RuntimeError(f"pkill failed: returncode={proc.returncode} stderr={proc.stderr!r}")
     # Brief pause so processes exit before next run
     time.sleep(2)
-    return {"stopped": True}
+    result = {"stopped": True}
+    if deid_schema:
+        result["cleanup"] = _cleanup_null_encounterid(deid_schema)
+    return result

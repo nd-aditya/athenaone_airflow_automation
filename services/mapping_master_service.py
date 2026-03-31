@@ -39,4 +39,50 @@ def update_mapping_and_master_tables(queue_id: int) -> dict:
     run_encounter_mapping_generation_task(queue_id)
     run_master_table_generation_task(queue_id)
 
+    import importlib, services.config as _cfg
+    importlib.reload(_cfg)
+    from services.config import ENABLE_MASTER_INSURANCE_DEDUP, MASTER_INSURANCE_DEDUP_PATIENT_IDS
+    print(f"[dedup] ENABLE_MASTER_INSURANCE_DEDUP={ENABLE_MASTER_INSURANCE_DEDUP}")
+    if ENABLE_MASTER_INSURANCE_DEDUP and MASTER_INSURANCE_DEDUP_PATIENT_IDS:
+        _dedup_master_insurance_table(MASTER_INSURANCE_DEDUP_PATIENT_IDS)
+
     return {"queue_id": queue_id, "status": "ok"}
+
+
+def _dedup_master_insurance_table(patient_ids: list):
+    """
+    For each nd_patient_id in patient_ids, keep one row at random in
+    master_prod.master_insurance_table and delete the rest.
+    Only runs when ENABLE_MASTER_INSURANCE_DEDUP = True.
+    """
+    from sqlalchemy import create_engine, text
+    from services.config import MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST
+
+    engine = create_engine(
+        f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/master_prod",
+        pool_pre_ping=True,
+    )
+    with engine.connect() as conn:
+        for pid in patient_ids:
+            conn.execute(text("DROP TEMPORARY TABLE IF EXISTS _keep_insurance"))
+            conn.execute(text("""
+                CREATE TEMPORARY TABLE _keep_insurance AS
+                SELECT * FROM master_prod.master_insurance_table
+                WHERE nd_patient_id = :pid
+                LIMIT 1
+            """), {"pid": pid})
+
+            conn.execute(text("""
+                DELETE FROM master_prod.master_insurance_table
+                WHERE nd_patient_id = :pid
+            """), {"pid": pid})
+
+            conn.execute(text("""
+                INSERT INTO master_prod.master_insurance_table
+                SELECT * FROM _keep_insurance
+            """))
+
+            conn.execute(text("DROP TEMPORARY TABLE IF EXISTS _keep_insurance"))
+            conn.commit()
+
+    engine.dispose()

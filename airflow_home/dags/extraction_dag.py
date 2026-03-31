@@ -289,8 +289,9 @@ with DAG(
         return wait_for_deid_completion(deid_result["queue_id"], table_ids=deid_result["table_ids"])
 
     @task
-    def stop_deid_workers(_: dict) -> dict:
-        return stop_workers()
+    def stop_deid_workers(_: dict, diff_result: dict) -> dict:
+        deid_schema = (diff_result or {}).get("diff_schema", "")
+        return stop_workers(deid_schema=deid_schema + "_deid" if deid_schema else None)
 
     @task
     def merge_deid_insert_task(diff_result: dict) -> dict:
@@ -340,7 +341,7 @@ with DAG(
     start_workers_task = start_deid_workers(priority_table_ids_task)
     create_deid_tasks_task = create_deid_tasks(start_workers_task)
     wait_deid_task = wait_for_deid(create_deid_tasks_task)
-    stop_workers_task = stop_deid_workers(wait_deid_task)
+    stop_workers_task = stop_deid_workers(wait_deid_task, diff_task)
     qc_task = run_qc_and_email(diff_task)
     merge_deid_insert = merge_deid_insert_task(diff_task)
     validate_deid_merge = validate_deid_merge_task(merge_deid_insert)
