@@ -486,7 +486,7 @@ class NDDBHandler:
             batch_df = df.iloc[start:end]
 
             try:
-                rows = batch_df.to_dict(orient="records")
+                rows = batch_df.replace({pd.NaT: None}).to_dict(orient="records")
                 self.insert_to_db(rows, table_name)
                 nd_logger.info(f"[DBHandler] Inserted rows {start + 1} to {end} into '{table_name}'.")
             except Exception as e:
