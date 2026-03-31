@@ -69,8 +69,8 @@ class NDDBHandler:
             # sql = f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES ({placeholders})"
             sql = f"INSERT INTO `{table_name}` ({', '.join(f'`{col}`' for col in columns)}) VALUES ({placeholders})"
 
-            # Convert rows to tuple format
-            data = [tuple(row.values()) for row in rows]
+            # Convert rows to tuple format, replacing NaT/NaN with None
+            data = [tuple(None if pd.isnull(v) else v for v in row.values()) for row in rows]
 
             # Execute bulk insert
             cursor.executemany(sql, data)
