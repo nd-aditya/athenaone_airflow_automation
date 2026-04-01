@@ -82,7 +82,8 @@ def _ensure_deid_database_exists(deid_schema: str):
     try:
         engine = create_engine(conn_str, pool_pre_ping=True)
         with engine.connect() as conn:
-            conn.execute(text(f"CREATE DATABASE IF NOT EXISTS `{deid_schema}` DEFAULT CHARACTER SET utf8mb4"))
+            conn.execute(text(f"DROP DATABASE IF EXISTS `{deid_schema}`"))
+            conn.execute(text(f"CREATE DATABASE `{deid_schema}` DEFAULT CHARACTER SET utf8mb4"))
             conn.commit()
         engine.dispose()
     except Exception:

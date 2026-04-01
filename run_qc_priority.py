@@ -30,7 +30,8 @@ PRIORITY_TABLES = {t.upper() for t in [
     "PATIENTSURGICALHISTORY", "PROCEDURECODE", "PROCEDURECODEREFERENCE",
     "SNOMED", "SOCIALHXFORMRESPONSE", "SOCIALHXFORMRESPONSEANSWER",
     "SURGICALHISTORYPROCEDURE", "visit", "VITALATTRIBUTEREADING", "VITALSIGN",
-    "PROVIDER"
+    "PROVIDER", "PROVIDERGROUP",
+    "PATIENTPROBLEM", "PATIENTSNOMEDPROBLEM", "PATIENTSNOMEDICD10",
 ]}
 
 from sqlalchemy import text, create_engine
@@ -67,7 +68,10 @@ TABLE_IDENTIFIER_MAP = {
     "SOCIALHXFORMRESPONSEANSWER": {"join_col": "SOCIALHXFORMRESPONSEID", "mapping_schema": BRIDGE_TABLE_SCHEMA, "mapping_table": "bridge_table_socialhxformresponseanswer", "mapping_col": "SOCIALHXFORMRESPONSEID"},
     "VISIT": {"col": "PATIENTID"},
     "VITALSIGN": {"join_col": "clinicalencounterid", "mapping_table": "encounter_mapping_table", "mapping_col": "encounter_id"},
-    "VITALATTRIBUTEREADING": {"col": "CHARTID"},
+    "VITALATTRIBUTEREADING":     {"col": "CHARTID"},
+    "PATIENTPROBLEM":            {"col": "CHARTID"},
+    "PATIENTSNOMEDPROBLEM":      {"col": "CHARTID"},
+    "PATIENTSNOMEDICD10":        {"col": "CHARTID"},
 }
 
 

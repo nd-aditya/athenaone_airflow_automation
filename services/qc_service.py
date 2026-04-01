@@ -66,6 +66,9 @@ TABLE_IDENTIFIER_MAP = {
     "VISIT":                     {"col": "PATIENTID"},
     "VITALSIGN":                 {"join_col": "clinicalencounterid",   "mapping_table": "encounter_mapping_table",             "mapping_col": "encounter_id"},
     "VITALATTRIBUTEREADING":     {"col": "CHARTID"},
+    "PATIENTPROBLEM":            {"col": "CHARTID"},
+    "PATIENTSNOMEDPROBLEM":      {"col": "CHARTID"},
+    "PATIENTSNOMEDICD10":        {"col": "CHARTID"},
 }
 
 
