@@ -83,7 +83,15 @@ class ReferenceMappingDataFrameJoiner:
         if destination_col not in merged_df.columns:
             raise ValueError(f"[ReferenceJoiner] Destination column '{destination_col}' not found after join.")
 
-        # Keep only one destination value per row if duplicates exist
+        # Drop rows with no bridge table match (unresolvable patient identifier)
+        unmatched = merged_df[destination_col].isna() | (merged_df[destination_col] == "")
+        dropped = int(unmatched.sum())
+        if dropped:
+            nd_logger.warning(
+                f"[ReferenceJoiner] Dropping {dropped} rows from '{self.table_obj.metadata.table_name}' "
+                f"with no bridge table match for '{source_col}' -> '{destination_col}'."
+            )
+        merged_df = merged_df[~unmatched].copy()
         merged_df[destination_col] = merged_df[destination_col].fillna("")
 
         if destination_column_type == "ENCOUNTER_ID":
