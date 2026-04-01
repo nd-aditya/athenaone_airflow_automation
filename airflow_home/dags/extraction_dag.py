@@ -108,7 +108,10 @@ TEST_TABLE_NAMES = [
     "VITALATTRIBUTEREADING",
     "VITALSIGN",
     "PROVIDER",
-    "PROVIDERGROUP"
+    "PROVIDERGROUP",
+    "PATIENTPROBLEM",
+    "PATIENTSNOMEDPROBLEM",
+    "PATIENTSNOMEDICD10"
 ]
 
 # =============================================================================
