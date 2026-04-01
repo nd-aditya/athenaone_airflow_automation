@@ -70,8 +70,11 @@ class ReferenceMappingDataFrameJoiner:
             bridge_df = pd.read_sql(stmt, conn)
         
         if bridge_df.empty:
-            nd_logger.warning("[ReferenceJoiner] No matching rows found in bridge table.")
-            return self.df, self.key_phi_columns
+            nd_logger.warning(
+                f"[ReferenceJoiner] No matching rows found in bridge table for "
+                f"'{self.table_obj.metadata.table_name}'. Dropping all {len(self.df)} rows in this batch."
+            )
+            return self.df.iloc[0:0].copy(), self.key_phi_columns
 
         # Merge and drop duplicate join columns
         self.df[source_col] = self.df[source_col].astype(str)
