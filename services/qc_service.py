@@ -2,7 +2,10 @@
 QC service: compare diff schema vs diff_deid schema row counts per table.
 Mirrors the logic of the manual QC script, driven by config values.
 """
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from sqlalchemy import create_engine, text
+
+QC_MAX_WORKERS = 5
 
 from services.config import (
     MYSQL_USER,
@@ -118,10 +121,8 @@ def _count_from_spec(engine, schema: str, table: str, spec: dict) -> tuple:
         with engine.connect() as conn:
             count = conn.execute(text(f"""
                 SELECT COUNT(*) FROM `{schema}`.`{table}` t
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM `{ms}`.`{mapping_table}` m
-                    WHERE m.`{mapping_col}` = t.`{join_col}`
-                )
+                LEFT JOIN `{ms}`.`{mapping_table}` m ON m.`{mapping_col}` = t.`{join_col}`
+                WHERE m.`{mapping_col}` IS NULL
             """)).scalar()
         return count, "Patient Identifier missing at reference table"
 
@@ -142,11 +143,9 @@ def _count_from_spec(engine, schema: str, table: str, spec: dict) -> tuple:
             count = conn.execute(text(f"""
                 SELECT COUNT(DISTINCT t.nd_auto_increment_id)
                 FROM `{schema}`.`{table}` t{joins}
+                LEFT JOIN `{ms}`.`{MAPPING_TABLE}` m ON m.`{col}` = {last_alias}.`{col}`
                 WHERE {last_alias}.`{col}` IS NOT NULL
-                  AND NOT EXISTS (
-                    SELECT 1 FROM `{ms}`.`{MAPPING_TABLE}` m
-                    WHERE m.`{col}` = {last_alias}.`{col}`
-                )
+                  AND m.`{col}` IS NULL
             """)).scalar()
         return count, "Patient Identifier missing at reference table"
 
@@ -160,11 +159,9 @@ def _count_from_spec(engine, schema: str, table: str, spec: dict) -> tuple:
                 SELECT COUNT(DISTINCT t.nd_auto_increment_id)
                 FROM `{schema}`.`{table}` t
                 LEFT JOIN `{HISTORICAL_SCHEMA}`.`{ref_table}` r ON t.`{join_col}` = r.`{join_col}`
+                LEFT JOIN `{ms}`.`{MAPPING_TABLE}` m ON m.`{ref_col}` = r.`{ref_col}`
                 WHERE r.`{ref_col}` IS NOT NULL
-                  AND NOT EXISTS (
-                    SELECT 1 FROM `{ms}`.`{MAPPING_TABLE}` m
-                    WHERE m.`{ref_col}` = r.`{ref_col}`
-                )
+                  AND m.`{ref_col}` IS NULL
             """)).scalar()
         return count, "Patient Identifier missing at reference table"
 
@@ -175,10 +172,8 @@ def _count_from_spec(engine, schema: str, table: str, spec: dict) -> tuple:
     with engine.connect() as conn:
         count = conn.execute(text(f"""
             SELECT COUNT(*) FROM `{schema}`.`{table}` t
-            WHERE NOT EXISTS (
-                SELECT 1 FROM `{ms}`.`{MAPPING_TABLE}` m
-                WHERE m.`{col}` = t.`{col}`
-            )
+            LEFT JOIN `{ms}`.`{MAPPING_TABLE}` m ON m.`{col}` = t.`{col}`
+            WHERE m.`{col}` IS NULL
         """)).scalar()
     return count, "Patient Identifier missing at source table"
 
@@ -350,47 +345,39 @@ def run_qc(diff_schema: str, deid_schema: str) -> dict:
     rows   = []
     errors = []
 
-    for table in tables:
-        try:
-            with orig_engine.connect() as conn:
-                orig_count = conn.execute(
-                    text(f"SELECT COUNT(*) FROM `{diff_schema}`.`{table}`")
-                ).scalar() or 0
+    def _process_table(table):
+        with orig_engine.connect() as conn:
+            orig_count = conn.execute(
+                text(f"SELECT COUNT(*) FROM `{diff_schema}`.`{table}`")
+            ).scalar() or 0
 
-            deid_table_actual = deid_tables_map.get(table.upper())
+        deid_table_actual = deid_tables_map.get(table.upper())
+        if deid_table_actual is None:
+            return {"table": table, "orig_count": orig_count, "deid_count": 0,
+                    "diff": orig_count, "ignore_rows": None,
+                    "status": "FAILED", "comment": "Table not deidentified"}
 
-            if deid_table_actual is None:
-                rows.append({
-                    "table":       table,
-                    "orig_count":  orig_count,
-                    "deid_count":  0,
-                    "diff":        orig_count,
-                    "ignore_rows": None,
-                    "status":      "FAILED",
-                    "comment":     "Table not deidentified",
-                })
-                continue
+        with deid_engine.connect() as conn:
+            deid_count = conn.execute(
+                text(f"SELECT COUNT(*) FROM `{deid_schema}`.`{deid_table_actual}`")
+            ).scalar() or 0
 
-            with deid_engine.connect() as conn:
-                deid_count = conn.execute(
-                    text(f"SELECT COUNT(*) FROM `{deid_schema}`.`{deid_table_actual}`")
-                ).scalar() or 0
+        ignore_rows, comment = _ignore_row_count(orig_engine, diff_schema, table)
+        diff       = orig_count - deid_count
+        ignore_val = ignore_rows or 0
+        status     = "PASS" if abs(diff) - ignore_val == 0 else "NEED_TO_CHECK"
+        return {"table": table, "orig_count": orig_count, "deid_count": deid_count,
+                "diff": diff, "ignore_rows": ignore_rows,
+                "status": status, "comment": comment if diff != 0 else ""}
 
-            ignore_rows, comment = _ignore_row_count(orig_engine, diff_schema, table)
-            diff        = orig_count - deid_count
-            ignore_val  = ignore_rows or 0
-            status      = "PASS" if abs(diff) - ignore_val == 0 else "NEED_TO_CHECK"
-            rows.append({
-                "table":       table,
-                "orig_count":  orig_count,
-                "deid_count":  deid_count,
-                "diff":        diff,
-                "ignore_rows": ignore_rows,
-                "status":      status,
-                "comment":     comment if diff != 0 else "",
-            })
-        except Exception as e:
-            errors.append({"table": table, "error": str(e)})
+    with ThreadPoolExecutor(max_workers=QC_MAX_WORKERS) as executor:
+        future_to_table = {executor.submit(_process_table, t): t for t in tables}
+        for future in as_completed(future_to_table):
+            table = future_to_table[future]
+            try:
+                rows.append(future.result())
+            except Exception as e:
+                errors.append({"table": table, "error": str(e)})
 
     orig_engine.dispose()
     deid_engine.dispose()
