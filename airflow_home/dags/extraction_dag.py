@@ -1,5 +1,6 @@
 from airflow import DAG
 from airflow.decorators import task
+from airflow.exceptions import AirflowSkipException
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from datetime import datetime
@@ -48,6 +49,7 @@ from services.worker_lifecycle import clear_worker_logs, start_workers, stop_wor
 from services.google_chat_service import extract_merge_chat_failure, extract_merge_chat_success
 from services.qc_service import run_qc
 from services.email_service import send_qc_report_email
+from services.gcp_dump_service import run_gcp_dump_pipeline
 
 # Snowflake schemas to extract from. Each can have table_rename_map for MySQL target names
 # (e.g. ATHENAONE.appointment -> appointment_2 so it does not clash with scheduling.appointment).
@@ -337,6 +339,17 @@ with DAG(
             "error_count": len(result["errors"]),
         }
 
+    @task
+    def gcp_dump_upload(_trim_result: dict, diff_result: dict) -> dict:
+        """Dump the deid schema to local SQL files and upload to GCS after trim.
+        Skips when GCP_FULL_REFRESH_FLAG is None (GCP dump disabled)."""
+        from services.config import GCP_FULL_REFRESH_FLAG
+        if GCP_FULL_REFRESH_FLAG is None:
+            raise AirflowSkipException("GCP_FULL_REFRESH_FLAG is None — GCP dump disabled.")
+        diff_schema = (diff_result or {}).get("diff_schema", "")
+        deid_schema = diff_schema + "_deid" if diff_schema else None
+        return run_gcp_dump_pipeline(dump_schema=deid_schema)
+
     diff_task = copy_to_diff_priority()
     deid_run_task = run_deid_pipeline(diff_task)
     mapping_master_task = update_mapping_master(deid_run_task)
@@ -350,6 +363,7 @@ with DAG(
     validate_deid_merge = validate_deid_merge_task(merge_deid_insert)
     fix_deid_merge = fix_deid_merge_task(validate_deid_merge)
     trim_task = trim_diff_schemas(diff_task)
+    gcp_dump_task = gcp_dump_upload(trim_task, diff_task)
     (
         diff_task
         >> deid_run_task
@@ -362,7 +376,7 @@ with DAG(
         >> [qc_task, merge_deid_insert]
     )
     merge_deid_insert >> validate_deid_merge >> fix_deid_merge >> trim_task
-    [qc_task, fix_deid_merge] >> trim_task
+    [qc_task, fix_deid_merge] >> trim_task >> gcp_dump_task
 
 
 # =============================================================================
@@ -594,6 +608,17 @@ with DAG(
             raise ValueError("diff_result missing diff_schema")
         return update_diff_schema_history_and_drop_old(diff_result["diff_schema"], keep_last_n=3)
 
+    @task
+    def gcp_dump_upload_dropped(_trim_result: dict, diff_result: dict) -> dict:
+        """Dump the dropped-records deid schema to local SQL files and upload to GCS after trim.
+        Skips when GCP_FULL_REFRESH_FLAG is None (GCP dump disabled)."""
+        from services.config import GCP_FULL_REFRESH_FLAG
+        if GCP_FULL_REFRESH_FLAG is None:
+            raise AirflowSkipException("GCP_FULL_REFRESH_FLAG is None — GCP dump disabled.")
+        diff_schema = (diff_result or {}).get("diff_schema", "")
+        deid_schema = diff_schema + "_deid" if diff_schema else None
+        return run_gcp_dump_pipeline(dump_schema=deid_schema)
+
     diff_dropped_task        = copy_to_diff_dropped()
     deid_run_dropped         = run_deid_pipeline_dropped(diff_dropped_task)
     mapping_dropped          = update_mapping_master_dropped(deid_run_dropped)
@@ -607,6 +632,7 @@ with DAG(
     validate_dropped         = validate_deid_merge_dropped(merge_insert_dropped)
     fix_dropped              = fix_deid_merge_dropped(validate_dropped)
     trim_dropped             = trim_diff_schemas_dropped(diff_dropped_task)
+    gcp_dump_dropped_task    = gcp_dump_upload_dropped(trim_dropped, diff_dropped_task)
 
     (
         diff_dropped_task
@@ -620,4 +646,4 @@ with DAG(
         >> [qc_dropped, merge_insert_dropped]
     )
     merge_insert_dropped >> validate_dropped >> fix_dropped >> trim_dropped
-    [qc_dropped, fix_dropped] >> trim_dropped
+    [qc_dropped, fix_dropped] >> trim_dropped >> gcp_dump_dropped_task

@@ -21,7 +21,22 @@ from services.config import (
     GCP_TRANSFER_CSV_PATH,
     GCP_BUCKET,
     GCP_DESTINATION_PREFIX,
+    GCP_FULL_REFRESH_FLAG,
 )
+
+
+def _resolve_dump_schema(dump_schema: str | None = None) -> str:
+    """
+    Return the schema to dump from.
+    GCP_FULL_REFRESH_FLAG=True  → DEIDENTIFIED_SCHEMA (full merged table)
+    GCP_FULL_REFRESH_FLAG=False → dump_schema passed by caller (e.g. diff_*_deid from DAG2/DAG4)
+    GCP_FULL_REFRESH_FLAG=None  → caller must skip before reaching here
+    """
+    if GCP_FULL_REFRESH_FLAG:
+        return DEIDENTIFIED_SCHEMA
+    if dump_schema:
+        return dump_schema
+    return DEIDENTIFIED_SCHEMA  # safe fallback when False but no schema passed
 
 
 def _project_root() -> str:
@@ -231,13 +246,16 @@ def upload_dump_to_gcs(
     }
 
 
-def run_gcp_dump_pipeline() -> dict:
+def run_gcp_dump_pipeline(dump_schema: str | None = None) -> dict:
     """
     Full pipeline: get tables (CSV or all in schema), mysqldump, upload to GCS.
+    dump_schema: explicit schema to dump from (e.g. diff_*_deid passed by DAG2/DAG4).
+                 If None, _resolve_dump_schema chooses based on GCP_FULL_REFRESH_FLAG.
     Returns combined summary for XCom.
     """
-    tables = get_tables_to_dump()
-    dump_result = run_mysqldump_dump(tables=tables)
+    schema = _resolve_dump_schema(dump_schema)
+    tables = get_tables_to_dump(schema=schema)
+    dump_result = run_mysqldump_dump(schema=schema, tables=tables)
     if dump_result["failed"]:
         failed_list = ", ".join(f["table"] for f in dump_result["failed"])
         first_err = dump_result["failed"][0].get("error", "")
