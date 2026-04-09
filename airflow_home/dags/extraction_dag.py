@@ -113,7 +113,8 @@ TEST_TABLE_NAMES = [
     "PROVIDERGROUP",
     "PATIENTPROBLEM",
     "PATIENTSNOMEDPROBLEM",
-    "PATIENTSNOMEDICD10"
+    "PATIENTSNOMEDICD10",
+    "PATIENTGPALHISTORY"
 ]
 
 # =============================================================================

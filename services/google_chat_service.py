@@ -87,30 +87,34 @@ def notify_dag_failure(context: dict[str, Any], title: str) -> None:
 
     dag_id, run_id, when = _dag_run_bits(context)
     host = socket.gethostname()
-    dr = context.get("dag_run")
-    failed_tasks: list[str] = []
-    if dr is not None:
-        try:
-            failed_tasks = [
-                ti.task_id
-                for ti in dr.get_task_instances(state=TaskInstanceState.FAILED)
-            ]
-        except Exception:
-            failed_tasks = []
 
+    # task_instance in context is always the task that triggered this callback —
+    # read it first before querying the DB (state may not be flushed yet)
     ti = context.get("task_instance")
-    if not failed_tasks and ti is not None:
-        failed_tasks = [ti.task_id]
+    failed_task = ti.task_id if ti is not None else None
+
+    # Fall back to querying all failed task instances from the dag_run
+    if not failed_task:
+        dr = context.get("dag_run")
+        if dr is not None:
+            try:
+                failed_tasks = [
+                    t.task_id
+                    for t in dr.get_task_instances(state=TaskInstanceState.FAILED)
+                ]
+                failed_task = ", ".join(failed_tasks) if failed_tasks else "unknown"
+            except Exception:
+                failed_task = "unknown"
 
     exception = context.get("exception")
-    err = f"• Exception: `{str(exception)[:500]}`\n" if exception else ""
+    err = f"• Error: `{str(exception)[:500]}`\n" if exception else ""
 
     text = (
         f"*❌ {title}* — failed\n"
         f"• DAG: `{dag_id}`\n"
+        f"• Failed task: `{failed_task}`\n"
         f"• Run ID: `{run_id}`\n"
         f"• Logical date: `{when}`\n"
-        f"• Failed task(s): `{', '.join(failed_tasks) or 'unknown'}`\n"
         f"• Host: `{host}`\n"
         f"{err}"
     )
