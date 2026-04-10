@@ -141,6 +141,23 @@ def run_deid_pipeline_for_airflow(diff_schema: str) -> dict:
     from nd_api_v2.models.incremental_queue import IncrementalQueue
     from nd_api_v2.services.register_dump import register_dump_in_queue
 
+    # Interrupt pending/running worker tasks from previous runs BEFORE deleting queues.
+    # Without this, workers holding stale table_ids hit Table.DoesNotExist after the
+    # old queue's Table records are cascade-deleted.
+    try:
+        from worker.models import Task, Chain
+        from worker.models.helper import ComputationStatus
+        old_chain_ids = list(
+            Chain.objects.filter(reference_uuid__startswith="db_").values_list("id", flat=True)
+        )
+        if old_chain_ids:
+            Task.objects.filter(
+                chain_id__in=old_chain_ids,
+                status__in=[ComputationStatus.PENDING, ComputationStatus.RUNNING],
+            ).update(status=ComputationStatus.INTERRUPTED)
+    except Exception:
+        pass  # non-fatal — proceed to queue deletion regardless
+
     # Delete old queues so this run has a clean set (same as manual register_dump.py)
     IncrementalQueue.objects.all().delete()
 
