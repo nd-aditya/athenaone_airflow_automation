@@ -158,33 +158,30 @@ def run_mysqldump_dump(
                 table,
             ]
 
-            # Pipe mysqldump → perl → file in one streaming pass.
-            # Use upper_table as pattern with /i (case-insensitive) so it matches
-            # regardless of how mysqldump writes the name internally.
-            # Safe for 60 GB+ dumps — perl processes one line at a time, no RAM spike.
-            perl_expr = f"s/`{re.escape(upper_table)}`/`{upper_table}`/gi"
+            # Stream mysqldump stdout line-by-line through Python — replaces table name
+            # with UPPER casing on the fly. Python's `for line in proc.stdout` reads
+            # ONE line at a time so memory usage is O(line) not O(file). Safe for 60GB+.
+            pattern = re.compile(rf"`{re.escape(upper_table)}`", re.IGNORECASE)
+            replacement = f"`{upper_table}`"
 
+            dump_proc = subprocess.Popen(
+                dump_cmd,
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
             with open(dump_file, "w", encoding="utf-8") as out_fh:
-                dump_proc = subprocess.Popen(
-                    dump_cmd,
-                    env=env,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                )
-                perl_proc = subprocess.Popen(
-                    ["perl", "-pe", perl_expr],
-                    stdin=dump_proc.stdout,
-                    stdout=out_fh,
-                    stderr=subprocess.PIPE,
-                )
-                dump_proc.stdout.close()  # allow SIGPIPE if perl exits early
-                _, perl_err = perl_proc.communicate()
-                dump_stderr = dump_proc.stderr.read()
-                dump_proc.wait()
+                for line in dump_proc.stdout:
+                    out_fh.write(pattern.sub(replacement, line))
+
+            dump_proc.wait()
+            dump_stderr = dump_proc.stderr.read()
 
             if dump_proc.returncode != 0:
-                err_msg = dump_stderr.decode("utf-8", errors="replace") if dump_stderr else ""
-                raise subprocess.CalledProcessError(dump_proc.returncode, dump_cmd, stderr=err_msg)
+                raise subprocess.CalledProcessError(dump_proc.returncode, dump_cmd, stderr=dump_stderr)
 
             dumped.append(upper_table)
         except subprocess.CalledProcessError as e:
