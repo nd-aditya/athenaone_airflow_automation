@@ -99,7 +99,7 @@ def get_tables_to_dump(schema: str = DEIDENTIFIED_SCHEMA, csv_path: str | None =
     )
     try:
         tables = inspect(engine).get_table_names(schema=schema)
-        return sorted(t.upper() for t in tables)
+        return sorted(tables)  # original case preserved — uppercasing happens in run_mysqldump_dump
     finally:
         engine.dispose()
 
@@ -142,44 +142,49 @@ def run_mysqldump_dump(
         upper_table = table.upper()
         dump_file = os.path.join(schema_dir, f"{upper_table}.sql")
         try:
-            with open(dump_file, "w", encoding="utf-8") as out:
-                subprocess.run(
-                    [
-                        "mysqldump",
-                        "--default-character-set=utf8mb4",
-                        "--complete-insert",       # explicit column names → fixes column count mismatch
-                        "--hex-blob",              # binary/special chars as hex → fixes Unknown command '\'' errors
-                        "--single-transaction",    # consistent snapshot without locking
-                        "--skip-tz-utc",           # keep original timestamps
-                        "--no-tablespaces",        # avoid permission errors on tablespace info
-                        "--set-gtid-purged=OFF",   # avoid GTID errors on restore
-                        "-h", MYSQL_HOST or "localhost",
-                        "-P", "3306",
-                        "-u", MYSQL_USER or "",
-                        schema,
-                        table,
-                    ],
-                    env=env,
-                    stdout=out,
-                    stderr=subprocess.PIPE,
-                    check=True,
-                    text=True,
-                    encoding="utf-8",
-                )
+            dump_cmd = [
+                "mysqldump",
+                "--default-character-set=utf8mb4",
+                "--complete-insert",    # explicit column names → fixes column count mismatch
+                "--hex-blob",           # binary/special chars as hex → fixes Unknown command '\'' errors
+                "--single-transaction", # consistent snapshot without locking
+                "--skip-tz-utc",        # keep original timestamps
+                "--no-tablespaces",     # avoid permission errors on tablespace info
+                "--set-gtid-purged=OFF",
+                "-h", MYSQL_HOST or "localhost",
+                "-P", "3306",
+                "-u", MYSQL_USER or "",
+                schema,
+                table,
+            ]
 
-            # Normalise ALL occurrences of the table name in backticks to UPPER.
-            # mysqldump always writes the actual stored name (e.g. `patient`) regardless
-            # of what name was passed as argument, so we do a case-insensitive replace.
-            with open(dump_file, "r", encoding="utf-8", errors="replace") as fh:
-                content = fh.read()
-            content = re.sub(
-                rf"`{re.escape(upper_table)}`",
-                f"`{upper_table}`",
-                content,
-                flags=re.IGNORECASE,
-            )
-            with open(dump_file, "w", encoding="utf-8") as fh:
-                fh.write(content)
+            # Pipe mysqldump → perl → file in one streaming pass.
+            # perl replaces `stored_name` with `UPPER_NAME` without loading the file
+            # into memory — safe for 60 GB+ dumps. No post-processing step.
+            # `table` is the exact stored name from MySQL inspect(); upper_table is target.
+            perl_expr = f"s/`{re.escape(table)}`/`{upper_table}`/g"
+
+            with open(dump_file, "w", encoding="utf-8") as out_fh:
+                dump_proc = subprocess.Popen(
+                    dump_cmd,
+                    env=env,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                perl_proc = subprocess.Popen(
+                    ["perl", "-pe", perl_expr],
+                    stdin=dump_proc.stdout,
+                    stdout=out_fh,
+                    stderr=subprocess.PIPE,
+                )
+                dump_proc.stdout.close()  # allow SIGPIPE if perl exits early
+                _, perl_err = perl_proc.communicate()
+                dump_stderr = dump_proc.stderr.read()
+                dump_proc.wait()
+
+            if dump_proc.returncode != 0:
+                err_msg = dump_stderr.decode("utf-8", errors="replace") if dump_stderr else ""
+                raise subprocess.CalledProcessError(dump_proc.returncode, dump_cmd, stderr=err_msg)
 
             dumped.append(upper_table)
         except subprocess.CalledProcessError as e:
