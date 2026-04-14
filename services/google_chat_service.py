@@ -88,31 +88,40 @@ def notify_dag_failure(context: dict[str, Any], title: str) -> None:
     dag_id, run_id, when = _dag_run_bits(context)
     host = socket.gethostname()
 
-    # task_instance in context is always the task that triggered this callback —
-    # read it first before querying the DB (state may not be flushed yet)
+    # task_instance in context is always the task that triggered this callback.
+    # For mapped tasks (e.g. extract_batch.expand), include the map index [N].
     ti = context.get("task_instance")
-    failed_task = ti.task_id if ti is not None else None
+    failed_task = None
+    if ti is not None:
+        failed_task = ti.task_id
+        map_index = getattr(ti, "map_index", -1)
+        if map_index is not None and map_index >= 0:
+            failed_task = f"{failed_task}[{map_index}]"
 
     # Fall back to querying all failed task instances from the dag_run
     if not failed_task:
         dr = context.get("dag_run")
         if dr is not None:
             try:
-                failed_tasks = [
-                    t.task_id
-                    for t in dr.get_task_instances(state=TaskInstanceState.FAILED)
-                ]
-                failed_task = ", ".join(failed_tasks) if failed_tasks else "unknown"
+                failed_tis = dr.get_task_instances(state=TaskInstanceState.FAILED)
+                parts = []
+                for t in failed_tis:
+                    name = t.task_id
+                    idx = getattr(t, "map_index", -1)
+                    if idx is not None and idx >= 0:
+                        name = f"{name}[{idx}]"
+                    parts.append(name)
+                failed_task = ", ".join(parts) if parts else "unknown"
             except Exception:
                 failed_task = "unknown"
 
     exception = context.get("exception")
-    err = f"• Error: `{str(exception)[:500]}`\n" if exception else ""
+    err = f"• Error: `{str(exception)[:400]}`\n" if exception else ""
 
     text = (
         f"*❌ {title}* — failed\n"
-        f"• DAG: `{dag_id}`\n"
         f"• Failed task: `{failed_task}`\n"
+        f"• DAG: `{dag_id}`\n"
         f"• Run ID: `{run_id}`\n"
         f"• Logical date: `{when}`\n"
         f"• Host: `{host}`\n"
