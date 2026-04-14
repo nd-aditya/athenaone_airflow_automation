@@ -98,7 +98,7 @@ def get_tables_to_dump(schema: str = DEIDENTIFIED_SCHEMA, csv_path: str | None =
     )
     try:
         tables = inspect(engine).get_table_names(schema=schema)
-        return sorted(tables)
+        return sorted(t.upper() for t in tables)
     finally:
         engine.dispose()
 
@@ -138,13 +138,20 @@ def run_mysqldump_dump(
     dumped = []
     failed = []
     for table in tables:
-        dump_file = os.path.join(schema_dir, f"{table}.sql")
+        upper_table = table.upper()
+        dump_file = os.path.join(schema_dir, f"{upper_table}.sql")
         try:
-            with open(dump_file, "w") as out:
+            with open(dump_file, "w", encoding="utf-8") as out:
                 subprocess.run(
                     [
                         "mysqldump",
-                        "--default-character-set=utf8",
+                        "--default-character-set=utf8mb4",
+                        "--complete-insert",       # explicit column names → fixes column count mismatch
+                        "--hex-blob",              # binary/special chars as hex → fixes Unknown command '\'' errors
+                        "--single-transaction",    # consistent snapshot without locking
+                        "--skip-tz-utc",           # keep original timestamps
+                        "--no-tablespaces",        # avoid permission errors on tablespace info
+                        "--set-gtid-purged=OFF",   # avoid GTID errors on restore
                         "-h", MYSQL_HOST or "localhost",
                         "-P", "3306",
                         "-u", MYSQL_USER or "",
@@ -156,15 +163,26 @@ def run_mysqldump_dump(
                     stderr=subprocess.PIPE,
                     check=True,
                     text=True,
+                    encoding="utf-8",
                 )
-            dumped.append(table)
+
+            # Normalise table name to UPPER inside the SQL so GCP's case-sensitive
+            # MySQL creates the table as UPPER regardless of how it's stored on MAC.
+            if upper_table != table:
+                with open(dump_file, "r", encoding="utf-8", errors="replace") as fh:
+                    content = fh.read()
+                content = content.replace(f"`{table}`", f"`{upper_table}`")
+                with open(dump_file, "w", encoding="utf-8") as fh:
+                    fh.write(content)
+
+            dumped.append(upper_table)
         except subprocess.CalledProcessError as e:
             err = e.stderr
             if err is None:
                 err = ""
             elif isinstance(err, bytes):
                 err = err.decode("utf-8", errors="replace")
-            failed.append({"table": table, "error": (err or str(e)).strip()})
+            failed.append({"table": upper_table, "error": (err or str(e)).strip()})
 
     file_data = []
     for root_walk, _dirs, files in os.walk(date_root):
