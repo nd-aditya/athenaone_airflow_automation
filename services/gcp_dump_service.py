@@ -5,6 +5,7 @@ Uploads to gs://bucket/<prefix>/<MMDDYYYY>/...
 """
 import hashlib
 import os
+import re
 import shutil
 import subprocess
 from datetime import datetime
@@ -166,14 +167,19 @@ def run_mysqldump_dump(
                     encoding="utf-8",
                 )
 
-            # Normalise table name to UPPER inside the SQL so GCP's case-sensitive
-            # MySQL creates the table as UPPER regardless of how it's stored on MAC.
-            if upper_table != table:
-                with open(dump_file, "r", encoding="utf-8", errors="replace") as fh:
-                    content = fh.read()
-                content = content.replace(f"`{table}`", f"`{upper_table}`")
-                with open(dump_file, "w", encoding="utf-8") as fh:
-                    fh.write(content)
+            # Normalise ALL occurrences of the table name in backticks to UPPER.
+            # mysqldump always writes the actual stored name (e.g. `patient`) regardless
+            # of what name was passed as argument, so we do a case-insensitive replace.
+            with open(dump_file, "r", encoding="utf-8", errors="replace") as fh:
+                content = fh.read()
+            content = re.sub(
+                rf"`{re.escape(upper_table)}`",
+                f"`{upper_table}`",
+                content,
+                flags=re.IGNORECASE,
+            )
+            with open(dump_file, "w", encoding="utf-8") as fh:
+                fh.write(content)
 
             dumped.append(upper_table)
         except subprocess.CalledProcessError as e:
