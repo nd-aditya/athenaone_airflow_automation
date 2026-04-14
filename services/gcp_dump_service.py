@@ -159,10 +159,10 @@ def run_mysqldump_dump(
             ]
 
             # Pipe mysqldump → perl → file in one streaming pass.
-            # perl replaces `stored_name` with `UPPER_NAME` without loading the file
-            # into memory — safe for 60 GB+ dumps. No post-processing step.
-            # `table` is the exact stored name from MySQL inspect(); upper_table is target.
-            perl_expr = f"s/`{re.escape(table)}`/`{upper_table}`/g"
+            # Use upper_table as pattern with /i (case-insensitive) so it matches
+            # regardless of how mysqldump writes the name internally.
+            # Safe for 60 GB+ dumps — perl processes one line at a time, no RAM spike.
+            perl_expr = f"s/`{re.escape(upper_table)}`/`{upper_table}`/gi"
 
             with open(dump_file, "w", encoding="utf-8") as out_fh:
                 dump_proc = subprocess.Popen(
