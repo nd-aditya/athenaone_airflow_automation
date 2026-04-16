@@ -50,6 +50,7 @@ from services.google_chat_service import extract_merge_chat_failure, extract_mer
 from services.qc_service import run_qc
 from services.email_service import send_qc_report_email
 from services.gcp_dump_service import run_gcp_dump_pipeline
+from services.mac_count_stats_service import upload_merge_stats_to_gcs
 
 # Snowflake schemas to extract from. Each can have table_rename_map for MySQL target names
 # (e.g. ATHENAONE.appointment -> appointment_2 so it does not clash with scheduling.appointment).
@@ -351,6 +352,11 @@ with DAG(
         deid_schema = diff_schema + "_deid" if diff_schema else None
         return run_gcp_dump_pipeline(dump_schema=deid_schema)
 
+    @task
+    def upload_merge_stats(_gcp_dump_result: dict) -> dict:
+        """Upload priority table counts from deidentified_merged to GCS merge_stats table."""
+        return upload_merge_stats_to_gcs("Athenaone_Deid_Priority_Tables")
+
     diff_task = copy_to_diff_priority()
     deid_run_task = run_deid_pipeline(diff_task)
     mapping_master_task = update_mapping_master(deid_run_task)
@@ -365,6 +371,7 @@ with DAG(
     fix_deid_merge = fix_deid_merge_task(validate_deid_merge)
     trim_task = trim_diff_schemas(diff_task)
     gcp_dump_task = gcp_dump_upload(trim_task, diff_task)
+    merge_stats_task = upload_merge_stats(gcp_dump_task)
     (
         diff_task
         >> deid_run_task
@@ -377,7 +384,7 @@ with DAG(
         >> [qc_task, merge_deid_insert]
     )
     merge_deid_insert >> validate_deid_merge >> fix_deid_merge >> trim_task
-    [qc_task, fix_deid_merge] >> trim_task >> gcp_dump_task
+    [qc_task, fix_deid_merge] >> trim_task >> gcp_dump_task >> merge_stats_task
 
 
 # =============================================================================
@@ -612,13 +619,19 @@ with DAG(
     @task
     def gcp_dump_upload_dropped(_trim_result: dict, diff_result: dict) -> dict:
         """Dump the dropped-records deid schema to local SQL files and upload to GCS after trim.
+        Uses folder suffix '_dropped' so it doesn't collide with DAG2 on the same day.
         Skips when GCP_FULL_REFRESH_FLAG is None (GCP dump disabled)."""
         from services.config import GCP_FULL_REFRESH_FLAG
         if GCP_FULL_REFRESH_FLAG is None:
             raise AirflowSkipException("GCP_FULL_REFRESH_FLAG is None — GCP dump disabled.")
         diff_schema = (diff_result or {}).get("diff_schema", "")
         deid_schema = diff_schema + "_deid" if diff_schema else None
-        return run_gcp_dump_pipeline(dump_schema=deid_schema)
+        return run_gcp_dump_pipeline(dump_schema=deid_schema, folder_suffix="_dropped")
+
+    @task
+    def upload_merge_stats_dropped(_gcp_dump_result: dict) -> dict:
+        """Upload priority table counts from deidentified_merged to GCS merge_stats table."""
+        return upload_merge_stats_to_gcs("Athenaone_Deid_Dropped_Records")
 
     diff_dropped_task        = copy_to_diff_dropped()
     deid_run_dropped         = run_deid_pipeline_dropped(diff_dropped_task)
@@ -634,6 +647,7 @@ with DAG(
     fix_dropped              = fix_deid_merge_dropped(validate_dropped)
     trim_dropped             = trim_diff_schemas_dropped(diff_dropped_task)
     gcp_dump_dropped_task    = gcp_dump_upload_dropped(trim_dropped, diff_dropped_task)
+    merge_stats_dropped_task = upload_merge_stats_dropped(gcp_dump_dropped_task)
 
     (
         diff_dropped_task
@@ -647,4 +661,4 @@ with DAG(
         >> [qc_dropped, merge_insert_dropped]
     )
     merge_insert_dropped >> validate_dropped >> fix_dropped >> trim_dropped
-    [qc_dropped, fix_dropped] >> trim_dropped >> gcp_dump_dropped_task
+    [qc_dropped, fix_dropped] >> trim_dropped >> gcp_dump_dropped_task >> merge_stats_dropped_task
