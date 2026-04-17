@@ -70,8 +70,6 @@ def upload_merge_stats_to_gcs(dag_id: str) -> dict:
 
     Returns summary dict for Airflow XCom.
     """
-    from google.cloud import storage as gcs
-
     snapshot_date = datetime.now().strftime("%Y-%m-%d")
     date_folder   = datetime.now().strftime("%m%d%Y")
     gcs_path      = f"{MERGE_STATS_GCS_FOLDER}/{date_folder}/merge_stats.csv"
@@ -125,19 +123,30 @@ def upload_merge_stats_to_gcs(dag_id: str) -> dict:
 
     engine.dispose()
 
-    # Upload CSV to GCS
+    # Upload CSV to GCS via gsutil (same credentials as dump service)
+    import os
+    import subprocess
+    import tempfile
+
     buf = io.StringIO()
     writer = csv.writer(buf)
     writer.writerow(columns)
     for row in all_rows:
         writer.writerow(row)
 
-    client = gcs.Client()
-    client.bucket(GCP_BUCKET).blob(gcs_path).upload_from_string(
-        buf.getvalue(), content_type="text/csv"
-    )
-
     gcs_uri = f"gs://{GCP_BUCKET}/{gcs_path}"
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False, encoding="utf-8") as tmp:
+        tmp.write(buf.getvalue())
+        tmp_path = tmp.name
+    try:
+        subprocess.run(
+            ["gsutil", "cp", tmp_path, gcs_uri],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        os.unlink(tmp_path)
     print(f"[merge_stats] {len(PRIORITY_TABLES) - len(errors)} tables inserted → {DEIDENTIFIED_SCHEMA}.merge_stats")
     print(f"[merge_stats] Full table uploaded → {gcs_uri}")
     if errors:
