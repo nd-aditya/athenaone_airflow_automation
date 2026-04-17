@@ -51,6 +51,7 @@ from services.qc_service import run_qc
 from services.email_service import send_qc_report_email
 from services.gcp_dump_service import run_gcp_dump_pipeline
 from services.mac_count_stats_service import upload_merge_stats_to_gcs
+from services.vpn_service import vpn_connect, vpn_disconnect
 
 # Snowflake schemas to extract from. Each can have table_rename_map for MySQL target names
 # (e.g. ATHENAONE.appointment -> appointment_2 so it does not clash with scheduling.appointment).
@@ -131,6 +132,14 @@ with DAG(
     on_success_callback=extract_merge_chat_success,
     on_failure_callback=extract_merge_chat_failure,
 ) as dag_extract_merge:
+
+    @task
+    def vpn_connect_task() -> dict:
+        return vpn_connect()
+
+    @task
+    def vpn_disconnect_task(_: list) -> dict:
+        return vpn_disconnect()
 
     @task
     def reset_incremental_schema() -> dict:
@@ -217,9 +226,11 @@ with DAG(
         """If validation had failed tables (count mismatch), fix nd_active_flag to one active per PK."""
         return fix_historical_one_active_per_pk(validate_result)
 
+    vpn_on = vpn_connect_task()
     batches = get_table_batches()
     reset_task = reset_incremental_schema()
     expanded = extract_batch.expand(batch=batches)
+    vpn_off = vpn_disconnect_task(expanded)
     add_date_task = add_nd_extracted_date()
     set_flags_task = set_historical_flags_to_n_task()
     merge_task = merge_to_historical()
@@ -237,7 +248,7 @@ with DAG(
         else EmptyOperator(task_id="trigger_deid_priority_dag_disabled")
     )
 
-    reset_task >> batches >> expanded >> add_date_task >> set_flags_task >> merge_task >> validate_task >> fix_task >> trigger_deid_priority_dag
+    reset_task >> vpn_on >> batches >> expanded >> vpn_off >> add_date_task >> set_flags_task >> merge_task >> validate_task >> fix_task >> trigger_deid_priority_dag
 
 
 # =============================================================================
