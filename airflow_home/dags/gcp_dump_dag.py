@@ -2,12 +2,19 @@
 GCP dump DAG: dump DEIDENTIFIED_SCHEMA tables under gcp_dump/<MMDDYYYY>/, upload to
 gs://bucket/EHR/<MMDDYYYY>/ (see config GCP_DESTINATION_PREFIX).
 Tasks: clear_dump_dir → run_dump (mysqldump) → run_upload (gsutil to GCS).
+
+Params (settable at trigger time):
+  schema: MySQL schema to dump from. Defaults to DEIDENTIFIED_SCHEMA from config.
+  tables: Comma-separated table names. Defaults to gcp_transfer.csv (or all tables if CSV missing).
 """
 from datetime import datetime
 
 from airflow import DAG
 from airflow.decorators import task
+from airflow.models.param import Param
+from airflow.operators.python import get_current_context
 
+from services.config import DEIDENTIFIED_SCHEMA, GCP_DUMP_DAG_PREFIX
 from services.gcp_dump_service import (
     clear_dump_directory,
     gcp_dump_date_root,
@@ -23,18 +30,39 @@ with DAG(
     schedule=None,
     catchup=False,
     tags=["gcp", "dump", "upload"],
+    params={
+        "schema": Param(
+            default=DEIDENTIFIED_SCHEMA,
+            type="string",
+            description="MySQL schema to dump from. Defaults to DEIDENTIFIED_SCHEMA in config.",
+        ),
+        "tables": Param(
+            default="",
+            type="string",
+            description="Comma-separated table names to dump. Defaults to gcp_transfer.csv (or all tables in schema if CSV missing).",
+        ),
+    },
 ) as dag_gcp_dump:
 
     @task
     def clear_dump_dir() -> dict:
         """Clear today's date folder under gcp_dump (e.g. gcp_dump/03182026/) before dump."""
-        return clear_dump_directory()
+        ctx = get_current_context()
+        schema = ctx["params"].get("schema") or DEIDENTIFIED_SCHEMA
+        return clear_dump_directory(schema=schema)
 
     @task
     def run_dump() -> dict:
-        """Get tables (CSV or all in DEIDENTIFIED_SCHEMA), run mysqldump to local SQL files."""
-        tables = get_tables_to_dump()
-        result = run_mysqldump_dump(tables=tables)
+        """Get tables (param list, or gcp_transfer.csv, or all in schema), run mysqldump."""
+        ctx = get_current_context()
+        schema = ctx["params"].get("schema") or DEIDENTIFIED_SCHEMA
+        tables_param = ctx["params"].get("tables", "")
+        if tables_param and tables_param.strip():
+            tables = [t.strip() for t in tables_param.split(",") if t.strip()]
+        else:
+            # falls back to gcp_transfer.csv, then all tables if CSV missing
+            tables = get_tables_to_dump(schema=schema)
+        result = run_mysqldump_dump(schema=schema, tables=tables)
         if result["failed"]:
             failed_list = ", ".join(f["table"] for f in result["failed"])
             first_err = result["failed"][0].get("error", "")
@@ -64,7 +92,7 @@ with DAG(
             }
         return upload_dump_to_gcs(
             source_folder=gcp_dump_date_root(date_folder),
-            destination_prefix=dump_result.get("gcs_prefix"),
+            destination_prefix=f"{GCP_DUMP_DAG_PREFIX.strip('/')}/{date_folder}",
         )
 
     dump_result = run_dump()
