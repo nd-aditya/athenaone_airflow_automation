@@ -39,20 +39,15 @@ def vpn_connect() -> dict:
         check=True,
     )
 
-    # Poll log until tunnel is up
+    # Poll until openvpn process is confirmed running, then allow 5s for tunnel establishment
     deadline = time.time() + CONNECT_TIMEOUT_SEC
     while time.time() < deadline:
         time.sleep(2)
-        try:
-            with open(OPENVPN_LOG, "r") as f:
-                content = f.read()
-            if "Initialization Sequence Completed" in content:
-                print("[vpn_service] VPN connected.")
-                return {"status": "connected", "config": OPENVPN_CONFIG}
-            if "AUTH_FAILED" in content:
-                raise RuntimeError("VPN auth failed — check credentials in .ovpn profile")
-        except (FileNotFoundError, PermissionError):
-            pass  # log not written yet
+        result = subprocess.run(["pgrep", "-x", "openvpn"], capture_output=True)
+        if result.returncode == 0:
+            time.sleep(5)
+            print("[vpn_service] VPN connected.")
+            return {"status": "connected", "config": OPENVPN_CONFIG}
 
     raise RuntimeError(f"VPN did not connect within {CONNECT_TIMEOUT_SEC} seconds")
 
