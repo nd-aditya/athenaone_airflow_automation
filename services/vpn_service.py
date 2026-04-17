@@ -7,6 +7,7 @@ Usage in DAG:
 """
 from __future__ import annotations
 
+import os
 import subprocess
 import time
 
@@ -23,7 +24,10 @@ def vpn_connect() -> dict:
     Raises RuntimeError if connection does not complete within CONNECT_TIMEOUT_SEC.
     """
     # Clear previous log so we don't match old "Sequence Completed" entries
-    subprocess.run(["sudo", "rm", "-f", OPENVPN_LOG], check=False)
+    try:
+        os.remove(OPENVPN_LOG)
+    except (FileNotFoundError, PermissionError):
+        pass
 
     subprocess.run(
         [
@@ -40,16 +44,14 @@ def vpn_connect() -> dict:
     while time.time() < deadline:
         time.sleep(2)
         try:
-            result = subprocess.run(
-                ["sudo", "cat", OPENVPN_LOG],
-                capture_output=True, text=True
-            )
-            if "Initialization Sequence Completed" in result.stdout:
+            with open(OPENVPN_LOG, "r") as f:
+                content = f.read()
+            if "Initialization Sequence Completed" in content:
                 print("[vpn_service] VPN connected.")
                 return {"status": "connected", "config": OPENVPN_CONFIG}
-            if "AUTH_FAILED" in result.stdout:
+            if "AUTH_FAILED" in content:
                 raise RuntimeError("VPN auth failed — check credentials in .ovpn profile")
-        except FileNotFoundError:
+        except (FileNotFoundError, PermissionError):
             pass  # log not written yet
 
     raise RuntimeError(f"VPN did not connect within {CONNECT_TIMEOUT_SEC} seconds")
