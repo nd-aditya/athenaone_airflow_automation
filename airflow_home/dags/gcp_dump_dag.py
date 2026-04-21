@@ -54,11 +54,21 @@ with DAG(
     @task
     def run_dump() -> dict:
         """Get tables (param list, or gcp_transfer.csv, or all in schema), run mysqldump."""
+        import logging
         ctx = get_current_context()
         schema = ctx["params"].get("schema") or DEIDENTIFIED_SCHEMA
         tables_param = ctx["params"].get("tables", "")
         if tables_param and tables_param.strip():
-            tables = [t.strip() for t in tables_param.split(",") if t.strip()]
+            requested = [t.strip() for t in tables_param.split(",") if t.strip()]
+            # filter to only tables that exist in the schema — skip missing ones
+            existing = set(get_tables_to_dump(schema=schema))
+            existing_upper = {t.upper(): t for t in existing}
+            tables = []
+            for t in requested:
+                if t.upper() in existing_upper:
+                    tables.append(existing_upper[t.upper()])
+                else:
+                    logging.warning("[gcp_dump] Table %r not found in schema %r — skipping.", t, schema)
         else:
             # falls back to gcp_transfer.csv, then all tables if CSV missing
             tables = get_tables_to_dump(schema=schema)
