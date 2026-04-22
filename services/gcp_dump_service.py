@@ -81,6 +81,18 @@ def clear_dump_directory(
     }
 
 
+def get_schema_table_names(schema: str) -> list[str]:
+    """Return all table names that actually exist in the given MySQL schema (never reads CSV)."""
+    engine = create_engine(
+        f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/",
+        pool_pre_ping=True,
+    )
+    try:
+        return inspect(engine).get_table_names(schema=schema)
+    finally:
+        engine.dispose()
+
+
 def get_tables_to_dump(schema: str = DEIDENTIFIED_SCHEMA, csv_path: str | None = None) -> list[str]:
     """
     Return list of table names to dump.

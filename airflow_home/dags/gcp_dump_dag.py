@@ -18,6 +18,7 @@ from services.config import DEIDENTIFIED_SCHEMA, GCP_DUMP_DAG_PREFIX
 from services.gcp_dump_service import (
     clear_dump_directory,
     gcp_dump_date_root,
+    get_schema_table_names,
     get_tables_to_dump,
     run_mysqldump_dump,
     upload_dump_to_gcs,
@@ -60,8 +61,8 @@ with DAG(
         tables_param = ctx["params"].get("tables", "")
         if tables_param and tables_param.strip():
             requested = [t.strip() for t in tables_param.split(",") if t.strip()]
-            # filter to only tables that exist in the schema — skip missing ones
-            existing = set(get_tables_to_dump(schema=schema))
+            # always query MySQL directly so gcp_transfer.csv doesn't affect the existence check
+            existing = set(get_schema_table_names(schema=schema))
             existing_upper = {t.upper(): t for t in existing}
             tables = []
             for t in requested:
