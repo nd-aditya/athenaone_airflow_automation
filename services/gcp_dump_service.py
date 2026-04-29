@@ -121,13 +121,16 @@ def run_mysqldump_dump(
     tables: list[str] | None = None,
     output_dir: str | None = None,
     folder_suffix: str | None = None,
+    run_date: datetime | None = None,
 ) -> dict:
     """
     Dump into gcp_dump/<MMDDYYYY[_suffix]>/<schema>/table.sql and write sql_dump_stats.csv.
     folder_suffix: e.g. "_dropped" → folder becomes "04162026_dropped".
+    run_date: use DAG logical_date instead of datetime.now() to avoid date collisions when
+              a run starts on day N but the upload task executes after midnight on day N+1.
     """
     root_base = output_dir or os.path.join(_project_root(), GCP_DUMP_OUTPUT_DIR)
-    date_folder = _gcp_date_folder() + (folder_suffix or "")
+    date_folder = (run_date or datetime.now()).strftime("%m%d%Y") + (folder_suffix or "")
     date_root = os.path.join(root_base, date_folder)
     schema_dir = os.path.join(date_root, schema)
 
@@ -285,7 +288,11 @@ def upload_dump_to_gcs(
     }
 
 
-def run_gcp_dump_pipeline(dump_schema: str | None = None, folder_suffix: str | None = None) -> dict:
+def run_gcp_dump_pipeline(
+    dump_schema: str | None = None,
+    folder_suffix: str | None = None,
+    run_date: datetime | None = None,
+) -> dict:
     """
     Full pipeline: get tables (CSV or all in schema), mysqldump, upload to GCS.
     dump_schema:   explicit schema to dump from (e.g. diff_*_deid passed by DAG2/DAG4).
@@ -293,17 +300,27 @@ def run_gcp_dump_pipeline(dump_schema: str | None = None, folder_suffix: str | N
     folder_suffix: appended to the date folder name in GCS/local path.
                    e.g. "_dropped" → folder becomes "04162026_dropped".
                    Use this to avoid DAG2 and DAG4 overwriting each other on the same day.
+    run_date:      pass DAG logical_date so the folder is pinned to the scheduled run date,
+                   not the wall-clock time of the upload task.
     Returns combined summary for XCom.
     """
     schema = _resolve_dump_schema(dump_schema)
     tables = get_tables_to_dump(schema=schema)
-    dump_result = run_mysqldump_dump(schema=schema, tables=tables, folder_suffix=folder_suffix)
+    dump_result = run_mysqldump_dump(schema=schema, tables=tables, folder_suffix=folder_suffix, run_date=run_date)
     if dump_result["failed"]:
-        failed_list = ", ".join(f["table"] for f in dump_result["failed"])
-        first_err = dump_result["failed"][0].get("error", "")
-        raise RuntimeError(
-            f"Dump failed for {len(dump_result['failed'])} table(s): {failed_list}. First error: {first_err}"
-        )
+        real_failures = [
+            f for f in dump_result["failed"]
+            if "couldn't find table" not in f.get("error", "").lower()
+        ]
+        skipped = [f for f in dump_result["failed"] if f not in real_failures]
+        for s in skipped:
+            print(f"[gcp_dump] WARNING: skipping {s['table']} — table not found in schema '{schema}'")
+        if real_failures:
+            failed_list = ", ".join(f["table"] for f in real_failures)
+            first_err = real_failures[0].get("error", "")
+            raise RuntimeError(
+                f"Dump failed for {len(real_failures)} table(s): {failed_list}. First error: {first_err}"
+            )
     if dump_result["dumped"] == 0:
         return {
             "status": "SKIPPED",

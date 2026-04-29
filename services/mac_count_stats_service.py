@@ -61,18 +61,21 @@ CREATE TABLE IF NOT EXISTS `{DEIDENTIFIED_SCHEMA}`.`merge_stats` (
 """
 
 
-def upload_merge_stats_to_gcs(dag_id: str) -> dict:
+def upload_merge_stats_to_gcs(dag_id: str, run_date: datetime | None = None) -> dict:
     """
     1. Create merge_stats table if it doesn't exist.
     2. INSERT counts for each priority table (INSERT ... ON DUPLICATE KEY UPDATE
        so re-running the same DAG on the same date overwrites instead of duplicating).
     3. Upload the full merge_stats table as CSV to GCS.
 
+    run_date: pass DAG logical_date so the folder is pinned to the scheduled run date,
+              not the wall-clock time of the upload task.
     Returns summary dict for Airflow XCom.
     """
-    snapshot_date = datetime.now().strftime("%Y-%m-%d")
-    date_folder   = datetime.now().strftime("%m%d%Y")
-    gcs_path      = f"{MERGE_STATS_GCS_FOLDER}/{date_folder}/merge_stats.csv"
+    effective_date = run_date or datetime.now()
+    snapshot_date  = effective_date.strftime("%Y-%m-%d")
+    date_folder    = effective_date.strftime("%m%d%Y")
+    gcs_path       = f"{MERGE_STATS_GCS_FOLDER}/{date_folder}/merge_stats.csv"
 
     engine = create_engine(
         f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/",

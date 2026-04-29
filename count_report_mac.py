@@ -1,29 +1,32 @@
 """
-Run on MAC.
+Run on any MAC machine.
 Fetches COUNT(*) and COUNT(*) WHERE nd_active_flag='Y' for each priority table
 from deidentified_merged, then uploads results to GCS.
 
 Usage:
     python count_report_mac.py
+
+Requirements:
+    pip install pymysql google-cloud-storage
 """
 import csv
 import io
-import sys
-import os
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
+from datetime import datetime
 
 import pymysql
 from google.cloud import storage
 
-from services.config import (
-    MYSQL_USER,
-    MYSQL_PASSWORD,
-    MYSQL_HOST,
-    DEIDENTIFIED_SCHEMA,
-    COUNT_REPORT_GCS_BUCKET,
-    COUNT_REPORT_MAC_GCS_PATH,
-)
+# ── CONFIG — edit these values for each machine ───────────────────────────────
+
+MYSQL_HOST     = 'localhost'
+MYSQL_USER     = 'ndadmin'
+MYSQL_PASSWORD = 'ndADMIN%402025'
+MYSQL_SCHEMA   = 'deidentified_merged'
+
+GCS_BUCKET        = 'nd-platform-dcnd'
+GCS_BASE_PATH     = 'EHR/merge_stats'
+
+# ── Tables ─────────────────────────────────────────────────────────────────────
 
 TABLES = [
     "ALLERGY", "APPOINTMENT", "APPOINTMENTELIGIBILITYINFO", "APPOINTMENTNOTE",
@@ -44,8 +47,9 @@ TABLES = [
 ]
 
 # ── Fetch ─────────────────────────────────────────────────────────────────────
-print(f"Connecting to MAC MySQL ({MYSQL_HOST}/{DEIDENTIFIED_SCHEMA})…")
-conn = pymysql.connect(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=DEIDENTIFIED_SCHEMA)
+
+print(f"Connecting to MySQL ({MYSQL_HOST}/{MYSQL_SCHEMA})…")
+conn = pymysql.connect(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_SCHEMA)
 cur  = conn.cursor()
 
 rows = []
@@ -66,14 +70,18 @@ for table in TABLES:
 conn.close()
 
 # ── Upload to GCS ─────────────────────────────────────────────────────────────
-print(f"\nUploading to gs://{COUNT_REPORT_GCS_BUCKET}/{COUNT_REPORT_MAC_GCS_PATH} …")
+
+date_folder = datetime.now().strftime("%m%d%Y")
+GCS_PATH = f"{GCS_BASE_PATH}/{date_folder}/mac_counts.csv"
+
+print(f"\nUploading to gs://{GCS_BUCKET}/{GCS_PATH} …")
 buf = io.StringIO()
 writer = csv.DictWriter(buf, fieldnames=["table", "total", "active_y", "error"])
 writer.writeheader()
 writer.writerows(rows)
 
 client = storage.Client()
-client.bucket(COUNT_REPORT_GCS_BUCKET).blob(COUNT_REPORT_MAC_GCS_PATH).upload_from_string(
+client.bucket(GCS_BUCKET).blob(GCS_PATH).upload_from_string(
     buf.getvalue(), content_type="text/csv"
 )
 print("Done. Run count_report_compare.py on MAC to generate the comparison Excel.")

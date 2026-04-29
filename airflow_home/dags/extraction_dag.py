@@ -2,6 +2,7 @@ from airflow import DAG
 from airflow.decorators import task
 from airflow.exceptions import AirflowSkipException
 from airflow.operators.empty import EmptyOperator
+from airflow.operators.python import get_current_context
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from datetime import datetime
 from sqlalchemy import create_engine, inspect, text
@@ -361,12 +362,14 @@ with DAG(
             raise AirflowSkipException("GCP_FULL_REFRESH_FLAG is None — GCP dump disabled.")
         diff_schema = (diff_result or {}).get("diff_schema", "")
         deid_schema = diff_schema + "_deid" if diff_schema else None
-        return run_gcp_dump_pipeline(dump_schema=deid_schema)
+        run_date = get_current_context()["logical_date"]
+        return run_gcp_dump_pipeline(dump_schema=deid_schema, run_date=run_date)
 
     @task
     def upload_merge_stats(_gcp_dump_result: dict) -> dict:
         """Upload priority table counts from deidentified_merged to GCS merge_stats table."""
-        return upload_merge_stats_to_gcs("Athenaone_Deid_Priority_Tables")
+        run_date = get_current_context()["logical_date"]
+        return upload_merge_stats_to_gcs("Athenaone_Deid_Priority_Tables", run_date=run_date)
 
     diff_task = copy_to_diff_priority()
     deid_run_task = run_deid_pipeline(diff_task)
@@ -637,12 +640,14 @@ with DAG(
             raise AirflowSkipException("GCP_FULL_REFRESH_FLAG is None — GCP dump disabled.")
         diff_schema = (diff_result or {}).get("diff_schema", "")
         deid_schema = diff_schema + "_deid" if diff_schema else None
-        return run_gcp_dump_pipeline(dump_schema=deid_schema, folder_suffix="_dropped")
+        run_date = get_current_context()["logical_date"]
+        return run_gcp_dump_pipeline(dump_schema=deid_schema, folder_suffix="_dropped", run_date=run_date)
 
     @task
     def upload_merge_stats_dropped(_gcp_dump_result: dict) -> dict:
         """Upload priority table counts from deidentified_merged to GCS merge_stats table."""
-        return upload_merge_stats_to_gcs("Athenaone_Deid_Dropped_Records")
+        run_date = get_current_context()["logical_date"]
+        return upload_merge_stats_to_gcs("Athenaone_Deid_Dropped_Records", run_date=run_date)
 
     diff_dropped_task        = copy_to_diff_dropped()
     deid_run_dropped         = run_deid_pipeline_dropped(diff_dropped_task)
